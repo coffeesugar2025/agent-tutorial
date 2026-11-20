@@ -1,0 +1,38 @@
+# Python 3.12
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+pydantic==2.10.4
+pydantic-settings==2.7.1
+python-multipart==0.0.20
+email-validator==2.2.0
+
+# MySQL (SQLAlchemy 2.0 async + asyncmy)
+# 0.2.9 没有 cp312 wheel，Windows + Python 3.12 会退化为 Cython 源码编译并失败；
+# 0.2.10 起提供 cp312-win_amd64 预编译 wheel，无需 VC++ Build Tools。
+# 若想完全免编译，改用 requirements-nocompile.txt（aiomysql 纯 Python 驱动）。
+SQLAlchemy[asyncio]==2.0.36
+asyncmy==0.2.10
+greenlet==3.1.1
+# MySQL 8.0 默认 caching_sha2_password 认证，驱动做 RSA 密码交换必须靠它；
+# 缺了会报 'cryptography' package is required for sha256_password or caching_sha2_password
+cryptography==44.0.0
+
+# Redis
+redis==5.2.1
+
+# RabbitMQ
+aio-pika==9.5.5
+
+# Kafka
+aiokafka==0.12.0
+
+# Elasticsearch 8.x
+elasticsearch==8.17.0
+
+# Auth
+PyJWT==2.10.1
+bcrypt==4.2.1
+
+# utils
+orjson==3.10.15
+loguru==0.7.3

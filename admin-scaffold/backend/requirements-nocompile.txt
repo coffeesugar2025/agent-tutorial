@@ -1,0 +1,40 @@
+# Windows / 无 C++ 编译环境 的备选依赖（与 requirements.txt 二选一，不要同时安装）
+# 用 aiomysql 替代 asyncmy：纯 Python（仅依赖 PyMySQL），全平台零编译。
+# SQLAlchemy 2.0 内置 mysql+aiomysql 方言，业务代码无需改动。
+# 使用时在 .env 中设置 MYSQL_DRIVER=aiomysql
+#
+# Python 3.12
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+pydantic==2.10.4
+pydantic-settings==2.7.1
+python-multipart==0.0.20
+email-validator==2.2.0
+
+# MySQL (SQLAlchemy 2.0 async + aiomysql)
+SQLAlchemy[asyncio]==2.0.36
+aiomysql==0.2.0
+PyMySQL==1.1.1
+greenlet==3.1.1
+# 等价于 PyMySQL[rsa]：MySQL 8.0 的 caching_sha2_password 认证需要 RSA 加密支持
+cryptography==44.0.0
+
+# Redis
+redis==5.2.1
+
+# RabbitMQ
+aio-pika==9.5.5
+
+# Kafka
+aiokafka==0.12.0
+
+# Elasticsearch 8.x
+elasticsearch==8.17.0
+
+# Auth
+PyJWT==2.10.1
+bcrypt==4.2.1
+
+# utils
+orjson==3.10.15
+loguru==0.7.3

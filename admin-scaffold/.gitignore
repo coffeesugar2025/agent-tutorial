@@ -1,0 +1,16 @@
+backend/.env
+backend/.venv/
+backend/__pycache__/
+backend/**/__pycache__/
+*.pyc
+frontend/node_modules/
+frontend/dist/
+frontend/.env.local
+android/.gradle/
+android/.idea/
+android/local.properties
+android/build/
+android/app/build/
+android/gradle/wrapper/gradle-wrapper.jar
+*.iml
+.DS_Store
