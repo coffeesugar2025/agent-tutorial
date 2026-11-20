@@ -1,0 +1,6 @@
+target/
+.pw-profile*/
+people-news.json
+*.log
+.idea/
+.vscode/

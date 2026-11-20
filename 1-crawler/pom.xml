@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>demo</groupId>
+  <artifactId>people-crawler</artifactId>
+  <version>1.0.0</version>
+
+  <properties>
+    <maven.compiler.release>17</maven.compiler.release>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.aspose</groupId>
+      <artifactId>aspose-words</artifactId>
+      <version>18.5.0718-jdk16</version> <!-- 替换为你本地 JAR 的版本 -->
+      <scope>system</scope>
+      <systemPath>${project.basedir}/src/main/resources/jar/aspose-words-18.5.0718-jdk16.jar
+      </systemPath> <!-- 替换为实际的本地 JAR 文件路径 -->
+    </dependency>
+    <!-- Aspose.PDF 依赖，使用本地 JAR -->
+    <dependency>
+      <groupId>com.aspose</groupId>
+      <artifactId>aspose-pdf</artifactId>
+      <version>18.1</version> <!-- 替换为你本地 JAR 的版本 -->
+      <scope>system</scope>
+      <systemPath>${project.basedir}/src/main/resources/jar/aspose-pdf-18.1.jar
+      </systemPath> <!-- 替换为实际的本地 JAR 文件路径 -->
+    </dependency>
+    <dependency>
+      <groupId>com.microsoft.playwright</groupId>
+      <artifactId>playwright</artifactId>
+      <version>1.49.0</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>2.17.2</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>3.5.0</version>
+      </plugin>
+    </plugins>
+  </build>
+</project>
