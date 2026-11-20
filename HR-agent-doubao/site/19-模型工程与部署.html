@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>19 · 模型工程：选档、路由、成本、部署 · HR Agent 工程实战教程</title>
+<style>
+
+:root{--bg:#fbfcfc;--fg:#1a1f23;--muted:#657076;--line:#e3e8ea;--brand:#0f766e;
+      --brand-soft:#e8f4f2;--code-bg:#11202b;--code-fg:#dfe9ee}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);
+     font:16px/1.75 -apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+a{color:var(--brand);text-decoration:none}
+a:hover{text-decoration:underline}
+.side{position:fixed;top:0;left:0;bottom:0;width:280px;overflow-y:auto;
+      border-right:1px solid var(--line);background:#fff;padding:20px 16px 40px}
+.brand a{display:block;font-weight:700;font-size:15px;line-height:1.4}
+.brand span{display:block;color:var(--muted);font-size:12px;margin-top:4px}
+nav{margin-top:18px;font-size:14px}
+nav a{display:block;padding:5px 8px;border-radius:6px;color:#33414a;line-height:1.45}
+nav a:hover{background:#f2f6f7;text-decoration:none}
+nav a.cur{background:var(--brand-soft);color:#0b5d56;font-weight:600}
+nav .grp{margin:14px 0 4px;font-size:11.5px;letter-spacing:.06em;color:#9aa5aa;
+          text-transform:uppercase;padding-left:8px}
+main{margin-left:280px;padding:44px 48px 80px;max-width:920px}
+.doc h1{font-size:27px;line-height:1.35;margin:0 0 6px;letter-spacing:-.01em}
+.doc h1+p{color:var(--muted)}
+.doc h2{font-size:20px;margin:38px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+.doc h3{font-size:17px;margin:26px 0 10px}
+.doc h4{font-size:15px;margin:20px 0 8px;color:#33414a}
+.doc p{margin:12px 0}
+.doc ul,.doc ol{margin:12px 0;padding-left:24px}
+.doc li{margin:5px 0}
+.doc blockquote{margin:16px 0;padding:12px 16px;background:#f5f8f8;border-left:3px solid var(--brand);
+                border-radius:0 8px 8px 0;color:#3d4a51}
+.doc blockquote p{margin:0}
+.doc pre{background:var(--code-bg);color:var(--code-fg);padding:14px 16px;border-radius:10px;
+         overflow-x:auto;font:13.5px/1.65 ui-monospace,SFMono-Regular,Consolas,monospace;
+         margin:16px 0;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.doc code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:13.5px;
+          background:#eef3f4;padding:1px 5px;border-radius:4px}
+.doc pre code{background:none;padding:0;color:inherit;font-size:inherit}
+.doc table{border-collapse:collapse;width:100%;margin:16px 0;font-size:14.5px}
+.doc th,.doc td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+.doc th{background:#f3f7f7;font-weight:600}
+.doc hr{border:none;border-top:1px solid var(--line);margin:32px 0}
+.doc img{max-width:100%}
+.pager{display:flex;justify-content:space-between;gap:16px;margin-top:48px;
+       padding-top:20px;border-top:1px solid var(--line);font-size:14px}
+.pager a{display:block;padding:10px 14px;border:1px solid var(--line);border-radius:8px;
+         max-width:46%;background:#fff}
+.pager .nx{text-align:right;margin-left:auto}
+.foot{margin-top:36px;color:#a4adb2;font-size:12px}
+@media(max-width:860px){
+  .side{position:static;width:auto;border-right:none;border-bottom:1px solid var(--line)}
+  main{margin:0;padding:24px 18px 60px}
+  .doc h1{font-size:23px}
+}
+
+</style></head><body>
+<aside class="side">
+  <div class="brand"><a href="index.html">HR Agent 工程实战教程</a>
+    <span>Python 3.12 · Vue 3 · HR 场景</span></div>
+  <nav><div class="grp">总目录</div>
+<a href="index.html" data-href="index.html">HR 场景 Agent 工程教程（LangChain / LangGraph 全程实战）</a>
+<div class="grp">一 · 打地基</div>
+<a href="00-导读与环境准备.html" data-href="00-导读与环境准备.html">00 · 导读与环境准备</a>
+<a href="01-第一次调用大模型.html" data-href="01-第一次调用大模型.html">01 · 第一次调用大模型（LangChain 版）</a>
+<a href="02-Prompt与结构化输出.html" data-href="02-Prompt与结构化输出.html">02 · Prompt 与结构化输出</a>
+<div class="grp">二 · Agent 内核</div>
+<a href="03-Agent-Loop.html" data-href="03-Agent-Loop.html">03 · Agent Loop：从 `create_agent` 到自己搭图</a>
+<a href="04-Tool-Calling.html" data-href="04-Tool-Calling.html">04 · Tool Calling：模型选错工具，90% 是描述写糊了</a>
+<a href="05-Planning.html" data-href="05-Planning.html">05 · Planning：把"计划"变成可校验的数据</a>
+<a href="06-Workflow与状态机.html" data-href="06-Workflow与状态机.html">06 · Workflow 与状态机：该定死的地方别让模型发挥</a>
+<div class="grp">三 · 记忆与上下文</div>
+<a href="07-Memory.html" data-href="07-Memory.html">07 · Memory：会话记忆、长期记忆、用户记忆</a>
+<a href="08-Context-Engineering.html" data-href="08-Context-Engineering.html">08 · Context Engineering：Token 预算、裁剪、压缩</a>
+<div class="grp">四 · RAG 与知识</div>
+<a href="09-RAG基础.html" data-href="09-RAG基础.html">09 · RAG 基础：解析、切片、向量化、召回、拼 Prompt</a>
+<a href="10-RAG进阶.html" data-href="10-RAG进阶.html">10 · RAG 进阶：混合检索、Rerank、版本治理、引用质量</a>
+<a href="11-RAG高阶.html" data-href="11-RAG高阶.html">11 · RAG 高阶：结构化知识、Text2SQL、Text2Cypher</a>
+<div class="grp">五 · 协作与生态</div>
+<a href="12-MCP与Skill.html" data-href="12-MCP与Skill.html">12 · MCP / Skill / Plugin：工具的"插座标准"</a>
+<a href="13-Multi-Agent.html" data-href="13-Multi-Agent.html">13 · Multi-Agent：分工、交接、仲裁</a>
+<a href="14-Human-in-the-loop.html" data-href="14-Human-in-the-loop.html">14 · Human-in-the-loop：该停的地方必须停下来等人</a>
+<div class="grp">六 · 生产级可靠性</div>
+<a href="15-可靠性工程.html" data-href="15-可靠性工程.html">15 · 可靠性工程：重试、超时、降级、幂等、熔断</a>
+<a href="16-Sandbox与长任务.html" data-href="16-Sandbox与长任务.html">16 · 长任务：断点续跑、分批、沙箱、预算</a>
+<a href="17-可观测性与评测.html" data-href="17-可观测性与评测.html">17 · 可观测性与评测：没有评测就没有迭代</a>
+<div class="grp">七 · 交付与落地</div>
+<a href="18-Vue3前端工作台.html" data-href="18-Vue3前端工作台.html">18 · Vue3 前端工作台：SSE 把"Agent 在想什么"显示出来</a>
+<a href="19-模型工程与部署.html" data-href="19-模型工程与部署.html" class="cur">19 · 模型工程：选档、路由、成本、部署</a>
+<a href="20-岗位地图与学习路径.html" data-href="20-岗位地图与学习路径.html">20 · 岗位地图与学习路径</a></nav>
+</aside>
+<main>
+  <article class="doc"><h1 id="19-模型工程-选档-路由-成本-部署">19 · 模型工程：选档、路由、成本、部署</h1>
+<h2 id="19-1-本章目标">19.1 本章目标</h2>
+<ol>
+<li>用 <code>init_chat_model</code> 一份代码换厂商；</li>
+<li>做<strong>分档路由</strong>：什么任务用什么档的模型；</li>
+<li>会算成本（每千次 + 年化），并且知道 90% 的钱花在哪；</li>
+<li>知道什么时候该 SFT / LoRA，什么时候只是 prompt 没写好。</li>
+</ol>
+<p>跑法：<code>python ch19_model_ops/main.py</code></p>
+<h2 id="19-2-换厂商-四行代码">19.2 换厂商：四行代码</h2>
+<pre><code class="lang-python">from langchain.chat_models import init_chat_model
+
+m = init_chat_model("deepseek-chat", model_provider="deepseek", base_url=..., api_key=...)
+m = init_chat_model("gpt-4o-mini",   model_provider="openai")
+m = init_chat_model("claude-sonnet-4", model_provider="anthropic")
+m = init_chat_model("qwen2.5:7b",    model_provider="ollama", base_url="http://localhost:11434")
+m = init_chat_model("my-model",      model_provider="openai", base_url="http://gpu-box:8000/v1")  # vLLM</code></pre>
+<p><strong>统一接口的价值</strong>：你的 20 个 demo、5 个工具、3 个图，全都只依赖 <code>BaseChatModel</code>。换厂商零改动——这是"用框架"最实际的收益之一。</p>
+<h2 id="19-3-三档模型">19.3 三档模型</h2>
+<table><thead><tr><th>档</th><th>典型</th><th>单价（每千次）</th><th>延迟</th><th>用来做什么</th></tr></thead><tbody>
+<tr><td>T1</td><td>小模型 / 本地 7B</td><td>3.0 元</td><td>0.8s</td><td>分类、抽取、改写、意图识别</td></tr>
+<tr><td>T2</td><td>中档</td><td>30 元</td><td>1.5s</td><td>常规问答、工具调度、简单归纳</td></tr>
+<tr><td>T3</td><td>旗舰</td><td>114 元</td><td>4.0s</td><td>复杂推理、多步规划、对外文案、审计结论</td></tr>
+</tbody></table>
+<h2 id="19-4-路由-规则优先-模型兜底">19.4 路由：规则优先，模型兜底</h2>
+<pre><code class="lang-python">def route(task: str, budget_left: float) -&gt; str:
+    # ① 红线条目永远不降档
+    if task in RED_LINE:            return "T3"     # 仲裁 / 合规结论 / 对外 offer 文案
+    # ② 明确的简单任务，直接给最便宜的
+    if task in CHEAP:               return "T1"     # 意图分类 / 字段抽取 / 摘要
+    # ③ 预算紧，降一档
+    if budget_left &lt; 0.2 and task in NORMAL: return "T1"
+    return "T2"</code></pre>
+<p>★ <strong>预算紧张可以降档，但红线不能降。</strong> 把"合规结论"降给 T1，省下的钱不够赔一次事故。</p>
+<h2 id="19-5-成本测算-这是本章最该记住的表">19.5 成本测算（这是本章最该记住的表）</h2>
+<pre><code>  每年 100 万次任务：全用 T3 → 416,100 元；全用 T1 → 11,096 元
+  真实分布：60% T1 + 30% T2 + 10% T3 → 110,960 元
+  ★ 分档的本质：把 90% 的简单任务赶到便宜档，成本直接降到 1/4</code></pre>
+<p>算法很简单：</p>
+<pre><code class="lang-python">cost = Σ (tasks_n × share × unit_price) / 1000</code></pre>
+<p>但<strong>先要估计任务分布</strong>——这才是难点。做法：上线前跑一周，统计每类任务的量与 token。</p>
+<h2 id="19-6-四个调优旋钮">19.6 四个调优旋钮</h2>
+<table><thead><tr><th>旋钮</th><th>影响</th><th>建议</th></tr></thead><tbody>
+<tr><td>temperature</td><td>稳定性 vs 多样性</td><td>抽取/分类 0；文案 0.6–0.8</td></tr>
+<tr><td>max_tokens</td><td>成本上限 vs 截断风险</td><td>按任务定，别用默认最大值</td></tr>
+<tr><td>top_p</td><td>采样范围</td><td>通常不动，改 temperature 就够</td></tr>
+<tr><td>结构化输出</td><td>稳定性</td><td>能用就用，别靠正则抠文本</td></tr>
+</tbody></table>
+<h2 id="19-7-什么时候该微调">19.7 什么时候该微调</h2>
+<p>一个判断顺序（<strong>别一上来就 SFT</strong>）：</p>
+<pre><code>① prompt 写好了吗？五部位写全了吗？      ── 没 → 先改 prompt（第 02 章）
+② 有评测集吗？能证明改 prompt 没用吗？    ── 没 → 先建 Golden（第 17 章）
+③ 是"知识不会"还是"格式不对"？            ── 知识 → RAG（第 09-11 章）
+④ 格式/风格/术语总不对，且数据有 500+ 条标注 → LoRA
+⑤ 要改模型"行为习惯"，且有偏好对数据      → DPO
+⑥ 都不行、且要极致性能                   → 全量 SFT（很少见）</code></pre>
+<p>实测一节对比（同题三档）：</p>
+<pre><code>  T1：说'年假按公司规定执行'，不给天数  ← 会闯祸
+  T2：'满 1 年 5 天，满 3 年 7 天'        ← 够用
+  T3：'…依据《员工手册》第十四条，满 1 年不满 5 年 7 天；
+      试用期内按转正后折算，需 HRBP 确认'  ← 敢上审计</code></pre>
+<p>差别不在"知识"，在<strong>引用与边界意识</strong>。这也说明：<strong>该用贵的地方只有一处——对外、可追责的输出。</strong></p>
+<h2 id="19-8-本地部署">19.8 本地部署</h2>
+<table><thead><tr><th>方案</th><th>适用</th><th>代价</th></tr></thead><tbody>
+<tr><td>Ollama</td><td>单机开发、内网</td><td>吞吐低，适合 1–3 人用</td></tr>
+<tr><td>vLLM</td><td>生产推理（Linux + CUDA）</td><td>需 GPU；吞吐高，PagedAttention</td></tr>
+<tr><td>SGLang</td><td>高并发 + 结构化输出</td><td>同上，生态稍新</td></tr>
+<tr><td>Xinference</td><td>多模型统一管理</td><td>功能全，但重</td></tr>
+</tbody></table>
+<p>内网/隐私场景（薪酬数据、员工身份证）<strong>必须本地或专有云</strong>。</p>
+<h2 id="19-9-常见坑">19.9 常见坑</h2>
+<ol>
+<li><strong>全用旗舰模型</strong>：成本是分档的 4 倍，效果只高一点点。</li>
+<li><strong>把红线任务降档</strong>：省小钱赔大事。</li>
+<li><strong>以为换模型能解决 prompt 问题</strong>：换三次模型不如改一次五部位 prompt。</li>
+<li><strong>没有 baseline 就上 LoRA</strong>：不知道 LoRA 前后差多少，等于赌博。</li>
+<li><strong><code>init_chat_model</code> 的 <code>model_provider</code> 名字写错</strong>：报"unknown provider"，去查官方 provider 列表。</li>
+<li><strong>vLLM 直接暴露在公网</strong>：没有鉴权的推理端点，一天就被刷爆。</li>
+</ol>
+<h2 id="19-10-自检清单">19.10 自检清单</h2>
+<ul>
+<li>[ ] 能说出三档模型的分工与单价量级</li>
+<li>[ ] 知道路由里"红线不降档"的原因</li>
+<li>[ ] 会算"每千次成本"和"年化成本"</li>
+<li>[ ] 能说出微调前的四步判断</li>
+</ul>
+<h2 id="19-11-练习">19.11 练习</h2>
+<ol>
+<li>把任务分布改成 80% T1 / 15% T2 / 5% T3，重算年化成本。</li>
+<li>用 <code>init_chat_model</code> 接你手上的一个真实厂商，跑通 ch02 的结构化输出。</li>
+<li>给 route 加"按延迟 SLA 路由"：要求 P95 &lt; 1.5s 的任务一律不许走 T3。</li>
+</ol></article>
+  <footer class="pager"><a class="pr" href="18-Vue3前端工作台.html">← 18 · Vue3 前端工作台：SSE 把"Agent 在想什么"显示出来</a>
+<a class="nx" href="20-岗位地图与学习路径.html">20 · 岗位地图与学习路径 →</a></footer>
+  <div class="foot">本教程示例数据均为虚构，仅用于教学。</div>
+</main>
+</body></html>

@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>05 · Planning：把"计划"变成可校验的数据 · HR Agent 工程实战教程</title>
+<style>
+
+:root{--bg:#fbfcfc;--fg:#1a1f23;--muted:#657076;--line:#e3e8ea;--brand:#0f766e;
+      --brand-soft:#e8f4f2;--code-bg:#11202b;--code-fg:#dfe9ee}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);
+     font:16px/1.75 -apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+a{color:var(--brand);text-decoration:none}
+a:hover{text-decoration:underline}
+.side{position:fixed;top:0;left:0;bottom:0;width:280px;overflow-y:auto;
+      border-right:1px solid var(--line);background:#fff;padding:20px 16px 40px}
+.brand a{display:block;font-weight:700;font-size:15px;line-height:1.4}
+.brand span{display:block;color:var(--muted);font-size:12px;margin-top:4px}
+nav{margin-top:18px;font-size:14px}
+nav a{display:block;padding:5px 8px;border-radius:6px;color:#33414a;line-height:1.45}
+nav a:hover{background:#f2f6f7;text-decoration:none}
+nav a.cur{background:var(--brand-soft);color:#0b5d56;font-weight:600}
+nav .grp{margin:14px 0 4px;font-size:11.5px;letter-spacing:.06em;color:#9aa5aa;
+          text-transform:uppercase;padding-left:8px}
+main{margin-left:280px;padding:44px 48px 80px;max-width:920px}
+.doc h1{font-size:27px;line-height:1.35;margin:0 0 6px;letter-spacing:-.01em}
+.doc h1+p{color:var(--muted)}
+.doc h2{font-size:20px;margin:38px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+.doc h3{font-size:17px;margin:26px 0 10px}
+.doc h4{font-size:15px;margin:20px 0 8px;color:#33414a}
+.doc p{margin:12px 0}
+.doc ul,.doc ol{margin:12px 0;padding-left:24px}
+.doc li{margin:5px 0}
+.doc blockquote{margin:16px 0;padding:12px 16px;background:#f5f8f8;border-left:3px solid var(--brand);
+                border-radius:0 8px 8px 0;color:#3d4a51}
+.doc blockquote p{margin:0}
+.doc pre{background:var(--code-bg);color:var(--code-fg);padding:14px 16px;border-radius:10px;
+         overflow-x:auto;font:13.5px/1.65 ui-monospace,SFMono-Regular,Consolas,monospace;
+         margin:16px 0;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.doc code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:13.5px;
+          background:#eef3f4;padding:1px 5px;border-radius:4px}
+.doc pre code{background:none;padding:0;color:inherit;font-size:inherit}
+.doc table{border-collapse:collapse;width:100%;margin:16px 0;font-size:14.5px}
+.doc th,.doc td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+.doc th{background:#f3f7f7;font-weight:600}
+.doc hr{border:none;border-top:1px solid var(--line);margin:32px 0}
+.doc img{max-width:100%}
+.pager{display:flex;justify-content:space-between;gap:16px;margin-top:48px;
+       padding-top:20px;border-top:1px solid var(--line);font-size:14px}
+.pager a{display:block;padding:10px 14px;border:1px solid var(--line);border-radius:8px;
+         max-width:46%;background:#fff}
+.pager .nx{text-align:right;margin-left:auto}
+.foot{margin-top:36px;color:#a4adb2;font-size:12px}
+@media(max-width:860px){
+  .side{position:static;width:auto;border-right:none;border-bottom:1px solid var(--line)}
+  main{margin:0;padding:24px 18px 60px}
+  .doc h1{font-size:23px}
+}
+
+</style></head><body>
+<aside class="side">
+  <div class="brand"><a href="index.html">HR Agent 工程实战教程</a>
+    <span>Python 3.12 · Vue 3 · HR 场景</span></div>
+  <nav><div class="grp">总目录</div>
+<a href="index.html" data-href="index.html">HR 场景 Agent 工程教程（LangChain / LangGraph 全程实战）</a>
+<div class="grp">一 · 打地基</div>
+<a href="00-导读与环境准备.html" data-href="00-导读与环境准备.html">00 · 导读与环境准备</a>
+<a href="01-第一次调用大模型.html" data-href="01-第一次调用大模型.html">01 · 第一次调用大模型（LangChain 版）</a>
+<a href="02-Prompt与结构化输出.html" data-href="02-Prompt与结构化输出.html">02 · Prompt 与结构化输出</a>
+<div class="grp">二 · Agent 内核</div>
+<a href="03-Agent-Loop.html" data-href="03-Agent-Loop.html">03 · Agent Loop：从 `create_agent` 到自己搭图</a>
+<a href="04-Tool-Calling.html" data-href="04-Tool-Calling.html">04 · Tool Calling：模型选错工具，90% 是描述写糊了</a>
+<a href="05-Planning.html" data-href="05-Planning.html" class="cur">05 · Planning：把"计划"变成可校验的数据</a>
+<a href="06-Workflow与状态机.html" data-href="06-Workflow与状态机.html">06 · Workflow 与状态机：该定死的地方别让模型发挥</a>
+<div class="grp">三 · 记忆与上下文</div>
+<a href="07-Memory.html" data-href="07-Memory.html">07 · Memory：会话记忆、长期记忆、用户记忆</a>
+<a href="08-Context-Engineering.html" data-href="08-Context-Engineering.html">08 · Context Engineering：Token 预算、裁剪、压缩</a>
+<div class="grp">四 · RAG 与知识</div>
+<a href="09-RAG基础.html" data-href="09-RAG基础.html">09 · RAG 基础：解析、切片、向量化、召回、拼 Prompt</a>
+<a href="10-RAG进阶.html" data-href="10-RAG进阶.html">10 · RAG 进阶：混合检索、Rerank、版本治理、引用质量</a>
+<a href="11-RAG高阶.html" data-href="11-RAG高阶.html">11 · RAG 高阶：结构化知识、Text2SQL、Text2Cypher</a>
+<div class="grp">五 · 协作与生态</div>
+<a href="12-MCP与Skill.html" data-href="12-MCP与Skill.html">12 · MCP / Skill / Plugin：工具的"插座标准"</a>
+<a href="13-Multi-Agent.html" data-href="13-Multi-Agent.html">13 · Multi-Agent：分工、交接、仲裁</a>
+<a href="14-Human-in-the-loop.html" data-href="14-Human-in-the-loop.html">14 · Human-in-the-loop：该停的地方必须停下来等人</a>
+<div class="grp">六 · 生产级可靠性</div>
+<a href="15-可靠性工程.html" data-href="15-可靠性工程.html">15 · 可靠性工程：重试、超时、降级、幂等、熔断</a>
+<a href="16-Sandbox与长任务.html" data-href="16-Sandbox与长任务.html">16 · 长任务：断点续跑、分批、沙箱、预算</a>
+<a href="17-可观测性与评测.html" data-href="17-可观测性与评测.html">17 · 可观测性与评测：没有评测就没有迭代</a>
+<div class="grp">七 · 交付与落地</div>
+<a href="18-Vue3前端工作台.html" data-href="18-Vue3前端工作台.html">18 · Vue3 前端工作台：SSE 把"Agent 在想什么"显示出来</a>
+<a href="19-模型工程与部署.html" data-href="19-模型工程与部署.html">19 · 模型工程：选档、路由、成本、部署</a>
+<a href="20-岗位地图与学习路径.html" data-href="20-岗位地图与学习路径.html">20 · 岗位地图与学习路径</a></nav>
+</aside>
+<main>
+  <article class="doc"><h1 id="05-Planning-把-计划-变成可校验的数据">05 · Planning：把"计划"变成可校验的数据</h1>
+<h2 id="5-1-本章目标">5.1 本章目标</h2>
+<ol>
+<li>用 <code>with_structured_output</code> 让模型产出<strong>结构化的计划</strong>（<code>Step</code> 列表），而不是一段散文；</li>
+<li>用拓扑排序保证执行顺序，并在执行前就抓出<strong>环</strong>和<strong>死依赖</strong>；</li>
+<li>一步失败 → 只重排剩余步骤（重规划），不是整条重来；</li>
+<li>知道什么情况下<strong>不该</strong>用 Planning。</li>
+</ol>
+<p>跑法：<code>python ch05_planning/main.py</code></p>
+<h2 id="5-2-计划是数据-不是文字">5.2 计划是数据，不是文字</h2>
+<pre><code class="lang-python">class Step(BaseModel):
+    id: str
+    action: str
+    depends_on: list[str] = Field(default_factory=list)
+    acceptance: str = Field(description="这一步怎么算完成（可验证的判据）")
+
+class Plan(BaseModel):
+    goal: str
+    steps: list[Step]</code></pre>
+<p><code>acceptance</code>（验收判据）是整个设计的关键。没有它，计划就是"看起来有条理的废话"；有它，每一步都能被程序判断"到底完成没有"。</p>
+<p>一条 prompt 拿到它：</p>
+<pre><code class="lang-python">prompt | model.with_structured_output(Plan)</code></pre>
+<h2 id="5-3-拓扑排序-环检测">5.3 拓扑排序 + 环检测</h2>
+<pre><code class="lang-python">def topo_order(plan: Plan) -&gt; list[str]:
+    ids = {s.id for s in plan.steps}
+    deps = {s.id: [d for d in s.depends_on if d in ids] for s in plan.steps}
+    for s in plan.steps:
+        for d in s.depends_on:
+            if d not in ids:
+                raise ValueError(f"步骤 {s.id} 依赖了不存在的 {d}")
+    order, done = [], set()
+    while len(order) &lt; len(ids):
+        ready = [i for i in ids if i not in done and all(d in done for d in deps[i])]
+        if not ready:
+            raise ValueError(f"计划里有环或死锁：剩余 {sorted(ids - done)}")
+        order.append(sorted(ready)[0]); done.add(order[-1])
+    return order</code></pre>
+<p>实测（反面）：</p>
+<pre><code>  计划里有环或死锁：剩余 ['a', 'b']
+  ★ 计划是数据 → 数据就能校验。校验放在执行前，比事后 debug 便宜一百倍</code></pre>
+<h2 id="5-4-图结构-planner-executor-循环-summarize-中间插-replan">5.4 图结构：planner → executor（循环）→ summarize，中间插 replan</h2>
+<pre><code class="lang-python">builder.add_conditional_edges("executor", route,
+    {"execute": "executor", "replan": "replan", "summarize": "summarize", "give_up": "give_up"})</code></pre>
+<p><code>route</code> 的判断只有三行逻辑：这一步失败了没？还有没有剩下的步骤？重规划次数超了没？</p>
+<h2 id="5-5-重规划的真正工作量-改写依赖边">5.5 重规划的真正工作量：改写依赖边</h2>
+<p>这是本章最容易翻车的地方。<code>s2</code> 失败后，我们加了一个 <code>s2_alt</code> 顶上，但下游 <code>s3</code> 还写着 <code>depends_on=["s2"]</code> —— 于是 <code>topo_order</code> 直接抛"步骤 s3 依赖了不存在的 s2"。</p>
+<p>正确的做法：</p>
+<pre><code class="lang-python">new_steps = [
+    s.model_copy(update={"depends_on": [alt_id if d == failed else d for d in s.depends_on]})
+    for s in rest
+] + [Step(id=alt_id, action="用缓存的人才库快照代替实时库", depends_on=[], acceptance="能拿到候选人列表")]</code></pre>
+<p><strong>重规划不只是"加一步"，是把依赖关系图一起改。</strong> 这一点在真实项目里同样是坑：任何"替换节点"都要顺手修边。</p>
+<p>实测输出：</p>
+<pre><code>  计划：把 P1001 的候选人初筛做完并给出建议
+    s1 解析 JD 得到岗位画像  depends_on=[]
+    s2 拉取该岗位全部简历    depends_on=['s1']
+    s3 按评分卡打分并排序    depends_on=['s2']
+  拓扑序：['s1', 's2', 's3']
+    执行 s1：✓ JD 已解析
+    执行 s2：✗ 简历库连接超时（模拟下游故障）
+    重规划 #1：s2 失败，改用降级路径
+    执行 s2_alt：✓
+    执行 s3：✓ 已按评分卡打分：C1001 82 分 / C1024 76 分
+  结果：完成 3/4 步；建议约面 C1001（82 分）</code></pre>
+<h2 id="5-6-什么时候不该用-Planning">5.6 什么时候不该用 Planning</h2>
+<table><thead><tr><th>判据</th><th>该用什么</th></tr></thead><tbody>
+<tr><td>步骤固定、每次都一样（查余额、发通知）</td><td>Workflow / 状态机（第 06 章）</td></tr>
+<tr><td>一句话就能答完</td><td>单条链或 <code>create_agent</code></td></tr>
+<tr><td>每步结果不可预估且强耦合（边做边看）</td><td>ReAct 循环（第 03 章）</td></tr>
+<tr><td>步骤多、可并行、需要人看中间结果</td><td>Plan-and-Execute（本章）</td></tr>
+</tbody></table>
+<p>判断口诀：<strong>"你能不能提前写出这 4 步？"</strong> 能→Planning；不能→ReAct。</p>
+<h2 id="5-7-常见坑">5.7 常见坑</h2>
+<ol>
+<li><strong>计划不校验就执行</strong>：模型给的顺序常常不是依赖顺序。拓扑排序不是"锦上添花"，是必需品。</li>
+<li><strong>重规划次数没上限</strong>：本章 <code>MAX_REPLANS=2</code>。没有上限就是"无限重试"的另一种写法。</li>
+<li><strong>重规划时丢了已完成的进度</strong>：只重排 <code>results</code> 之外的步骤，已完成的不动。</li>
+<li><strong><code>TypedDict</code> 里加了私有字段但没声明</strong>：<code>_plan_args</code>、<code>_failed</code> 这类字段要写进 <code>TypedDict</code>，否则 LangGraph 更新时会报 KeyError。</li>
+<li><strong>每步都让模型重新规划</strong>：那是 ReAct，不是 Plan-and-Execute。计划只在开头和失败时重排。</li>
+</ol>
+<h2 id="5-8-自检清单">5.8 自检清单</h2>
+<ul>
+<li>[ ] 计划里为什么必须有 <code>acceptance</code></li>
+<li>[ ] 拓扑排序能抓哪三类问题</li>
+<li>[ ] 重规划为什么必须改写下游依赖</li>
+<li>[ ] 能说出"什么场景不该用 Planning"</li>
+</ul>
+<h2 id="5-9-练习">5.9 练习</h2>
+<ol>
+<li>给 <code>Step</code> 加 <code>est_tokens</code>，在 planner 里拒绝总预算超标的计划。</li>
+<li>把 <code>s2</code> 改成"先试两次再降级"，观察 replan 次数与总耗时的变化。</li>
+<li>把 Plan-and-Execute 换成 <code>create_agent</code> + 一个 <code>write_plan</code> 工具，对比两种做法的可控性与可解释性。</li>
+</ol></article>
+  <footer class="pager"><a class="pr" href="04-Tool-Calling.html">← 04 · Tool Calling：模型选错工具，90% 是描述写糊了</a>
+<a class="nx" href="06-Workflow与状态机.html">06 · Workflow 与状态机：该定死的地方别让模型发挥 →</a></footer>
+  <div class="foot">本教程示例数据均为虚构，仅用于教学。</div>
+</main>
+</body></html>

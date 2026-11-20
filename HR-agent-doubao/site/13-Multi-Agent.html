@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>13 · Multi-Agent：分工、交接、仲裁 · HR Agent 工程实战教程</title>
+<style>
+
+:root{--bg:#fbfcfc;--fg:#1a1f23;--muted:#657076;--line:#e3e8ea;--brand:#0f766e;
+      --brand-soft:#e8f4f2;--code-bg:#11202b;--code-fg:#dfe9ee}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);
+     font:16px/1.75 -apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+a{color:var(--brand);text-decoration:none}
+a:hover{text-decoration:underline}
+.side{position:fixed;top:0;left:0;bottom:0;width:280px;overflow-y:auto;
+      border-right:1px solid var(--line);background:#fff;padding:20px 16px 40px}
+.brand a{display:block;font-weight:700;font-size:15px;line-height:1.4}
+.brand span{display:block;color:var(--muted);font-size:12px;margin-top:4px}
+nav{margin-top:18px;font-size:14px}
+nav a{display:block;padding:5px 8px;border-radius:6px;color:#33414a;line-height:1.45}
+nav a:hover{background:#f2f6f7;text-decoration:none}
+nav a.cur{background:var(--brand-soft);color:#0b5d56;font-weight:600}
+nav .grp{margin:14px 0 4px;font-size:11.5px;letter-spacing:.06em;color:#9aa5aa;
+          text-transform:uppercase;padding-left:8px}
+main{margin-left:280px;padding:44px 48px 80px;max-width:920px}
+.doc h1{font-size:27px;line-height:1.35;margin:0 0 6px;letter-spacing:-.01em}
+.doc h1+p{color:var(--muted)}
+.doc h2{font-size:20px;margin:38px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+.doc h3{font-size:17px;margin:26px 0 10px}
+.doc h4{font-size:15px;margin:20px 0 8px;color:#33414a}
+.doc p{margin:12px 0}
+.doc ul,.doc ol{margin:12px 0;padding-left:24px}
+.doc li{margin:5px 0}
+.doc blockquote{margin:16px 0;padding:12px 16px;background:#f5f8f8;border-left:3px solid var(--brand);
+                border-radius:0 8px 8px 0;color:#3d4a51}
+.doc blockquote p{margin:0}
+.doc pre{background:var(--code-bg);color:var(--code-fg);padding:14px 16px;border-radius:10px;
+         overflow-x:auto;font:13.5px/1.65 ui-monospace,SFMono-Regular,Consolas,monospace;
+         margin:16px 0;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.doc code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:13.5px;
+          background:#eef3f4;padding:1px 5px;border-radius:4px}
+.doc pre code{background:none;padding:0;color:inherit;font-size:inherit}
+.doc table{border-collapse:collapse;width:100%;margin:16px 0;font-size:14.5px}
+.doc th,.doc td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+.doc th{background:#f3f7f7;font-weight:600}
+.doc hr{border:none;border-top:1px solid var(--line);margin:32px 0}
+.doc img{max-width:100%}
+.pager{display:flex;justify-content:space-between;gap:16px;margin-top:48px;
+       padding-top:20px;border-top:1px solid var(--line);font-size:14px}
+.pager a{display:block;padding:10px 14px;border:1px solid var(--line);border-radius:8px;
+         max-width:46%;background:#fff}
+.pager .nx{text-align:right;margin-left:auto}
+.foot{margin-top:36px;color:#a4adb2;font-size:12px}
+@media(max-width:860px){
+  .side{position:static;width:auto;border-right:none;border-bottom:1px solid var(--line)}
+  main{margin:0;padding:24px 18px 60px}
+  .doc h1{font-size:23px}
+}
+
+</style></head><body>
+<aside class="side">
+  <div class="brand"><a href="index.html">HR Agent 工程实战教程</a>
+    <span>Python 3.12 · Vue 3 · HR 场景</span></div>
+  <nav><div class="grp">总目录</div>
+<a href="index.html" data-href="index.html">HR 场景 Agent 工程教程（LangChain / LangGraph 全程实战）</a>
+<div class="grp">一 · 打地基</div>
+<a href="00-导读与环境准备.html" data-href="00-导读与环境准备.html">00 · 导读与环境准备</a>
+<a href="01-第一次调用大模型.html" data-href="01-第一次调用大模型.html">01 · 第一次调用大模型（LangChain 版）</a>
+<a href="02-Prompt与结构化输出.html" data-href="02-Prompt与结构化输出.html">02 · Prompt 与结构化输出</a>
+<div class="grp">二 · Agent 内核</div>
+<a href="03-Agent-Loop.html" data-href="03-Agent-Loop.html">03 · Agent Loop：从 `create_agent` 到自己搭图</a>
+<a href="04-Tool-Calling.html" data-href="04-Tool-Calling.html">04 · Tool Calling：模型选错工具，90% 是描述写糊了</a>
+<a href="05-Planning.html" data-href="05-Planning.html">05 · Planning：把"计划"变成可校验的数据</a>
+<a href="06-Workflow与状态机.html" data-href="06-Workflow与状态机.html">06 · Workflow 与状态机：该定死的地方别让模型发挥</a>
+<div class="grp">三 · 记忆与上下文</div>
+<a href="07-Memory.html" data-href="07-Memory.html">07 · Memory：会话记忆、长期记忆、用户记忆</a>
+<a href="08-Context-Engineering.html" data-href="08-Context-Engineering.html">08 · Context Engineering：Token 预算、裁剪、压缩</a>
+<div class="grp">四 · RAG 与知识</div>
+<a href="09-RAG基础.html" data-href="09-RAG基础.html">09 · RAG 基础：解析、切片、向量化、召回、拼 Prompt</a>
+<a href="10-RAG进阶.html" data-href="10-RAG进阶.html">10 · RAG 进阶：混合检索、Rerank、版本治理、引用质量</a>
+<a href="11-RAG高阶.html" data-href="11-RAG高阶.html">11 · RAG 高阶：结构化知识、Text2SQL、Text2Cypher</a>
+<div class="grp">五 · 协作与生态</div>
+<a href="12-MCP与Skill.html" data-href="12-MCP与Skill.html">12 · MCP / Skill / Plugin：工具的"插座标准"</a>
+<a href="13-Multi-Agent.html" data-href="13-Multi-Agent.html" class="cur">13 · Multi-Agent：分工、交接、仲裁</a>
+<a href="14-Human-in-the-loop.html" data-href="14-Human-in-the-loop.html">14 · Human-in-the-loop：该停的地方必须停下来等人</a>
+<div class="grp">六 · 生产级可靠性</div>
+<a href="15-可靠性工程.html" data-href="15-可靠性工程.html">15 · 可靠性工程：重试、超时、降级、幂等、熔断</a>
+<a href="16-Sandbox与长任务.html" data-href="16-Sandbox与长任务.html">16 · 长任务：断点续跑、分批、沙箱、预算</a>
+<a href="17-可观测性与评测.html" data-href="17-可观测性与评测.html">17 · 可观测性与评测：没有评测就没有迭代</a>
+<div class="grp">七 · 交付与落地</div>
+<a href="18-Vue3前端工作台.html" data-href="18-Vue3前端工作台.html">18 · Vue3 前端工作台：SSE 把"Agent 在想什么"显示出来</a>
+<a href="19-模型工程与部署.html" data-href="19-模型工程与部署.html">19 · 模型工程：选档、路由、成本、部署</a>
+<a href="20-岗位地图与学习路径.html" data-href="20-岗位地图与学习路径.html">20 · 岗位地图与学习路径</a></nav>
+</aside>
+<main>
+  <article class="doc"><h1 id="13-Multi-Agent-分工-交接-仲裁">13 · Multi-Agent：分工、交接、仲裁</h1>
+<h2 id="13-1-本章目标">13.1 本章目标</h2>
+<ol>
+<li>想清楚"为什么需要多智能体"——答案不是"模型不够聪明"，是"权限与责任要分开"；</li>
+<li>用 Supervisor 模式做串行派活，并加交接上限；</li>
+<li>用 <code>Send</code> 做并行 fan-out + join，知道它的代价；</li>
+<li>能收口冲突（合规一票否决），而不是"三个都说没问题"。</li>
+</ol>
+<p>跑法：<code>python ch13_multi_agent/main.py</code></p>
+<h2 id="13-2-三个专家-各自有权-也有禁区">13.2 三个专家（各自有权、也有禁区）</h2>
+<pre><code class="lang-python">WORKERS = {
+    "recruiter": {"role": "招聘专员", "scope": "候选人匹配、面试安排", "may_not": "定薪、改带宽"},
+    "comp":      {"role": "薪酬专员", "scope": "带宽核对、特批测算",     "may_not": "承诺候选人薪资"},
+    "legal":     {"role": "合规审核", "scope": "合同条款、用工风险",     "may_not": "做业务决策"},
+}</code></pre>
+<p>★ <strong>多智能体的真正理由：定薪的人和合规的人不能是同一个。</strong> 一个"全能 Agent"给它全套工具，它就能既定薪又给自己开绿灯。</p>
+<h2 id="13-3-Supervisor-调度者只决定-谁下一个">13.3 Supervisor：调度者只决定"谁下一个"</h2>
+<pre><code class="lang-python">def supervisor(state):
+    if state.get("turns", 0) &gt;= MAX_HANDOFFS:
+        return {"next": "FINISH", "handoffs": ... + ["达到交接上限，强制收口"]}
+    done = state.get("findings", {})
+    nxt = model.invoke(ROUTE_PROMPT).content.strip()   # recruiter / comp / legal / FINISH
+    return {"next": nxt, "turns": state.get("turns", 0) + 1}</code></pre>
+<p>三个设计决定：</p>
+<ol>
+<li><strong>supervisor 不干活</strong>。它只做路由。干活会污染判断。</li>
+<li><strong>交接上限 <code>MAX_HANDOFFS</code></strong>。没有它，A→B→A 会转到天亮。</li>
+<li><strong>每个 worker 只拿"自己该看的那部分上下文"</strong>，不是全量。这是成本与安全的双重要求。</li>
+</ol>
+<p>实测：</p>
+<pre><code>    supervisor → recruiter
+    recruiter 输出：C1024 与 P1001 匹配度 82%，可约二面
+    supervisor → comp
+    comp 输出：C1024 期望 28K，带宽 22-25K，超 3K，需薪酬特批
+    supervisor → legal
+    legal 输出：合规提示：offer 需写明试用期与竞业条款；28K 超出带宽须留特批书面记录
+    supervisor → FINISH
+    仲裁结果：有条件通过：走薪酬特批后再发 offer</code></pre>
+<h2 id="13-4-仲裁-必须有人署名">13.4 仲裁：必须有人署名</h2>
+<pre><code class="lang-python">def judge(state):
+    legal_veto = "须留特批书面记录" not in state["findings"].get("legal", "")
+    if legal_veto:                      verdict = "退回：合规未通过"
+    elif "特批" in comp:                verdict = "有条件通过：走薪酬特批后再发 offer"
+    else:                               verdict = "通过"</code></pre>
+<p>规则要显式写出来：<strong>合规有一票否决；薪酬与招聘冲突时以制度为准，不以"谁先说"为准。</strong></p>
+<p>生产上更稳的做法是让 legal 输出结构化判决（<code>veto: bool + reason</code>），而不是靠字符串匹配。</p>
+<h2 id="13-5-Send-并行-fan-out-与-join">13.5 Send：并行 fan-out 与 join</h2>
+<pre><code class="lang-python">class ReviewState(TypedDict, total=False):
+    case: str
+    reviews: Annotated[list[dict], operator.add]   # ★ 并行分支写同一字段 → 必须声明 reducer
+    merged: str
+
+def fan_out(state):
+    return [Send(w, {"case": state["case"], "reviews": []}) for w in WORKERS]
+
+r.add_conditional_edges(START, fan_out, list(WORKERS))
+for n in WORKERS: r.add_edge(n, "join")</code></pre>
+<p>两个要点：</p>
+<ul>
+<li><strong><code>Send</code> 的第二个参数是"发给这个节点的初始 state"</strong>。三个节点并行跑，结果无序返回。</li>
+<li><strong>写同一个字段必须加 reducer</strong>（<code>Annotated[list, operator.add]</code>），否则后写的覆盖先写的。</li>
+</ul>
+<p>实测：</p>
+<pre><code>    [recruiter] 并行评审完成
+    [comp] 并行评审完成
+    [legal] 并行评审完成
+    合并结果：共 3 份评审，有条件通过；待处理：['comp:期望 28K 超带宽 3K']</code></pre>
+<p>★ <code>Send</code> 的价值：<strong>墙钟时间 = 最慢那个</strong>；代价：结果无序、冲突要自己收口。</p>
+<h2 id="13-6-四个最容易翻车的点">13.6 四个最容易翻车的点</h2>
+<table><thead><tr><th>坑</th><th>后果</th><th>解法</th></tr></thead><tbody>
+<tr><td>无限交接</td><td>A↔B 永远收不了口</td><td>交接上限 + 收敛判据</td></tr>
+<tr><td>上下文污染</td><td>token 翻三倍，互相带偏</td><td>每个 worker 只给切片</td></tr>
+<tr><td>责任真空</td><td>三个都说没问题，没人负责</td><td>必须有仲裁节点署名</td></tr>
+<tr><td>成本失控</td><td>串行 5 个专家 = 5 倍成本</td><td>先问"单 Agent + 工具门禁够不够"</td></tr>
+</tbody></table>
+<p>★ <strong>能用单 Agent + 工具门禁解决的，别上多智能体。</strong> 多智能体的门槛是"权限必须分开"，不是"任务看起来复杂"。</p>
+<h2 id="13-7-单-Agent-还是多-Agent-一个判断流程">13.7 单 Agent 还是多 Agent：一个判断流程</h2>
+<pre><code>需要不同的人（或不同权限）签不同的字？   ── 是 → 多智能体
+  └ 否
+任务能拆成"互不依赖的子任务"并行跑？      ── 是 → Send 并行（也是一种多智能体）
+  └ 否
+工具数量 &gt; 10 且经常选错？                ── 是 → 按角色分组（挂载不同工具集）
+  └ 否 → 单 Agent + 严格门禁</code></pre>
+<h2 id="13-8-常见坑">13.8 常见坑</h2>
+<ol>
+<li><strong>supervisor 也调工具</strong>：判断被污染，路由摇摆。</li>
+<li><strong>worker 之间共享全部历史</strong>：成本与干扰双爆。</li>
+<li><strong>并行分支忘了 reducer</strong>：review 只剩最后一份。</li>
+<li><strong>没有仲裁节点</strong>：多智能体最常见的"看似完成，实则无人负责"。</li>
+<li><strong>按"角色扮演"而非"权限边界"分工</strong>：给三个 agent 起名叫"资深 HR""薪酬专家"，但工具集完全一样——那只是同一件事跑三遍。</li>
+</ol>
+<h2 id="13-9-自检清单">13.9 自检清单</h2>
+<ul>
+<li>[ ] 能说出"必须多智能体"的唯一硬理由</li>
+<li>[ ] 知道 supervisor 为什么不能干活</li>
+<li>[ ] 能解释 <code>Send</code> + <code>Annotated[list, operator.add]</code> 的组合</li>
+<li>[ ] 能说出多智能体的四个坑</li>
+</ul>
+<h2 id="13-10-练习">13.10 练习</h2>
+<ol>
+<li>把 <code>MAX_HANDOFFS</code> 改成 2，观察结论质量与成本的变化。</li>
+<li>把 legal 的输出改成 <code>with_structured_output(Verdict)</code>（带 <code>veto</code> 字段）。</li>
+<li>把三个 worker 指向不同档位的模型（T1/T2/T3），统计"每正确一次"的成本。</li>
+</ol></article>
+  <footer class="pager"><a class="pr" href="12-MCP与Skill.html">← 12 · MCP / Skill / Plugin：工具的"插座标准"</a>
+<a class="nx" href="14-Human-in-the-loop.html">14 · Human-in-the-loop：该停的地方必须停下来等人 →</a></footer>
+  <div class="foot">本教程示例数据均为虚构，仅用于教学。</div>
+</main>
+</body></html>

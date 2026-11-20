@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HR Agent 工作台 · 第 18 章（Vue3 + SSE）</title>
+<script type="importmap">
+{ "imports": { "vue": "https://unpkg.com/vue@3/dist/vue.esm-browser.prod.js" } }
+</script>
+<style>
+  :root{ --bg:#f6f7f9; --card:#fff; --line:#e5e7eb; --text:#111827; --muted:#6b7280;
+         --brand:#0f766e; --soft:#e6f4f1; --warn:#b45309; }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);
+       font:15px/1.6 -apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+  .app{max-width:880px;margin:0 auto;padding:24px 16px 60px}
+  h1{font-size:19px;margin:0 0 4px}
+  .sub{color:var(--muted);font-size:13px;margin-bottom:16px}
+  .row{display:grid;grid-template-columns:1fr 320px;gap:16px}
+  @media(max-width:820px){.row{grid-template-columns:1fr}}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}
+  .bubble{border-radius:12px;padding:10px 12px;margin:8px 0;max-width:100%;white-space:pre-wrap}
+  .me{background:var(--brand);color:#fff;margin-left:auto;width:fit-content}
+  .ai{background:#fbfdfc;border:1px solid var(--soft)}
+  .tl{list-style:none;margin:0;padding:0;font-size:13px}
+  .tl li{display:flex;gap:8px;padding:6px 0;border-bottom:1px dashed var(--line);align-items:flex-start}
+  .tag{font-family:ui-monospace,Consolas,monospace;font-size:11px;padding:2px 6px;border-radius:6px;
+       background:var(--soft);color:#0b5f59;white-space:nowrap}
+  .tag.tool{background:#fff7ed;color:var(--warn)}
+  .tag.err{background:#fef2f2;color:#b91c1c}
+  .muted{color:var(--muted)}
+  button{background:var(--brand);color:#fff;border:0;border-radius:8px;padding:9px 16px;cursor:pointer}
+  button:disabled{background:#9ca3af;cursor:not-allowed}
+  .note{margin-top:14px;font-size:12px;color:var(--muted)}
+  .fallback{display:none}
+</style>
+</head>
+<body>
+<div id="app" class="app">
+  <h1>HR Agent 工作台 · 实时事件流</h1>
+  <div class="sub">Vue3 + EventSource(SSE)：显示的是 Agent 的<b>执行过程</b>，不是最终答案的假打字。</div>
+  <div class="row">
+    <div class="card">
+      <div v-for="m in msgs" :key="m.id" :class="['bubble', m.role === 'user' ? 'me' : 'ai']">{{ m.text }}</div>
+      <button :disabled="running" @click="ask">{{ running ? '执行中…' : '发起一次提问' }}</button>
+      <div class="note">问题固定为：技术中心多少人？张伟还有几天年假？</div>
+    </div>
+    <div class="card">
+      <div class="sub" style="margin:0 0 8px">事件时间线（这是本章的主角）</div>
+      <ul class="tl">
+        <li v-for="(e,i) in events" :key="i">
+          <span :class="['tag', e.cls]">{{ e.event }}</span>
+          <span>{{ e.text }}</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+  <div class="fallback" id="fallback">
+    未加载到 Vue3（需要联网访问 unpkg）。这不影响本章验证：另开终端跑 <code>python ch18_vue_frontend/client.py</code>，
+    能直接看到同一串 SSE 事件。
+  </div>
+</div>
+<script type="module">
+import { createApp, ref } from 'vue';
+
+createApp({
+  setup() {
+    const msgs = ref([]);
+    const events = ref([]);
+    const running = ref(false);
+    let id = 0;
+
+    function push(role, text) { msgs.value.push({ id: ++id, role, text }); }
+
+    function ask() {
+      running.value = true;
+      events.value = [];
+      push('user', '技术中心多少人？张伟还有几天年假？');
+      const es = new EventSource('/chat');
+
+      const on = (name, cls, render) => es.addEventListener(name, ev => {
+        const d = JSON.parse(ev.data);
+        events.value.push({ event: name, cls, text: render(d) });
+        if (name === 'answer') push('ai', d.text);
+      });
+
+      on('start', '', d => d.msg);
+      on('thinking', '', d => d.msg);
+      on('tool_start', 'tool', d => `${d.name}(${JSON.stringify(d.input)})`);
+      on('tool_end', 'tool', d => `${d.name} → ${d.output}`);
+      on('answer', '', d => d.text);
+      on('error', 'err', d => d.msg);
+      on('done', '', d => d.msg);
+
+      es.addEventListener('done', () => { es.close(); running.value = false; });
+      es.addEventListener('error', () => { es.close(); running.value = false; });
+    }
+
+    return { msgs, events, running, ask };
+  }
+}).mount('#app');
+</script>
+<script>
+  // Vue 没加载出来时给个提示，不让用户面对空白页
+  window.addEventListener('load', () => {
+    if (!window.__vue_ok && !document.querySelector('#app').__vue_app__) {
+      document.getElementById('fallback').style.display = 'block';
+    }
+  });
+</script>
+</body>
+</html>

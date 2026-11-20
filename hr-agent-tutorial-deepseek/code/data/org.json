@@ -1,0 +1,63 @@
+{
+  "company": "Acme 科技（虚构）",
+  "updated_at": "2026-01-01",
+  "headcount": 16,
+  "departments": [
+    {
+      "id": "D01",
+      "name": "技术部",
+      "head": "E2001",
+      "headcount": 7,
+      "children": [
+        {"id": "D0101", "name": "后端组", "head": "E1001", "headcount": 2},
+        {"id": "D0102", "name": "前端组", "head": "E1005", "headcount": 1},
+        {"id": "D0103", "name": "算法组", "head": "E1007", "headcount": 2},
+        {"id": "D0104", "name": "质量组", "head": "E1009", "headcount": 1},
+        {"id": "D0105", "name": "数据组", "head": "E1011", "headcount": 1}
+      ]
+    },
+    {
+      "id": "D02",
+      "name": "产品部",
+      "head": "E2002",
+      "headcount": 2,
+      "children": [
+        {"id": "D0201", "name": "产品组", "head": "E1002", "headcount": 1}
+      ]
+    },
+    {
+      "id": "D03",
+      "name": "销售部",
+      "head": "E2003",
+      "headcount": 3,
+      "children": [
+        {"id": "D0301", "name": "华南大区", "head": "E1003", "headcount": 1},
+        {"id": "D0302", "name": "华北大区", "head": "E1012", "headcount": 1}
+      ]
+    },
+    {
+      "id": "D04",
+      "name": "人力资源部",
+      "head": "E2004",
+      "headcount": 3,
+      "children": [
+        {"id": "D0401", "name": "招聘组", "head": "E1010", "headcount": 1},
+        {"id": "D0402", "name": "员工关系组", "head": "E1004", "headcount": 1}
+      ]
+    },
+    {
+      "id": "D05",
+      "name": "财务部",
+      "head": "E2004",
+      "headcount": 1,
+      "children": []
+    },
+    {
+      "id": "D06",
+      "name": "市场部",
+      "head": "E2003",
+      "headcount": 1,
+      "children": []
+    }
+  ]
+}

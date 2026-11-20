@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>14 · Human-in-the-loop：该停的地方必须停下来等人 · HR Agent 工程实战教程</title>
+<style>
+
+:root{--bg:#fbfcfc;--fg:#1a1f23;--muted:#657076;--line:#e3e8ea;--brand:#0f766e;
+      --brand-soft:#e8f4f2;--code-bg:#11202b;--code-fg:#dfe9ee}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);
+     font:16px/1.75 -apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+a{color:var(--brand);text-decoration:none}
+a:hover{text-decoration:underline}
+.side{position:fixed;top:0;left:0;bottom:0;width:280px;overflow-y:auto;
+      border-right:1px solid var(--line);background:#fff;padding:20px 16px 40px}
+.brand a{display:block;font-weight:700;font-size:15px;line-height:1.4}
+.brand span{display:block;color:var(--muted);font-size:12px;margin-top:4px}
+nav{margin-top:18px;font-size:14px}
+nav a{display:block;padding:5px 8px;border-radius:6px;color:#33414a;line-height:1.45}
+nav a:hover{background:#f2f6f7;text-decoration:none}
+nav a.cur{background:var(--brand-soft);color:#0b5d56;font-weight:600}
+nav .grp{margin:14px 0 4px;font-size:11.5px;letter-spacing:.06em;color:#9aa5aa;
+          text-transform:uppercase;padding-left:8px}
+main{margin-left:280px;padding:44px 48px 80px;max-width:920px}
+.doc h1{font-size:27px;line-height:1.35;margin:0 0 6px;letter-spacing:-.01em}
+.doc h1+p{color:var(--muted)}
+.doc h2{font-size:20px;margin:38px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+.doc h3{font-size:17px;margin:26px 0 10px}
+.doc h4{font-size:15px;margin:20px 0 8px;color:#33414a}
+.doc p{margin:12px 0}
+.doc ul,.doc ol{margin:12px 0;padding-left:24px}
+.doc li{margin:5px 0}
+.doc blockquote{margin:16px 0;padding:12px 16px;background:#f5f8f8;border-left:3px solid var(--brand);
+                border-radius:0 8px 8px 0;color:#3d4a51}
+.doc blockquote p{margin:0}
+.doc pre{background:var(--code-bg);color:var(--code-fg);padding:14px 16px;border-radius:10px;
+         overflow-x:auto;font:13.5px/1.65 ui-monospace,SFMono-Regular,Consolas,monospace;
+         margin:16px 0;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.doc code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:13.5px;
+          background:#eef3f4;padding:1px 5px;border-radius:4px}
+.doc pre code{background:none;padding:0;color:inherit;font-size:inherit}
+.doc table{border-collapse:collapse;width:100%;margin:16px 0;font-size:14.5px}
+.doc th,.doc td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+.doc th{background:#f3f7f7;font-weight:600}
+.doc hr{border:none;border-top:1px solid var(--line);margin:32px 0}
+.doc img{max-width:100%}
+.pager{display:flex;justify-content:space-between;gap:16px;margin-top:48px;
+       padding-top:20px;border-top:1px solid var(--line);font-size:14px}
+.pager a{display:block;padding:10px 14px;border:1px solid var(--line);border-radius:8px;
+         max-width:46%;background:#fff}
+.pager .nx{text-align:right;margin-left:auto}
+.foot{margin-top:36px;color:#a4adb2;font-size:12px}
+@media(max-width:860px){
+  .side{position:static;width:auto;border-right:none;border-bottom:1px solid var(--line)}
+  main{margin:0;padding:24px 18px 60px}
+  .doc h1{font-size:23px}
+}
+
+</style></head><body>
+<aside class="side">
+  <div class="brand"><a href="index.html">HR Agent 工程实战教程</a>
+    <span>Python 3.12 · Vue 3 · HR 场景</span></div>
+  <nav><div class="grp">总目录</div>
+<a href="index.html" data-href="index.html">HR 场景 Agent 工程教程（LangChain / LangGraph 全程实战）</a>
+<div class="grp">一 · 打地基</div>
+<a href="00-导读与环境准备.html" data-href="00-导读与环境准备.html">00 · 导读与环境准备</a>
+<a href="01-第一次调用大模型.html" data-href="01-第一次调用大模型.html">01 · 第一次调用大模型（LangChain 版）</a>
+<a href="02-Prompt与结构化输出.html" data-href="02-Prompt与结构化输出.html">02 · Prompt 与结构化输出</a>
+<div class="grp">二 · Agent 内核</div>
+<a href="03-Agent-Loop.html" data-href="03-Agent-Loop.html">03 · Agent Loop：从 `create_agent` 到自己搭图</a>
+<a href="04-Tool-Calling.html" data-href="04-Tool-Calling.html">04 · Tool Calling：模型选错工具，90% 是描述写糊了</a>
+<a href="05-Planning.html" data-href="05-Planning.html">05 · Planning：把"计划"变成可校验的数据</a>
+<a href="06-Workflow与状态机.html" data-href="06-Workflow与状态机.html">06 · Workflow 与状态机：该定死的地方别让模型发挥</a>
+<div class="grp">三 · 记忆与上下文</div>
+<a href="07-Memory.html" data-href="07-Memory.html">07 · Memory：会话记忆、长期记忆、用户记忆</a>
+<a href="08-Context-Engineering.html" data-href="08-Context-Engineering.html">08 · Context Engineering：Token 预算、裁剪、压缩</a>
+<div class="grp">四 · RAG 与知识</div>
+<a href="09-RAG基础.html" data-href="09-RAG基础.html">09 · RAG 基础：解析、切片、向量化、召回、拼 Prompt</a>
+<a href="10-RAG进阶.html" data-href="10-RAG进阶.html">10 · RAG 进阶：混合检索、Rerank、版本治理、引用质量</a>
+<a href="11-RAG高阶.html" data-href="11-RAG高阶.html">11 · RAG 高阶：结构化知识、Text2SQL、Text2Cypher</a>
+<div class="grp">五 · 协作与生态</div>
+<a href="12-MCP与Skill.html" data-href="12-MCP与Skill.html">12 · MCP / Skill / Plugin：工具的"插座标准"</a>
+<a href="13-Multi-Agent.html" data-href="13-Multi-Agent.html">13 · Multi-Agent：分工、交接、仲裁</a>
+<a href="14-Human-in-the-loop.html" data-href="14-Human-in-the-loop.html" class="cur">14 · Human-in-the-loop：该停的地方必须停下来等人</a>
+<div class="grp">六 · 生产级可靠性</div>
+<a href="15-可靠性工程.html" data-href="15-可靠性工程.html">15 · 可靠性工程：重试、超时、降级、幂等、熔断</a>
+<a href="16-Sandbox与长任务.html" data-href="16-Sandbox与长任务.html">16 · 长任务：断点续跑、分批、沙箱、预算</a>
+<a href="17-可观测性与评测.html" data-href="17-可观测性与评测.html">17 · 可观测性与评测：没有评测就没有迭代</a>
+<div class="grp">七 · 交付与落地</div>
+<a href="18-Vue3前端工作台.html" data-href="18-Vue3前端工作台.html">18 · Vue3 前端工作台：SSE 把"Agent 在想什么"显示出来</a>
+<a href="19-模型工程与部署.html" data-href="19-模型工程与部署.html">19 · 模型工程：选档、路由、成本、部署</a>
+<a href="20-岗位地图与学习路径.html" data-href="20-岗位地图与学习路径.html">20 · 岗位地图与学习路径</a></nav>
+</aside>
+<main>
+  <article class="doc"><h1 id="14-Human-in-the-loop-该停的地方必须停下来等人">14 · Human-in-the-loop：该停的地方必须停下来等人</h1>
+<h2 id="14-1-本章目标">14.1 本章目标</h2>
+<ol>
+<li>用 <code>interrupt()</code> 在"高危动作"前挂起，用 <code>Command(resume=...)</code> 续跑；</li>
+<li>理解 checkpointer 在这里的作用（挂起期间进程可以退出）；</li>
+<li>三种人的回答：approve / edit / reject；</li>
+<li>四道校验：身份、时效、幂等、审计。</li>
+</ol>
+<p>跑法：<code>python ch14_hitl/main.py</code></p>
+<h2 id="14-2-红线动作清单">14.2 红线动作清单</h2>
+<p>HR 场景里<strong>一律不许自动执行</strong>的动作：</p>
+<ul>
+<li>发 offer / 调薪 / 定级</li>
+<li>批量导出个人信息</li>
+<li>开除、调岗、绩效结论</li>
+<li>对外发送任何口径文件</li>
+</ul>
+<p>判断标准：<strong>不可逆 + 影响一个人 / 影响一笔钱 / 影响合规</strong> → 必须 HITL。</p>
+<h2 id="14-3-三件套">14.3 三件套</h2>
+<pre><code class="lang-python">def gate_node(state):
+    decision = interrupt({
+        "action": "send_offer",
+        "risk": "high",
+        "reason": "月薪 28,000 超出带宽 22-25K，需薪酬特批 + HRD 签批",
+        "content": state["content"],
+        "options": ["approve", "reject", "edit"],
+        "sla_hours": 24,
+        "created_at": time.time(),
+    })
+    return {"approval": decision}</code></pre>
+<p><code>interrupt()</code> 抛出一个特殊信号，图<strong>停在这里</strong>，状态由 checkpointer 保住。外面的人拿到的是一个<strong>结构化的问题</strong>（不是一句话）：</p>
+<pre><code>  图已挂起：next=('gate',)
+  等人批准的内容：月薪 28,000 超出带宽 22-25K，需薪酬特批 + HRD 签批</code></pre>
+<p>★ 给审批人的 payload 必须含：<strong>要批什么（action）、为什么、风险等级、原文、可选项、时限</strong>。只丢一句"请确认"，等于把责任推回给系统。</p>
+<h2 id="14-4-续跑">14.4 续跑</h2>
+<pre><code class="lang-python">app.invoke(Command(resume={"decision": "approve", "approver": "薪酬负责人-王强"}), cfg)</code></pre>
+<p>实测三种：</p>
+<pre><code>  ① 直接批准
+    结果：sent=True，内容：【offer】K1001：月薪 28,000…
+    轨迹：['已生成 offer 草稿', '已发送（审批人 薪酬负责人-王强）']
+
+  ② 编辑后批准
+    结果：sent=True，内容：【offer】K1002：月薪 25,000（已压回带宽内）…
+
+  ③ 拒绝
+    结果：sent=None
+    轨迹：['已生成 offer 草稿']</code></pre>
+<p>注意 ② 的价值：<strong>人改内容，流程不重跑</strong>。这是真实审批最需要的——领导把 28K 改成 25K，系统应该直接用新内容往下走，而不是让 Agent 重新生成一遍。</p>
+<h2 id="14-5-四道校验-必须有">14.5 四道校验（必须有）</h2>
+<pre><code class="lang-python">def validate(state, ap):
+    if ap.get("approver") == state.get("applicant"):     return "审批人不能是申请人本人"
+    if waited &gt; 24 * 3600:                               return "审批超时，自动失效"
+    if 超带宽 and "HRD" not in ap["approver"]:            return "超带宽必须 HRD 签批"
+    return None</code></pre>
+<p>实测：</p>
+<pre><code>    申请人自批    → ⛔ 审批人不能是申请人本人
+    超时未批     → ⛔ 审批超时 30h &gt; 24h，自动失效
+    越权批准     → ⛔ 超带宽 offer 必须 HRD 签批
+    合规批准     → ✅ 通过</code></pre>
+<p>四道校验对应四个真实事故：</p>
+<table><thead><tr><th>校验</th><th>防的事故</th></tr></thead><tbody>
+<tr><td>身份</td><td>自己批自己（最常见的流程漏洞）</td></tr>
+<tr><td>时效</td><td>挂起永远不处理，任务永远"进行中"</td></tr>
+<tr><td>幂等</td><td>同一个审批点批两次，发了两个 offer</td></tr>
+<tr><td>审计</td><td>出了问题查不到"谁批的、批的哪一版"</td></tr>
+</tbody></table>
+<h2 id="14-6-checkpointer-为什么是前提">14.6 checkpointer 为什么是前提</h2>
+<p><code>interrupt()</code> 之后图的状态必须能被<strong>另一个进程</strong>读出来——审批人可能在手机上点，可能在两天后点。<code>InMemorySaver</code> 只适合教学；生产用 <code>SqliteSaver</code> 或 Postgres saver：</p>
+<pre><code class="lang-python">from langgraph.checkpoint.sqlite import SqliteSaver
+graph = builder.compile(checkpointer=SqliteSaver.from_conn_string("hitl.db"))</code></pre>
+<h2 id="14-7-别把-HITL-做成-确认弹窗">14.7 别把 HITL 做成"确认弹窗"</h2>
+<p>★ <strong>HITL 的本质不是加个按钮，是把不可逆的动作拆成三步：生成 → 人审 → 执行。</strong></p>
+<ul>
+<li>"生成"阶段可以自动；"执行"阶段必须由人触发；</li>
+<li>人审要看到"要批的东西本身"，不是"要不要继续"；</li>
+<li>执行阶段要能带上人的修改，不要重跑生成。</li>
+</ul>
+<h2 id="14-8-常见坑">14.8 常见坑</h2>
+<ol>
+<li><strong><code>interrupt()</code> 放在工具里</strong>：工具调用是模型驱动的，挂起后模型会再试一次。放在<strong>图节点</strong>里。</li>
+<li><strong>没配 checkpointer</strong>：<code>interrupt()</code> 直接报错（没有地方存状态）。</li>
+<li><strong><code>thread_id</code> 冲突</strong>：同一 thread 两次中断会串。用业务单号 + 审批点做 thread_id。</li>
+<li><strong>resume 的 payload 结构变了</strong>：上一版存的是 <code>{"ok": true}</code>，新版要 <code>{"decision": ...}</code>，恢复时报 KeyError。payload 结构也要版本化。</li>
+<li><strong>审批人看不到原文</strong>：只给一句"是否批准"，人只能凭感觉点——这是最坏的 HITL。</li>
+</ol>
+<h2 id="14-9-自检清单">14.9 自检清单</h2>
+<ul>
+<li>[ ] 能列出 HR 场景的 HITL 红线动作</li>
+<li>[ ] 知道 <code>interrupt</code> + <code>Command(resume)</code> + checkpointer 三者的关系</li>
+<li>[ ] 能说出四道校验各防什么事故</li>
+<li>[ ] 理解"生成/人审/执行"三段式</li>
+</ul>
+<h2 id="14-10-练习">14.10 练习</h2>
+<ol>
+<li>给 gate 加第二个 <code>interrupt</code>（财务复核），跑通两级审批。</li>
+<li>把 <code>InMemorySaver</code> 换成 <code>SqliteSaver</code>，杀掉进程后再 <code>Command(resume)</code> 续跑。</li>
+<li>给审批加"超时自动转上级"分支，观察 <code>next</code> 的变化。</li>
+</ol></article>
+  <footer class="pager"><a class="pr" href="13-Multi-Agent.html">← 13 · Multi-Agent：分工、交接、仲裁</a>
+<a class="nx" href="15-可靠性工程.html">15 · 可靠性工程：重试、超时、降级、幂等、熔断 →</a></footer>
+  <div class="foot">本教程示例数据均为虚构，仅用于教学。</div>
+</main>
+</body></html>

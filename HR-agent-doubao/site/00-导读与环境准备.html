@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>00 · 导读与环境准备 · HR Agent 工程实战教程</title>
+<style>
+
+:root{--bg:#fbfcfc;--fg:#1a1f23;--muted:#657076;--line:#e3e8ea;--brand:#0f766e;
+      --brand-soft:#e8f4f2;--code-bg:#11202b;--code-fg:#dfe9ee}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);
+     font:16px/1.75 -apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+a{color:var(--brand);text-decoration:none}
+a:hover{text-decoration:underline}
+.side{position:fixed;top:0;left:0;bottom:0;width:280px;overflow-y:auto;
+      border-right:1px solid var(--line);background:#fff;padding:20px 16px 40px}
+.brand a{display:block;font-weight:700;font-size:15px;line-height:1.4}
+.brand span{display:block;color:var(--muted);font-size:12px;margin-top:4px}
+nav{margin-top:18px;font-size:14px}
+nav a{display:block;padding:5px 8px;border-radius:6px;color:#33414a;line-height:1.45}
+nav a:hover{background:#f2f6f7;text-decoration:none}
+nav a.cur{background:var(--brand-soft);color:#0b5d56;font-weight:600}
+nav .grp{margin:14px 0 4px;font-size:11.5px;letter-spacing:.06em;color:#9aa5aa;
+          text-transform:uppercase;padding-left:8px}
+main{margin-left:280px;padding:44px 48px 80px;max-width:920px}
+.doc h1{font-size:27px;line-height:1.35;margin:0 0 6px;letter-spacing:-.01em}
+.doc h1+p{color:var(--muted)}
+.doc h2{font-size:20px;margin:38px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+.doc h3{font-size:17px;margin:26px 0 10px}
+.doc h4{font-size:15px;margin:20px 0 8px;color:#33414a}
+.doc p{margin:12px 0}
+.doc ul,.doc ol{margin:12px 0;padding-left:24px}
+.doc li{margin:5px 0}
+.doc blockquote{margin:16px 0;padding:12px 16px;background:#f5f8f8;border-left:3px solid var(--brand);
+                border-radius:0 8px 8px 0;color:#3d4a51}
+.doc blockquote p{margin:0}
+.doc pre{background:var(--code-bg);color:var(--code-fg);padding:14px 16px;border-radius:10px;
+         overflow-x:auto;font:13.5px/1.65 ui-monospace,SFMono-Regular,Consolas,monospace;
+         margin:16px 0;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.doc code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:13.5px;
+          background:#eef3f4;padding:1px 5px;border-radius:4px}
+.doc pre code{background:none;padding:0;color:inherit;font-size:inherit}
+.doc table{border-collapse:collapse;width:100%;margin:16px 0;font-size:14.5px}
+.doc th,.doc td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+.doc th{background:#f3f7f7;font-weight:600}
+.doc hr{border:none;border-top:1px solid var(--line);margin:32px 0}
+.doc img{max-width:100%}
+.pager{display:flex;justify-content:space-between;gap:16px;margin-top:48px;
+       padding-top:20px;border-top:1px solid var(--line);font-size:14px}
+.pager a{display:block;padding:10px 14px;border:1px solid var(--line);border-radius:8px;
+         max-width:46%;background:#fff}
+.pager .nx{text-align:right;margin-left:auto}
+.foot{margin-top:36px;color:#a4adb2;font-size:12px}
+@media(max-width:860px){
+  .side{position:static;width:auto;border-right:none;border-bottom:1px solid var(--line)}
+  main{margin:0;padding:24px 18px 60px}
+  .doc h1{font-size:23px}
+}
+
+</style></head><body>
+<aside class="side">
+  <div class="brand"><a href="index.html">HR Agent 工程实战教程</a>
+    <span>Python 3.12 · Vue 3 · HR 场景</span></div>
+  <nav><div class="grp">总目录</div>
+<a href="index.html" data-href="index.html">HR 场景 Agent 工程教程（LangChain / LangGraph 全程实战）</a>
+<div class="grp">一 · 打地基</div>
+<a href="00-导读与环境准备.html" data-href="00-导读与环境准备.html" class="cur">00 · 导读与环境准备</a>
+<a href="01-第一次调用大模型.html" data-href="01-第一次调用大模型.html">01 · 第一次调用大模型（LangChain 版）</a>
+<a href="02-Prompt与结构化输出.html" data-href="02-Prompt与结构化输出.html">02 · Prompt 与结构化输出</a>
+<div class="grp">二 · Agent 内核</div>
+<a href="03-Agent-Loop.html" data-href="03-Agent-Loop.html">03 · Agent Loop：从 `create_agent` 到自己搭图</a>
+<a href="04-Tool-Calling.html" data-href="04-Tool-Calling.html">04 · Tool Calling：模型选错工具，90% 是描述写糊了</a>
+<a href="05-Planning.html" data-href="05-Planning.html">05 · Planning：把"计划"变成可校验的数据</a>
+<a href="06-Workflow与状态机.html" data-href="06-Workflow与状态机.html">06 · Workflow 与状态机：该定死的地方别让模型发挥</a>
+<div class="grp">三 · 记忆与上下文</div>
+<a href="07-Memory.html" data-href="07-Memory.html">07 · Memory：会话记忆、长期记忆、用户记忆</a>
+<a href="08-Context-Engineering.html" data-href="08-Context-Engineering.html">08 · Context Engineering：Token 预算、裁剪、压缩</a>
+<div class="grp">四 · RAG 与知识</div>
+<a href="09-RAG基础.html" data-href="09-RAG基础.html">09 · RAG 基础：解析、切片、向量化、召回、拼 Prompt</a>
+<a href="10-RAG进阶.html" data-href="10-RAG进阶.html">10 · RAG 进阶：混合检索、Rerank、版本治理、引用质量</a>
+<a href="11-RAG高阶.html" data-href="11-RAG高阶.html">11 · RAG 高阶：结构化知识、Text2SQL、Text2Cypher</a>
+<div class="grp">五 · 协作与生态</div>
+<a href="12-MCP与Skill.html" data-href="12-MCP与Skill.html">12 · MCP / Skill / Plugin：工具的"插座标准"</a>
+<a href="13-Multi-Agent.html" data-href="13-Multi-Agent.html">13 · Multi-Agent：分工、交接、仲裁</a>
+<a href="14-Human-in-the-loop.html" data-href="14-Human-in-the-loop.html">14 · Human-in-the-loop：该停的地方必须停下来等人</a>
+<div class="grp">六 · 生产级可靠性</div>
+<a href="15-可靠性工程.html" data-href="15-可靠性工程.html">15 · 可靠性工程：重试、超时、降级、幂等、熔断</a>
+<a href="16-Sandbox与长任务.html" data-href="16-Sandbox与长任务.html">16 · 长任务：断点续跑、分批、沙箱、预算</a>
+<a href="17-可观测性与评测.html" data-href="17-可观测性与评测.html">17 · 可观测性与评测：没有评测就没有迭代</a>
+<div class="grp">七 · 交付与落地</div>
+<a href="18-Vue3前端工作台.html" data-href="18-Vue3前端工作台.html">18 · Vue3 前端工作台：SSE 把"Agent 在想什么"显示出来</a>
+<a href="19-模型工程与部署.html" data-href="19-模型工程与部署.html">19 · 模型工程：选档、路由、成本、部署</a>
+<a href="20-岗位地图与学习路径.html" data-href="20-岗位地图与学习路径.html">20 · 岗位地图与学习路径</a></nav>
+</aside>
+<main>
+  <article class="doc"><h1 id="00-导读与环境准备">00 · 导读与环境准备</h1>
+<h2 id="0-1-这本书不假设你会什么">0.1 这本书不假设你会什么</h2>
+<p>只假设三件事：会用命令行（Windows 上是 PowerShell，知道 <code>cd</code> 切目录）、写过一个 <code>for</code> 循环、不抗拒看报错。</p>
+<p><strong>不假设</strong>你会机器学习、Transformer、向量数据库、前端框架、Docker。</p>
+<h2 id="0-2-全书的技术底座-LangChain-LangGraph">0.2 全书的技术底座：LangChain + LangGraph</h2>
+<p>这不是一本"手写 Agent 原理"的书，也不是"只讲概念、代码是伪代码"的书。</p>
+<p><strong>每一章的 demo 都用真实的 LangChain / LangGraph 原语实现</strong>，你可以直接把这套写法搬进公司的项目：</p>
+<table><thead><tr><th>要做的事</th><th>用的原语</th><th>出处</th></tr></thead><tbody>
+<tr><td>调模型</td><td><code>ChatOpenAI</code> / <code>init_chat_model</code></td><td><code>langchain-openai</code></td></tr>
+<tr><td>拼提示词、串流程</td><td><code>ChatPromptTemplate</code>、LCEL（`prompt \</td><td>model \</td><td>parser`）</td><td><code>langchain-core</code></td></tr>
+<tr><td>结构化输出</td><td><code>with_structured_output(PydanticModel)</code></td><td><code>langchain-core</code></td></tr>
+<tr><td>工具</td><td><code>@tool</code>、<code>StructuredTool</code>、<code>args_schema</code></td><td><code>langchain-core</code></td></tr>
+<tr><td>Agent 循环</td><td><code>create_agent</code>、<code>ToolNode</code>、<code>tools_condition</code></td><td><code>langchain</code>、<code>langgraph</code></td></tr>
+<tr><td>手搭图 / 状态机 / 多智能体</td><td><code>StateGraph</code>、条件边、<code>Send</code></td><td><code>langgraph</code></td></tr>
+<tr><td>断点、HITL、长任务</td><td><code>InMemorySaver</code> / <code>SqliteSaver</code>、<code>interrupt()</code>、<code>Command(resume=...)</code></td><td><code>langgraph</code></td></tr>
+<tr><td>Memory</td><td><code>RunnableWithMessageHistory</code>、<code>InMemoryVectorStore</code></td><td><code>langchain-core</code></td></tr>
+<tr><td>RAG</td><td><code>RecursiveCharacterTextSplitter</code>、<code>BM25Retriever</code>、<code>EnsembleRetriever</code></td><td><code>langchain-text-splitters</code>、<code>langchain-classic</code></td></tr>
+<tr><td>观测</td><td><code>BaseCallbackHandler</code>、<code>astream_events(version="v2")</code></td><td><code>langchain-core</code></td></tr>
+</tbody></table>
+<p>两个必须提前知道的事实（本书实测，<code>langchain 1.5.0</code> / <code>langchain-core 1.8.0</code>）：</p>
+<ol>
+<li><strong>1.x 和 0.x 差别很大</strong>。<code>EnsembleRetriever</code> 搬到了 <code>langchain-classic</code>；<code>InMemoryVectorStore</code> 的 <code>filter</code> 参数收的是<strong>函数</strong>不是 dict；同步的 <code>stream_events</code> 已不支持 v2，必须用 <code>astream_events</code>。这些坑书里都标出来了。</li>
+<li><strong>没有 API Key 也能跑完整套</strong>。<code>demos/common/llm.py</code> 里的 <code>ScriptedChatModel</code> 是 LangChain 官方假模型的子类，能返回带 <code>tool_calls</code> 的消息，所以 <code>create_agent</code> 的工具循环、结构化输出解析、事件流全都是真实发生的，只是"模型"是剧本。</li>
+</ol>
+<h2 id="0-3-环境安装">0.3 环境安装</h2>
+<h3 id="Python-3-12">Python 3.12</h3>
+<pre><code class="lang-powershell">python --version    # 3.12.x（3.13 也实测通过）</code></pre>
+<p>推荐用 <code>uv</code> 管版本（比 conda 轻）：</p>
+<pre><code class="lang-powershell">pip install uv
+uv python install 3.12</code></pre>
+<h3 id="一次性装齐依赖">一次性装齐依赖</h3>
+<pre><code class="lang-powershell">cd HR-Agent-教程\demos
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt</code></pre>
+<p><code>requirements.txt</code> 里这些都是<strong>必装</strong>，不是可选：</p>
+<pre><code>langchain==1.5.0
+langchain-core==1.8.0
+langgraph
+langchain-openai
+langchain-community
+langchain-classic
+langchain-text-splitters
+pydantic&gt;=2.7
+rank_bm25
+sqlalchemy</code></pre>
+<h3 id="可选-章节里会说明什么时候需要">可选（章节里会说明什么时候需要）</h3>
+<p><code>langchain-mcp-adapters</code> + <code>mcp</code>（第 12 章接真 MCP 服务）、<code>langchain-neo4j</code>（第 11 章真图谱）、<code>langsmith</code>（第 17 章接托管 Trace）。</p>
+<h2 id="0-4-接真模型-可选">0.4 接真模型（可选）</h2>
+<p>复制 <code>demos/.env.example</code> 为 <code>demos/.env</code>：</p>
+<pre><code>LLM_BASE_URL=https://api.deepseek.com/v1
+LLM_MODEL=deepseek-chat
+LLM_API_KEY=sk-你的</code></pre>
+<p>任何 OpenAI 兼容服务都行：DeepSeek、通义、智谱、vLLM、Ollama、Xinference。 没填 Key 时每个 demo 第一条输出会提示"已切换到 ScriptedChatModel"，这不是报错。</p>
+<h2 id="0-5-怎么跑">0.5 怎么跑</h2>
+<pre><code class="lang-powershell">cd HR-Agent-教程\demos
+.\.venv\Scripts\python.exe ch01_hello_llm\main.py</code></pre>
+<p>每章一个独立目录，互不依赖，按顺序学但可以跳。第 18 章特殊：</p>
+<pre><code class="lang-powershell"># 终端 A
+.\.venv\Scripts\python.exe ch18_vue_frontend\server.py
+# 终端 B（不开浏览器也能验证）
+.\.venv\Scripts\python.exe ch18_vue_frontend\client.py</code></pre>
+<h2 id="0-6-目录结构">0.6 目录结构</h2>
+<pre><code>HR-Agent-教程/
+├─ README.md               总览、学习路径、验收清单
+├─ docs/                   21 章正文（00-20）
+├─ demos/
+│  ├─ common/llm.py        全书统一模型层（模型工厂 + 假模型 + 叙事 helper）
+│  ├─ common/embed.py      离线 Embeddings（让 RAG 章节无 Key 也能看效果）
+│  ├─ ch01 … ch19          19 个可独立运行的小 demo
+│  └─ requirements.txt
+├─ build_site.py           docs → site/（离线网页书）
+└─ site/index.html</code></pre>
+<h2 id="0-7-先纠正三个误解">0.7 先纠正三个误解</h2>
+<p><strong>一、Agent ≠ 会调 API 的聊天机器人。</strong> 聊天机器人是"进一段话、出一段话"；Agent 多了两件事：能改变外部世界（调工具、写库、发邮件）、能自己决定下一步。所以一半工作量不在模型上。</p>
+<p><strong>二、效果不好多半不是模型不够强。</strong> 是上下文喂错了、工具描述写糊了、该走流程的地方让模型自由发挥、失败了没有重试降级。同一模型，改工程结构，成功率能从 40% 到 90%。</p>
+<p><strong>三、HR 场景"简单"是错觉。</strong> HR 是高敏感 + 强流程 + 多系统的典型：薪酬身份证病历绩效泄露一次就是事故；offer 背调入职离职每一步都有审批时限；ATS、考勤、薪酬、OA、IM 五套系统。这三条正好是 Agent 工程最难的部位。</p>
+<h2 id="0-8-学习节奏建议">0.8 学习节奏建议</h2>
+<table><thead><tr><th>阶段</th><th>章节</th><th>目标</th></tr></thead><tbody>
+<tr><td>第 1 周</td><td>00–04</td><td>能跑通一条链、一个工具循环，理解"契约"和"描述"为什么决定成败</td></tr>
+<tr><td>第 2 周</td><td>05–08</td><td>会画图、会分状态、会管记忆和上下文预算</td></tr>
+<tr><td>第 3 周</td><td>09–12</td><td>RAG 三层 + MCP 接入</td></tr>
+<tr><td>第 4 周</td><td>13–17</td><td>多智能体、HITL、可靠性、长任务、评测</td></tr>
+<tr><td>第 5 周</td><td>18–20</td><td>前后端打通、模型工程、岗位地图</td></tr>
+</tbody></table>
+<p>每章末尾都有"自检清单"，答不出来就别往下走。</p></article>
+  <footer class="pager"><a class="pr" href="index.html">← HR 场景 Agent 工程教程（LangChain / LangGraph 全程实战）</a>
+<a class="nx" href="01-第一次调用大模型.html">01 · 第一次调用大模型（LangChain 版） →</a></footer>
+  <div class="foot">本教程示例数据均为虚构，仅用于教学。</div>
+</main>
+</body></html>

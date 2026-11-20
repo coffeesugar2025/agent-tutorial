@@ -1,0 +1,26 @@
+# ===== 必装：全书 19 个 demo 的运行时底座 =====
+# 版本为本书实测通过的组合（langchain 1.5.0 / langchain-core 1.8.0）
+langchain==1.5.0
+langchain-core==1.8.0
+langgraph
+langchain-openai          # ChatOpenAI / OpenAIEmbeddings，兼容 DeepSeek、Qwen、GLM、ollama、vLLM
+langchain-community       # SQLDatabase（第 11 章）、BM25Retriever（第 10 章）
+langchain-classic         # EnsembleRetriever 在 1.x 里搬到了这里（第 10 章）
+langchain-text-splitters  # RecursiveCharacterTextSplitter（第 09 章）
+pydantic>=2.7.0           # 结构化输出契约（第 02 章起全篇使用）
+rank_bm25                 # BM25Retriever 的数学实现（第 10 章，缺它会 ImportError）
+sqlalchemy>=2.0           # SQLDatabase 依赖（第 11 章）
+tiktoken                  # 精确 token 计数（第 08/17 章；不装则用书中估值函数）
+
+# ===== 可选：对应章节的真·生产接入（不装也能跑完教学版本）=====
+# mcp                         # 第 12 章：真 MCP 服务端（ch12_mcp/server.py）
+# langchain-mcp-adapters      # 第 12 章：MultiServerMCPClient.load_mcp_tools()
+# langchain-neo4j             # 第 11 章：Neo4jGraph / Text2Cypher
+# langsmith                   # 第 17 章：托管 Trace（也可直接用环境变量启用）
+# chromadb / qdrant-client    # 第 09-10 章：把 InMemoryVectorStore 换成持久化向量库
+
+# ===== 可选：第 19 章模型工程（需要 GPU / Linux，Windows 上装不了）=====
+# transformers>=4.42.0
+# peft>=0.11.0
+# datasets>=2.20.0
+# vllm>=0.5.0

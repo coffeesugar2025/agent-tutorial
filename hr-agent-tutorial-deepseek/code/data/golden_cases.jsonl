@@ -1,0 +1,20 @@
+{"id": "G01", "input": "我还有几天年假？", "employee_id": "E1001", "expected_intent": "leave_balance", "expected_tools": ["get_leave_balance"], "must_include": ["13"], "category": "假期", "difficulty": "easy"}
+{"id": "G02", "input": "5 年以上司龄有几天年假？", "employee_id": "E1001", "expected_intent": "leave_policy", "expected_tools": ["search_policy"], "must_include": ["15"], "category": "制度", "difficulty": "easy"}
+{"id": "G03", "input": "年假没休完可以结转到什么时候？", "employee_id": "E1001", "expected_intent": "leave_policy", "expected_tools": ["search_policy"], "must_include": ["3 月 31 日"], "category": "制度", "difficulty": "medium"}
+{"id": "G04", "input": "帮我提交 2026-12-01 到 2026-12-03 的 3 天年假申请", "employee_id": "E1001", "expected_intent": "apply_leave", "expected_tools": ["check_leave_eligibility", "submit_leave_request"], "must_include": ["已提交"], "category": "假期", "difficulty": "hard"}
+{"id": "G05", "input": "帮我找会 Vue3 的前端候选人", "employee_id": "E1010", "expected_intent": "candidate_search", "expected_tools": ["search_candidates"], "must_include": ["张蕾"], "category": "招聘", "difficulty": "easy"}
+{"id": "G06", "input": "推荐几位算法候选人", "employee_id": "E1010", "expected_intent": "candidate_search", "expected_tools": ["search_candidates"], "must_include": ["王浩"], "category": "招聘", "difficulty": "easy"}
+{"id": "G07", "input": "王浩现在到哪一步了？", "employee_id": "E1010", "expected_intent": "candidate_query", "expected_tools": ["get_candidate"], "must_include": ["Offer"], "category": "招聘", "difficulty": "easy"}
+{"id": "G08", "input": "安排王浩 2026-12-05 14:00 面试", "employee_id": "E1010", "expected_intent": "interview_schedule", "expected_tools": ["schedule_interview"], "must_include": ["审批"], "category": "招聘", "difficulty": "medium"}
+{"id": "G09", "input": "把张伟的薪资调整到 P6-1", "employee_id": "E1004", "expected_intent": "salary_adjust", "expected_tools": ["adjust_salary"], "must_include": ["审批"], "category": "薪酬", "difficulty": "medium"}
+{"id": "G10", "input": "帮林晓办理入职，入职日期 2026-12-01", "employee_id": "E1010", "expected_intent": "onboarding", "expected_tools": ["start_onboarding"], "must_include": ["入职流程"], "category": "入职", "difficulty": "medium"}
+{"id": "G11", "input": "T2026002 这个工单进展如何？", "employee_id": "E1005", "expected_intent": "ticket_query", "expected_tools": ["get_ticket"], "must_include": ["个税"], "category": "工单", "difficulty": "easy"}
+{"id": "G12", "input": "病假需要提供什么材料？", "employee_id": "E1001", "expected_intent": "leave_policy", "expected_tools": ["search_policy"], "must_include": ["二级及以上医院"], "category": "制度", "difficulty": "easy"}
+{"id": "G13", "input": "远程办公每周最多几天？", "employee_id": "E1001", "expected_intent": "leave_policy", "expected_tools": ["search_policy"], "must_include": ["2 天"], "category": "制度", "difficulty": "easy"}
+{"id": "G14", "input": "婚假有几天？", "employee_id": "E1001", "expected_intent": "leave_policy", "expected_tools": ["search_policy"], "must_include": ["10 天"], "category": "制度", "difficulty": "easy"}
+{"id": "G15", "input": "报销需要在多久内提交？", "employee_id": "E1001", "expected_intent": "leave_policy", "expected_tools": ["search_policy"], "must_include": ["30 个自然日"], "category": "制度", "difficulty": "medium"}
+{"id": "G16", "input": "试用期可以远程办公吗？", "employee_id": "E1001", "expected_intent": "leave_policy", "expected_tools": ["search_policy"], "must_include": ["不适用"], "category": "制度", "difficulty": "medium"}
+{"id": "G17", "input": "今天天气怎么样？", "employee_id": "E1001", "expected_intent": "out_of_scope", "expected_tools": [], "must_include": ["转人工"], "category": "边界", "difficulty": "easy"}
+{"id": "G18", "input": "帮我开除张伟", "employee_id": "E1004", "expected_intent": "out_of_scope", "expected_tools": [], "must_include": ["转人工"], "category": "边界", "difficulty": "hard"}
+{"id": "G19", "input": "P6 的 offer 需要谁审批？", "employee_id": "E1004", "expected_intent": "leave_policy", "expected_tools": ["search_policy"], "must_include": ["HR 总监"], "category": "制度", "difficulty": "medium"}
+{"id": "G20", "input": "公司年会在哪里办？", "employee_id": "E1001", "expected_intent": "out_of_scope", "expected_tools": [], "must_include": ["无法"], "category": "边界", "difficulty": "medium"}

@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>01 · 第一次调用大模型（LangChain 版） · HR Agent 工程实战教程</title>
+<style>
+
+:root{--bg:#fbfcfc;--fg:#1a1f23;--muted:#657076;--line:#e3e8ea;--brand:#0f766e;
+      --brand-soft:#e8f4f2;--code-bg:#11202b;--code-fg:#dfe9ee}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);
+     font:16px/1.75 -apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+a{color:var(--brand);text-decoration:none}
+a:hover{text-decoration:underline}
+.side{position:fixed;top:0;left:0;bottom:0;width:280px;overflow-y:auto;
+      border-right:1px solid var(--line);background:#fff;padding:20px 16px 40px}
+.brand a{display:block;font-weight:700;font-size:15px;line-height:1.4}
+.brand span{display:block;color:var(--muted);font-size:12px;margin-top:4px}
+nav{margin-top:18px;font-size:14px}
+nav a{display:block;padding:5px 8px;border-radius:6px;color:#33414a;line-height:1.45}
+nav a:hover{background:#f2f6f7;text-decoration:none}
+nav a.cur{background:var(--brand-soft);color:#0b5d56;font-weight:600}
+nav .grp{margin:14px 0 4px;font-size:11.5px;letter-spacing:.06em;color:#9aa5aa;
+          text-transform:uppercase;padding-left:8px}
+main{margin-left:280px;padding:44px 48px 80px;max-width:920px}
+.doc h1{font-size:27px;line-height:1.35;margin:0 0 6px;letter-spacing:-.01em}
+.doc h1+p{color:var(--muted)}
+.doc h2{font-size:20px;margin:38px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+.doc h3{font-size:17px;margin:26px 0 10px}
+.doc h4{font-size:15px;margin:20px 0 8px;color:#33414a}
+.doc p{margin:12px 0}
+.doc ul,.doc ol{margin:12px 0;padding-left:24px}
+.doc li{margin:5px 0}
+.doc blockquote{margin:16px 0;padding:12px 16px;background:#f5f8f8;border-left:3px solid var(--brand);
+                border-radius:0 8px 8px 0;color:#3d4a51}
+.doc blockquote p{margin:0}
+.doc pre{background:var(--code-bg);color:var(--code-fg);padding:14px 16px;border-radius:10px;
+         overflow-x:auto;font:13.5px/1.65 ui-monospace,SFMono-Regular,Consolas,monospace;
+         margin:16px 0;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.doc code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:13.5px;
+          background:#eef3f4;padding:1px 5px;border-radius:4px}
+.doc pre code{background:none;padding:0;color:inherit;font-size:inherit}
+.doc table{border-collapse:collapse;width:100%;margin:16px 0;font-size:14.5px}
+.doc th,.doc td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+.doc th{background:#f3f7f7;font-weight:600}
+.doc hr{border:none;border-top:1px solid var(--line);margin:32px 0}
+.doc img{max-width:100%}
+.pager{display:flex;justify-content:space-between;gap:16px;margin-top:48px;
+       padding-top:20px;border-top:1px solid var(--line);font-size:14px}
+.pager a{display:block;padding:10px 14px;border:1px solid var(--line);border-radius:8px;
+         max-width:46%;background:#fff}
+.pager .nx{text-align:right;margin-left:auto}
+.foot{margin-top:36px;color:#a4adb2;font-size:12px}
+@media(max-width:860px){
+  .side{position:static;width:auto;border-right:none;border-bottom:1px solid var(--line)}
+  main{margin:0;padding:24px 18px 60px}
+  .doc h1{font-size:23px}
+}
+
+</style></head><body>
+<aside class="side">
+  <div class="brand"><a href="index.html">HR Agent 工程实战教程</a>
+    <span>Python 3.12 · Vue 3 · HR 场景</span></div>
+  <nav><div class="grp">总目录</div>
+<a href="index.html" data-href="index.html">HR 场景 Agent 工程教程（LangChain / LangGraph 全程实战）</a>
+<div class="grp">一 · 打地基</div>
+<a href="00-导读与环境准备.html" data-href="00-导读与环境准备.html">00 · 导读与环境准备</a>
+<a href="01-第一次调用大模型.html" data-href="01-第一次调用大模型.html" class="cur">01 · 第一次调用大模型（LangChain 版）</a>
+<a href="02-Prompt与结构化输出.html" data-href="02-Prompt与结构化输出.html">02 · Prompt 与结构化输出</a>
+<div class="grp">二 · Agent 内核</div>
+<a href="03-Agent-Loop.html" data-href="03-Agent-Loop.html">03 · Agent Loop：从 `create_agent` 到自己搭图</a>
+<a href="04-Tool-Calling.html" data-href="04-Tool-Calling.html">04 · Tool Calling：模型选错工具，90% 是描述写糊了</a>
+<a href="05-Planning.html" data-href="05-Planning.html">05 · Planning：把"计划"变成可校验的数据</a>
+<a href="06-Workflow与状态机.html" data-href="06-Workflow与状态机.html">06 · Workflow 与状态机：该定死的地方别让模型发挥</a>
+<div class="grp">三 · 记忆与上下文</div>
+<a href="07-Memory.html" data-href="07-Memory.html">07 · Memory：会话记忆、长期记忆、用户记忆</a>
+<a href="08-Context-Engineering.html" data-href="08-Context-Engineering.html">08 · Context Engineering：Token 预算、裁剪、压缩</a>
+<div class="grp">四 · RAG 与知识</div>
+<a href="09-RAG基础.html" data-href="09-RAG基础.html">09 · RAG 基础：解析、切片、向量化、召回、拼 Prompt</a>
+<a href="10-RAG进阶.html" data-href="10-RAG进阶.html">10 · RAG 进阶：混合检索、Rerank、版本治理、引用质量</a>
+<a href="11-RAG高阶.html" data-href="11-RAG高阶.html">11 · RAG 高阶：结构化知识、Text2SQL、Text2Cypher</a>
+<div class="grp">五 · 协作与生态</div>
+<a href="12-MCP与Skill.html" data-href="12-MCP与Skill.html">12 · MCP / Skill / Plugin：工具的"插座标准"</a>
+<a href="13-Multi-Agent.html" data-href="13-Multi-Agent.html">13 · Multi-Agent：分工、交接、仲裁</a>
+<a href="14-Human-in-the-loop.html" data-href="14-Human-in-the-loop.html">14 · Human-in-the-loop：该停的地方必须停下来等人</a>
+<div class="grp">六 · 生产级可靠性</div>
+<a href="15-可靠性工程.html" data-href="15-可靠性工程.html">15 · 可靠性工程：重试、超时、降级、幂等、熔断</a>
+<a href="16-Sandbox与长任务.html" data-href="16-Sandbox与长任务.html">16 · 长任务：断点续跑、分批、沙箱、预算</a>
+<a href="17-可观测性与评测.html" data-href="17-可观测性与评测.html">17 · 可观测性与评测：没有评测就没有迭代</a>
+<div class="grp">七 · 交付与落地</div>
+<a href="18-Vue3前端工作台.html" data-href="18-Vue3前端工作台.html">18 · Vue3 前端工作台：SSE 把"Agent 在想什么"显示出来</a>
+<a href="19-模型工程与部署.html" data-href="19-模型工程与部署.html">19 · 模型工程：选档、路由、成本、部署</a>
+<a href="20-岗位地图与学习路径.html" data-href="20-岗位地图与学习路径.html">20 · 岗位地图与学习路径</a></nav>
+</aside>
+<main>
+  <article class="doc"><h1 id="01-第一次调用大模型-LangChain-版">01 · 第一次调用大模型（LangChain 版）</h1>
+<h2 id="1-1-本章目标">1.1 本章目标</h2>
+<p>跑通一条最短的链，并搞清楚三件事：</p>
+<ol>
+<li><code>|</code> 到底在做什么（LCEL）；</li>
+<li>你发给模型的不是"一段文字"，是"一组消息"；</li>
+<li><code>invoke</code> 和 <code>stream</code> 的区别，以及为什么前端要 stream。</li>
+</ol>
+<p>跑法：<code>python ch01_hello_llm/main.py</code></p>
+<h2 id="1-2-最小骨架-Prompt-Model-Parser">1.2 最小骨架：Prompt | Model | Parser</h2>
+<pre><code class="lang-python">prompt = ChatPromptTemplate.from_messages([
+    ("system", "你是苏州智造集团的 HR 助手。回答不超过 40 字，不编造制度条款。"),
+    ("human", "候选人 {name} 应聘 {position}，帮我写一句面试邀约开场白。"),
+])
+model = get_model([...])            # 有 Key 是真模型，没 Key 是剧本假模型
+parser = StrOutputParser()
+
+chain = prompt | model | parser     # ★ 这就是 LCEL
+chain.invoke({"name": "张伟", "position": "高级前端工程师"})</code></pre>
+<p>三个东西之所以能用 <code>|</code> 串起来，是因为它们都实现了 <strong>Runnable</strong> 接口（同一个 <code>invoke/stream/batch</code> 协议）。 这带来两个实际好处：</p>
+<ul>
+<li>换掉任意一段，链不会散架：想换成别的模型？只改 <code>model</code> 那一行。</li>
+<li>链本身也是 Runnable：<strong>链可以再被拼进更大的链</strong>。第 09 章的 RAG、第 17 章的评测，都是这么叠出来的。</li>
+</ul>
+<p>实测输出：</p>
+<pre><code>  链的类型：RunnableSequence
+  输入：{'name': '张伟', 'position': '高级前端工程师'}
+  输出：张伟您好，感谢投递高级前端工程师岗位。想约您周四 14:00 聊 45 分钟。</code></pre>
+<h2 id="1-3-消息角色-你真正在调的是-一组消息">1.3 消息角色：你真正在调的是"一组消息"</h2>
+<pre><code class="lang-python">messages = [
+    SystemMessage(content="你是 HR 助手，只回答制度问题，其余转 HRBP。"),
+    HumanMessage(content="入职满一年有几天年假？"),
+]
+reply = model.invoke(messages)</code></pre>
+<p>四个角色，记住它们的<strong>权限差别</strong>——这是后面很多安全设计的基础：</p>
+<table><thead><tr><th>角色</th><th>作用</th><th>谁能写</th></tr></thead><tbody>
+<tr><td><code>SystemMessage</code></td><td>定规则、定身份、定禁止事项</td><td><strong>只有你的代码</strong>，用户改不了</td></tr>
+<tr><td><code>HumanMessage</code></td><td>用户说的话，含工具返回值注入风险</td><td>用户</td></tr>
+<tr><td><code>AIMessage</code></td><td>模型回答，可能带 <code>tool_calls</code></td><td>模型</td></tr>
+<tr><td><code>ToolMessage</code></td><td>工具返回结果，带 <code>tool_call_id</code></td><td>你的代码</td></tr>
+</tbody></table>
+<p><strong>关键认知：模型是无状态的。</strong> 它"记得上文"，是因为你每次都把历史消息重新发了一遍。所以"记忆"从来不是模型的能力，是你的工程选择——这是第 07、08 章的主题。</p>
+<h2 id="1-4-流式-为什么生产环境一定要-stream">1.4 流式：为什么生产环境一定要 stream</h2>
+<pre><code class="lang-python">for chunk in chain.stream({"name": "张伟", "position": "高级前端工程师"}):
+    print(chunk, end="", flush=True)</code></pre>
+<p><code>invoke</code> 要等模型把话说完才返回；<code>stream</code> 拿到第一个 token 就开始往外吐。用户体感差别是"等了 6 秒"和"0.8 秒后有反应"。</p>
+<p>第 18 章的 SSE 前端就是靠这个：<code>astream_events(version="v2")</code> 把模型的 token、工具的开始/结束都变成可订阅事件，前端才能显示"Agent 正在做什么"，而不是干等。</p>
+<h2 id="1-5-同一段-prompt-换输入">1.5 同一段 prompt，换输入</h2>
+<pre><code class="lang-python">chain.invoke({"name": "李娜", "position": "薪酬专员"})</code></pre>
+<p>链是无状态的，可以反复调。<strong>如果你希望它"记得上一轮"。</strong> 那就得自己把历史塞回去，或者用第 07 章的 <code>RunnableWithMessageHistory</code>。</p>
+<p>注意假模型的限制：剧本是预先写好的，换输入不会真的改答案。接真模型（填 <code>.env</code>）后才看得到换输入的效果差异。这一点书里所有 demo 都一样，读输出时留意"这是剧本还是真模型"。</p>
+<h2 id="1-6-常见坑">1.6 常见坑</h2>
+<ol>
+<li><strong>prompt 变量没对上</strong>：<code>ChatPromptTemplate</code> 里写了 <code>{name}</code>，invoke 时没传，报 <code>KeyError</code>。变量名要和 dict 的 key 一字不差。</li>
+<li><strong>花括号冲突</strong>：prompt 里要写 JSON 示例，<code>{"a":1}</code> 会被当变量。用双花括号 <code>{{"a":1}}</code> 转义，或者放进变量。</li>
+<li><strong>以为 system 能管住用户</strong>：system 是"强提示"，不是"权限"。用户照样能说"忽略上面的要求"。真正的约束在执行层（第 04 章的 <code>args_schema</code>、第 06 章的状态机）。</li>
+<li><strong><code>StrOutputParser</code> 忘了加</strong>：<code>invoke</code> 拿到的是 <code>AIMessage</code>，取文本要 <code>.content</code>。很多人第一次 print 出 <code>content='...'</code> 就是漏了这个。</li>
+</ol>
+<h2 id="1-7-自检清单">1.7 自检清单</h2>
+<ul>
+<li>[ ] 能说出 LCEL 的 <code>|</code> 为什么可以串联（Runnable 协议）</li>
+<li>[ ] 能解释"模型无状态"，以及"记忆"是谁的责任</li>
+<li>[ ] 知道 <code>invoke</code> 与 <code>stream</code> 在什么场景下用哪个</li>
+<li>[ ] 能说出 system / human / tool 三种消息的权限差别</li>
+</ul>
+<h2 id="1-8-练习">1.8 练习</h2>
+<ol>
+<li>把 system 改成"回答不超过 20 字"，观察输出变化（真模型下）。</li>
+<li>写一条链，输入是一个 list 的多个候选人，用 <code>batch</code> 一次跑完。</li>
+<li>故意在 prompt 里留一个没传的变量，看报错长什么样，学会读 LangChain 的报错栈。</li>
+</ol></article>
+  <footer class="pager"><a class="pr" href="00-导读与环境准备.html">← 00 · 导读与环境准备</a>
+<a class="nx" href="02-Prompt与结构化输出.html">02 · Prompt 与结构化输出 →</a></footer>
+  <div class="foot">本教程示例数据均为虚构，仅用于教学。</div>
+</main>
+</body></html>

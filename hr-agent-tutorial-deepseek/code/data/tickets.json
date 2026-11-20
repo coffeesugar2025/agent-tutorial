@@ -1,0 +1,122 @@
+[
+  {
+    "id": "T2026001",
+    "employee_id": "E1001",
+    "category": "假期",
+    "title": "年假余额与结转规则咨询",
+    "description": "想确认 2025 年剩余年假能否结转到 2026 年，最晚什么时候休完。",
+    "status": "resolved",
+    "priority": "P2",
+    "created_at": "2026-01-08T09:12:00+08:00",
+    "assignee": "E1004",
+    "sla_hours": 24
+  },
+  {
+    "id": "T2026002",
+    "employee_id": "E1005",
+    "category": "薪酬",
+    "title": "工资条个税专项附加扣除未生效",
+    "description": "12 月提交的住房租金专项附加扣除，1 月工资条仍未体现。",
+    "status": "in_progress",
+    "priority": "P1",
+    "created_at": "2026-01-10T10:30:00+08:00",
+    "assignee": "E1006",
+    "sla_hours": 8
+  },
+  {
+    "id": "T2026003",
+    "employee_id": "E1003",
+    "category": "证明",
+    "title": "开具在职证明（签证用）",
+    "description": "需要中英文在职证明，用于商务签证，要求注明职位与入职时间。",
+    "status": "open",
+    "priority": "P2",
+    "created_at": "2026-01-11T14:05:00+08:00",
+    "assignee": null,
+    "sla_hours": 24
+  },
+  {
+    "id": "T2026004",
+    "employee_id": "E1007",
+    "category": "假期",
+    "title": "病假材料补交",
+    "description": "1 月 6 日因发烧请假一天，医院证明已拿到，询问补交流程。",
+    "status": "resolved",
+    "priority": "P3",
+    "created_at": "2026-01-07T16:40:00+08:00",
+    "assignee": "E1004",
+    "sla_hours": 48
+  },
+  {
+    "id": "T2026005",
+    "employee_id": "E1009",
+    "category": "证明",
+    "title": "收入证明用于房贷",
+    "description": "银行要求提供近 6 个月收入证明，需加盖公司公章。",
+    "status": "in_progress",
+    "priority": "P1",
+    "created_at": "2026-01-12T09:00:00+08:00",
+    "assignee": "E1006",
+    "sla_hours": 8
+  },
+  {
+    "id": "T2026006",
+    "employee_id": "E1008",
+    "category": "其他",
+    "title": "工位调整申请",
+    "description": "因项目组调整，希望从 3 楼搬到 5 楼产品区。",
+    "status": "open",
+    "priority": "P3",
+    "created_at": "2026-01-12T11:20:00+08:00",
+    "assignee": null,
+    "sla_hours": 72
+  },
+  {
+    "id": "T2026007",
+    "employee_id": "E1011",
+    "category": "假期",
+    "title": "婚假天数与申请材料",
+    "description": "计划 3 月结婚，想了解婚假天数、是否包含周末、需要哪些材料。",
+    "status": "open",
+    "priority": "P2",
+    "created_at": "2026-01-13T08:45:00+08:00",
+    "assignee": "E1004",
+    "sla_hours": 24
+  },
+  {
+    "id": "T2026008",
+    "employee_id": "E1012",
+    "category": "薪酬",
+    "title": "销售提成计算口径确认",
+    "description": "Q4 回款跨年，提成应按回款还是按签约确认？",
+    "status": "in_progress",
+    "priority": "P1",
+    "created_at": "2026-01-13T15:10:00+08:00",
+    "assignee": "E1006",
+    "sla_hours": 8
+  },
+  {
+    "id": "T2026009",
+    "employee_id": "E1002",
+    "category": "其他",
+    "title": "申请外部行业会议参会名额",
+    "description": "3 月产品创新大会，申请参会与预算审批。",
+    "status": "open",
+    "priority": "P2",
+    "created_at": "2026-01-14T10:00:00+08:00",
+    "assignee": null,
+    "sla_hours": 24
+  },
+  {
+    "id": "T2026010",
+    "employee_id": "E1006",
+    "category": "其他",
+    "title": "ERP 报销单无法提交",
+    "description": "提交差旅报销时提示成本中心为空，已确认部门信息无误。",
+    "status": "in_progress",
+    "priority": "P1",
+    "created_at": "2026-01-14T13:25:00+08:00",
+    "assignee": "E2004",
+    "sla_hours": 8
+  }
+]

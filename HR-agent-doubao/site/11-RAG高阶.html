@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>11 · RAG 高阶：结构化知识、Text2SQL、Text2Cypher · HR Agent 工程实战教程</title>
+<style>
+
+:root{--bg:#fbfcfc;--fg:#1a1f23;--muted:#657076;--line:#e3e8ea;--brand:#0f766e;
+      --brand-soft:#e8f4f2;--code-bg:#11202b;--code-fg:#dfe9ee}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);
+     font:16px/1.75 -apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+a{color:var(--brand);text-decoration:none}
+a:hover{text-decoration:underline}
+.side{position:fixed;top:0;left:0;bottom:0;width:280px;overflow-y:auto;
+      border-right:1px solid var(--line);background:#fff;padding:20px 16px 40px}
+.brand a{display:block;font-weight:700;font-size:15px;line-height:1.4}
+.brand span{display:block;color:var(--muted);font-size:12px;margin-top:4px}
+nav{margin-top:18px;font-size:14px}
+nav a{display:block;padding:5px 8px;border-radius:6px;color:#33414a;line-height:1.45}
+nav a:hover{background:#f2f6f7;text-decoration:none}
+nav a.cur{background:var(--brand-soft);color:#0b5d56;font-weight:600}
+nav .grp{margin:14px 0 4px;font-size:11.5px;letter-spacing:.06em;color:#9aa5aa;
+          text-transform:uppercase;padding-left:8px}
+main{margin-left:280px;padding:44px 48px 80px;max-width:920px}
+.doc h1{font-size:27px;line-height:1.35;margin:0 0 6px;letter-spacing:-.01em}
+.doc h1+p{color:var(--muted)}
+.doc h2{font-size:20px;margin:38px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+.doc h3{font-size:17px;margin:26px 0 10px}
+.doc h4{font-size:15px;margin:20px 0 8px;color:#33414a}
+.doc p{margin:12px 0}
+.doc ul,.doc ol{margin:12px 0;padding-left:24px}
+.doc li{margin:5px 0}
+.doc blockquote{margin:16px 0;padding:12px 16px;background:#f5f8f8;border-left:3px solid var(--brand);
+                border-radius:0 8px 8px 0;color:#3d4a51}
+.doc blockquote p{margin:0}
+.doc pre{background:var(--code-bg);color:var(--code-fg);padding:14px 16px;border-radius:10px;
+         overflow-x:auto;font:13.5px/1.65 ui-monospace,SFMono-Regular,Consolas,monospace;
+         margin:16px 0;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.doc code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:13.5px;
+          background:#eef3f4;padding:1px 5px;border-radius:4px}
+.doc pre code{background:none;padding:0;color:inherit;font-size:inherit}
+.doc table{border-collapse:collapse;width:100%;margin:16px 0;font-size:14.5px}
+.doc th,.doc td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+.doc th{background:#f3f7f7;font-weight:600}
+.doc hr{border:none;border-top:1px solid var(--line);margin:32px 0}
+.doc img{max-width:100%}
+.pager{display:flex;justify-content:space-between;gap:16px;margin-top:48px;
+       padding-top:20px;border-top:1px solid var(--line);font-size:14px}
+.pager a{display:block;padding:10px 14px;border:1px solid var(--line);border-radius:8px;
+         max-width:46%;background:#fff}
+.pager .nx{text-align:right;margin-left:auto}
+.foot{margin-top:36px;color:#a4adb2;font-size:12px}
+@media(max-width:860px){
+  .side{position:static;width:auto;border-right:none;border-bottom:1px solid var(--line)}
+  main{margin:0;padding:24px 18px 60px}
+  .doc h1{font-size:23px}
+}
+
+</style></head><body>
+<aside class="side">
+  <div class="brand"><a href="index.html">HR Agent 工程实战教程</a>
+    <span>Python 3.12 · Vue 3 · HR 场景</span></div>
+  <nav><div class="grp">总目录</div>
+<a href="index.html" data-href="index.html">HR 场景 Agent 工程教程（LangChain / LangGraph 全程实战）</a>
+<div class="grp">一 · 打地基</div>
+<a href="00-导读与环境准备.html" data-href="00-导读与环境准备.html">00 · 导读与环境准备</a>
+<a href="01-第一次调用大模型.html" data-href="01-第一次调用大模型.html">01 · 第一次调用大模型（LangChain 版）</a>
+<a href="02-Prompt与结构化输出.html" data-href="02-Prompt与结构化输出.html">02 · Prompt 与结构化输出</a>
+<div class="grp">二 · Agent 内核</div>
+<a href="03-Agent-Loop.html" data-href="03-Agent-Loop.html">03 · Agent Loop：从 `create_agent` 到自己搭图</a>
+<a href="04-Tool-Calling.html" data-href="04-Tool-Calling.html">04 · Tool Calling：模型选错工具，90% 是描述写糊了</a>
+<a href="05-Planning.html" data-href="05-Planning.html">05 · Planning：把"计划"变成可校验的数据</a>
+<a href="06-Workflow与状态机.html" data-href="06-Workflow与状态机.html">06 · Workflow 与状态机：该定死的地方别让模型发挥</a>
+<div class="grp">三 · 记忆与上下文</div>
+<a href="07-Memory.html" data-href="07-Memory.html">07 · Memory：会话记忆、长期记忆、用户记忆</a>
+<a href="08-Context-Engineering.html" data-href="08-Context-Engineering.html">08 · Context Engineering：Token 预算、裁剪、压缩</a>
+<div class="grp">四 · RAG 与知识</div>
+<a href="09-RAG基础.html" data-href="09-RAG基础.html">09 · RAG 基础：解析、切片、向量化、召回、拼 Prompt</a>
+<a href="10-RAG进阶.html" data-href="10-RAG进阶.html">10 · RAG 进阶：混合检索、Rerank、版本治理、引用质量</a>
+<a href="11-RAG高阶.html" data-href="11-RAG高阶.html" class="cur">11 · RAG 高阶：结构化知识、Text2SQL、Text2Cypher</a>
+<div class="grp">五 · 协作与生态</div>
+<a href="12-MCP与Skill.html" data-href="12-MCP与Skill.html">12 · MCP / Skill / Plugin：工具的"插座标准"</a>
+<a href="13-Multi-Agent.html" data-href="13-Multi-Agent.html">13 · Multi-Agent：分工、交接、仲裁</a>
+<a href="14-Human-in-the-loop.html" data-href="14-Human-in-the-loop.html">14 · Human-in-the-loop：该停的地方必须停下来等人</a>
+<div class="grp">六 · 生产级可靠性</div>
+<a href="15-可靠性工程.html" data-href="15-可靠性工程.html">15 · 可靠性工程：重试、超时、降级、幂等、熔断</a>
+<a href="16-Sandbox与长任务.html" data-href="16-Sandbox与长任务.html">16 · 长任务：断点续跑、分批、沙箱、预算</a>
+<a href="17-可观测性与评测.html" data-href="17-可观测性与评测.html">17 · 可观测性与评测：没有评测就没有迭代</a>
+<div class="grp">七 · 交付与落地</div>
+<a href="18-Vue3前端工作台.html" data-href="18-Vue3前端工作台.html">18 · Vue3 前端工作台：SSE 把"Agent 在想什么"显示出来</a>
+<a href="19-模型工程与部署.html" data-href="19-模型工程与部署.html">19 · 模型工程：选档、路由、成本、部署</a>
+<a href="20-岗位地图与学习路径.html" data-href="20-岗位地图与学习路径.html">20 · 岗位地图与学习路径</a></nav>
+</aside>
+<main>
+  <article class="doc"><h1 id="11-RAG-高阶-结构化知识-Text2SQL-Text2Cypher">11 · RAG 高阶：结构化知识、Text2SQL、Text2Cypher</h1>
+<h2 id="11-1-本章目标">11.1 本章目标</h2>
+<ol>
+<li>判断一个问题该走 <strong>RAG</strong> 还是 <strong>SQL/图查询</strong>——这是本章最值钱的一分钟；</li>
+<li>用 <code>SQLDatabase</code> 自动读出表结构，喂给模型；</li>
+<li>用 <code>with_structured_output(Query)</code> 让模型只输出 SQL + 口径，不输出解释；</li>
+<li>三层护栏：只读、表白名单、审计——把 SQL 执行做成"不可能出事"。</li>
+</ol>
+<p>跑法：<code>python ch11_text2sql/main.py</code></p>
+<h2 id="11-2-一句话判据">11.2 一句话判据</h2>
+<pre><code>"技术中心现在有多少人？"
+  · RAG 会给一段"技术中心负责…"的描述 —— 没有数字，无法回答
+  · SQL 会给 3（在职口径：status='active' 且 dept='技术中心'）</code></pre>
+<table><thead><tr><th>问法</th><th>走哪条路</th></tr></thead><tbody>
+<tr><td>多少个 / 多少天 / 排名 / 占比 / 趋势</td><td><strong>SQL</strong></td></tr>
+<tr><td>规定是什么 / 怎么走流程 / 有什么要求</td><td><strong>RAG</strong></td></tr>
+<tr><td>谁会影响 X 的交付 / 技能-岗位-项目三角</td><td><strong>图查询</strong></td></tr>
+</tbody></table>
+<p>★ 数字类问题必须走结构化查询。<strong>向量库永远算不准聚合。</strong></p>
+<h2 id="11-3-SQLDatabase-schema-自动喂给模型">11.3 <code>SQLDatabase</code>：schema 自动喂给模型</h2>
+<pre><code class="lang-python">from langchain_community.utilities import SQLDatabase
+
+db = SQLDatabase.from_uri(f"sqlite:///{DB_PATH.as_posix()}", include_tables=["emp", "leave_bal"])
+SCHEMA = db.get_table_info()</code></pre>
+<p>实测输出（直接从库里读出来的）：</p>
+<pre><code>    CREATE TABLE emp (
+      emp_id TEXT,
+      name TEXT,
+      dept TEXT,
+      city TEXT,
+      level TEXT,
+      status TEXT,
+      hired_at TEXT</code></pre>
+<p><code>include_tables</code> 很重要：<strong>只暴露该暴露的表</strong>。默认暴露全库，等于把薪资表也告诉了模型。</p>
+<h2 id="11-4-Text2SQL-契约里必须带口径">11.4 Text2SQL：契约里必须带口径</h2>
+<pre><code class="lang-python">class Query(BaseModel):
+    sql: str = Field(description="一条只读 SQL，禁止 INSERT/UPDATE/DELETE")
+    caliber: str = Field(description="口径说明：统计范围、过滤条件，一句话")
+    tables: list[str] = Field(description="用到的表名")</code></pre>
+<p>为什么强制模型写 <code>caliber</code>？因为 HR 数据 90% 的争议在口径上：</p>
+<ul>
+<li>"技术中心有多少人"——在职的？含实习？含外包？含待入职？</li>
+<li>模型写 <code>SELECT COUNT(*) FROM emp WHERE dept='技术中心'</code> 是错的（把离职的赵敏也算进去了）。</li>
+</ul>
+<p>实测：</p>
+<pre><code>  SQL：SELECT COUNT(*) AS n FROM emp WHERE dept='技术中心' AND status='active'
+  口径：统计技术中心在职（status=active）员工数，不含已离职
+  用到的表：['emp']</code></pre>
+<h2 id="11-5-三层护栏">11.5 三层护栏</h2>
+<pre><code class="lang-python">def guarded_exec(cur, query: Query) -&gt; list[tuple]:
+    sql = query.sql.strip()
+    if not sql.upper().startswith(("SELECT", "WITH")):
+        raise PermissionError("只允许 SELECT / WITH 开头的只读查询")
+    for bad in ("INSERT","UPDATE","DELETE","DROP","ALTER","ATTACH","PRAGMA"):
+        if bad in sql.upper():
+            raise PermissionError(f"命中危险关键字：{bad}")
+    if not set(query.tables) &lt;= ALLOWED_TABLES:
+        raise PermissionError(f"越权访问表：{set(query.tables) - ALLOWED_TABLES}")
+    rows = cur.execute(sql).fetchall()
+    audit.append({"sql": sql, "rows": len(rows), "caliber": query.caliber})
+    return rows</code></pre>
+<p>实测两个攻击都被拦：</p>
+<pre><code>  恶意 SQL 被拦：只允许 SELECT / WITH 开头的只读查询
+  越权表被拦：越权访问表：{'salary_secret'}
+  ★ Text2SQL 的安全不靠 prompt，靠'执行层'：只读、白名单、审计三件套</code></pre>
+<p><strong>必须补的两条</strong>（demo 里没做，生产必做）：</p>
+<ol>
+<li><strong>只读账号</strong>：数据库层面就用一个没有写权限的账号。字符串检查只是第二道闸。</li>
+<li><strong>行级权限</strong>：<code>WHERE dept = 调用者的部门</code>。不然一个业务中心的人能查到全公司薪资。</li>
+</ol>
+<h2 id="11-6-Text2Cypher-GraphRAG-什么时候真需要图">11.6 Text2Cypher / GraphRAG：什么时候真需要图</h2>
+<p>用 dict 模拟三元组（生产换 Neo4j + <code>langchain-neo4j</code> 的 <code>Neo4jGraph</code>）：</p>
+<pre><code class="lang-python">triples = [
+    ("E1001", "任职于", "技术中心"),
+    ("E1001", "汇报给", "E1003"),
+    ("E1003", "负责", "前端平台"),
+    ("前端平台", "依赖", "设计系统"),
+    ("C1024", "应聘", "P1001"),
+    ("P1001", "属于", "前端平台"),
+]</code></pre>
+<p>两跳邻居查询："谁会影响前端平台的交付"——SQL 要写三层 JOIN，图上一步就够。</p>
+<table><thead><tr><th>图的强项</th><th>图的成本</th></tr></thead><tbody>
+<tr><td>多跳关系、影响面分析</td><td>三元组抽取要人审（LLM 抽的关系一半是错的）</td></tr>
+<tr><td>组织架构、技能-岗位-项目三角</td><td>维护成本高，schema 会漂移</td></tr>
+<tr><td>"谁汇报给谁、谁依赖谁"</td><td>数据更新链路复杂</td></tr>
+</tbody></table>
+<p><strong>经验判据：先把 SQL 做扎实，出现"要 3 跳以上才能答"的问题，再考虑图。</strong></p>
+<h2 id="11-7-GraphRAG-的真实门槛">11.7 GraphRAG 的真实门槛</h2>
+<ol>
+<li><strong>本体（Ontology）设计</strong>：实体类型、关系类型要人工定，不是让模型自由发挥。</li>
+<li><strong>抽取质量</strong>：一段 JD 里"要求 Vue3 经验"是技能关系，"3-5 年"是约束。LLM 经常把约束抽成关系。</li>
+<li><strong>增量更新</strong>：员工离职、调岗，图要跟着变。</li>
+<li><strong>评测</strong>：图查询的"答对"标准比 RAG 更难定。</li>
+</ol>
+<p>所以真实项目里 GraphRAG 通常只用在<strong>一个垂直场景</strong>（如"故障归因""技能图谱"），而不是全公司铺开。</p>
+<h2 id="11-8-常见坑">11.8 常见坑</h2>
+<ol>
+<li><strong>schema 全暴露</strong>：<code>include_tables</code> 不设，等于把敏感表结构告诉模型。</li>
+<li><strong>不校验表白名单</strong>：模型可以写 <code>SELECT * FROM salary</code>。</li>
+<li><strong>不记审计</strong>：出了问题无法复盘"是谁在什么时候查了什么"。</li>
+<li><strong>口径没落库</strong>：同一个"在职人数"两个报表给两个数，就是口径没写清。</li>
+<li><strong>以为 Text2SQL 能替代 RAG</strong>：政策类问题它答不了。</li>
+</ol>
+<h2 id="11-9-自检清单">11.9 自检清单</h2>
+<ul>
+<li>[ ] 能用一句话判断该走 RAG 还是 SQL</li>
+<li>[ ] 知道 <code>include_tables</code> 的作用</li>
+<li>[ ] 能说出三层护栏分别防什么</li>
+<li>[ ] 理解 GraphRAG 的成本与适用边界</li>
+</ul>
+<h2 id="11-10-练习">11.10 练习</h2>
+<ol>
+<li>跑"各部门在职人数"，检查 <code>caliber</code> 是否把"在职"写清。</li>
+<li>给 <code>guarded_exec</code> 加 dry-run（<code>EXPLAIN</code>），先看代价再执行。</li>
+<li>用 <code>langchain-neo4j</code> 的 <code>Neo4jGraph</code> 替换 <code>triples</code>，跑通一条 Text2Cypher。</li>
+</ol></article>
+  <footer class="pager"><a class="pr" href="10-RAG进阶.html">← 10 · RAG 进阶：混合检索、Rerank、版本治理、引用质量</a>
+<a class="nx" href="12-MCP与Skill.html">12 · MCP / Skill / Plugin：工具的"插座标准" →</a></footer>
+  <div class="foot">本教程示例数据均为虚构，仅用于教学。</div>
+</main>
+</body></html>

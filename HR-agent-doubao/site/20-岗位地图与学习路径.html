@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>20 · 岗位地图与学习路径 · HR Agent 工程实战教程</title>
+<style>
+
+:root{--bg:#fbfcfc;--fg:#1a1f23;--muted:#657076;--line:#e3e8ea;--brand:#0f766e;
+      --brand-soft:#e8f4f2;--code-bg:#11202b;--code-fg:#dfe9ee}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);
+     font:16px/1.75 -apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+a{color:var(--brand);text-decoration:none}
+a:hover{text-decoration:underline}
+.side{position:fixed;top:0;left:0;bottom:0;width:280px;overflow-y:auto;
+      border-right:1px solid var(--line);background:#fff;padding:20px 16px 40px}
+.brand a{display:block;font-weight:700;font-size:15px;line-height:1.4}
+.brand span{display:block;color:var(--muted);font-size:12px;margin-top:4px}
+nav{margin-top:18px;font-size:14px}
+nav a{display:block;padding:5px 8px;border-radius:6px;color:#33414a;line-height:1.45}
+nav a:hover{background:#f2f6f7;text-decoration:none}
+nav a.cur{background:var(--brand-soft);color:#0b5d56;font-weight:600}
+nav .grp{margin:14px 0 4px;font-size:11.5px;letter-spacing:.06em;color:#9aa5aa;
+          text-transform:uppercase;padding-left:8px}
+main{margin-left:280px;padding:44px 48px 80px;max-width:920px}
+.doc h1{font-size:27px;line-height:1.35;margin:0 0 6px;letter-spacing:-.01em}
+.doc h1+p{color:var(--muted)}
+.doc h2{font-size:20px;margin:38px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+.doc h3{font-size:17px;margin:26px 0 10px}
+.doc h4{font-size:15px;margin:20px 0 8px;color:#33414a}
+.doc p{margin:12px 0}
+.doc ul,.doc ol{margin:12px 0;padding-left:24px}
+.doc li{margin:5px 0}
+.doc blockquote{margin:16px 0;padding:12px 16px;background:#f5f8f8;border-left:3px solid var(--brand);
+                border-radius:0 8px 8px 0;color:#3d4a51}
+.doc blockquote p{margin:0}
+.doc pre{background:var(--code-bg);color:var(--code-fg);padding:14px 16px;border-radius:10px;
+         overflow-x:auto;font:13.5px/1.65 ui-monospace,SFMono-Regular,Consolas,monospace;
+         margin:16px 0;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.doc code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:13.5px;
+          background:#eef3f4;padding:1px 5px;border-radius:4px}
+.doc pre code{background:none;padding:0;color:inherit;font-size:inherit}
+.doc table{border-collapse:collapse;width:100%;margin:16px 0;font-size:14.5px}
+.doc th,.doc td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+.doc th{background:#f3f7f7;font-weight:600}
+.doc hr{border:none;border-top:1px solid var(--line);margin:32px 0}
+.doc img{max-width:100%}
+.pager{display:flex;justify-content:space-between;gap:16px;margin-top:48px;
+       padding-top:20px;border-top:1px solid var(--line);font-size:14px}
+.pager a{display:block;padding:10px 14px;border:1px solid var(--line);border-radius:8px;
+         max-width:46%;background:#fff}
+.pager .nx{text-align:right;margin-left:auto}
+.foot{margin-top:36px;color:#a4adb2;font-size:12px}
+@media(max-width:860px){
+  .side{position:static;width:auto;border-right:none;border-bottom:1px solid var(--line)}
+  main{margin:0;padding:24px 18px 60px}
+  .doc h1{font-size:23px}
+}
+
+</style></head><body>
+<aside class="side">
+  <div class="brand"><a href="index.html">HR Agent 工程实战教程</a>
+    <span>Python 3.12 · Vue 3 · HR 场景</span></div>
+  <nav><div class="grp">总目录</div>
+<a href="index.html" data-href="index.html">HR 场景 Agent 工程教程（LangChain / LangGraph 全程实战）</a>
+<div class="grp">一 · 打地基</div>
+<a href="00-导读与环境准备.html" data-href="00-导读与环境准备.html">00 · 导读与环境准备</a>
+<a href="01-第一次调用大模型.html" data-href="01-第一次调用大模型.html">01 · 第一次调用大模型（LangChain 版）</a>
+<a href="02-Prompt与结构化输出.html" data-href="02-Prompt与结构化输出.html">02 · Prompt 与结构化输出</a>
+<div class="grp">二 · Agent 内核</div>
+<a href="03-Agent-Loop.html" data-href="03-Agent-Loop.html">03 · Agent Loop：从 `create_agent` 到自己搭图</a>
+<a href="04-Tool-Calling.html" data-href="04-Tool-Calling.html">04 · Tool Calling：模型选错工具，90% 是描述写糊了</a>
+<a href="05-Planning.html" data-href="05-Planning.html">05 · Planning：把"计划"变成可校验的数据</a>
+<a href="06-Workflow与状态机.html" data-href="06-Workflow与状态机.html">06 · Workflow 与状态机：该定死的地方别让模型发挥</a>
+<div class="grp">三 · 记忆与上下文</div>
+<a href="07-Memory.html" data-href="07-Memory.html">07 · Memory：会话记忆、长期记忆、用户记忆</a>
+<a href="08-Context-Engineering.html" data-href="08-Context-Engineering.html">08 · Context Engineering：Token 预算、裁剪、压缩</a>
+<div class="grp">四 · RAG 与知识</div>
+<a href="09-RAG基础.html" data-href="09-RAG基础.html">09 · RAG 基础：解析、切片、向量化、召回、拼 Prompt</a>
+<a href="10-RAG进阶.html" data-href="10-RAG进阶.html">10 · RAG 进阶：混合检索、Rerank、版本治理、引用质量</a>
+<a href="11-RAG高阶.html" data-href="11-RAG高阶.html">11 · RAG 高阶：结构化知识、Text2SQL、Text2Cypher</a>
+<div class="grp">五 · 协作与生态</div>
+<a href="12-MCP与Skill.html" data-href="12-MCP与Skill.html">12 · MCP / Skill / Plugin：工具的"插座标准"</a>
+<a href="13-Multi-Agent.html" data-href="13-Multi-Agent.html">13 · Multi-Agent：分工、交接、仲裁</a>
+<a href="14-Human-in-the-loop.html" data-href="14-Human-in-the-loop.html">14 · Human-in-the-loop：该停的地方必须停下来等人</a>
+<div class="grp">六 · 生产级可靠性</div>
+<a href="15-可靠性工程.html" data-href="15-可靠性工程.html">15 · 可靠性工程：重试、超时、降级、幂等、熔断</a>
+<a href="16-Sandbox与长任务.html" data-href="16-Sandbox与长任务.html">16 · 长任务：断点续跑、分批、沙箱、预算</a>
+<a href="17-可观测性与评测.html" data-href="17-可观测性与评测.html">17 · 可观测性与评测：没有评测就没有迭代</a>
+<div class="grp">七 · 交付与落地</div>
+<a href="18-Vue3前端工作台.html" data-href="18-Vue3前端工作台.html">18 · Vue3 前端工作台：SSE 把"Agent 在想什么"显示出来</a>
+<a href="19-模型工程与部署.html" data-href="19-模型工程与部署.html">19 · 模型工程：选档、路由、成本、部署</a>
+<a href="20-岗位地图与学习路径.html" data-href="20-岗位地图与学习路径.html" class="cur">20 · 岗位地图与学习路径</a></nav>
+</aside>
+<main>
+  <article class="doc"><h1 id="20-岗位地图与学习路径">20 · 岗位地图与学习路径</h1>
+<h2 id="20-1-用人单位真正在看的六件事">20.1 用人单位真正在看的六件事</h2>
+<table><thead><tr><th>能力</th><th>面试怎么问</th><th>书里对应</th></tr></thead><tbody>
+<tr><td>业务抽象</td><td>"把这个需求拆成状态机和接口"</td><td>05 / 06</td></tr>
+<tr><td>Agent 工程化</td><td>"你的 Loop 怎么停？失败怎么恢复？"</td><td>03 / 15 / 16</td></tr>
+<tr><td>RAG 与知识治理</td><td>"版本串台怎么解决？引用怎么校验？"</td><td>09 / 10 / 11</td></tr>
+<tr><td>生产可靠性</td><td>"幂等键怎么设计？超时设几层？"</td><td>15 / 14</td></tr>
+<tr><td>评测与迭代</td><td>"你怎么证明这次改动有用？"</td><td>17</td></tr>
+<tr><td>垂直行业理解</td><td>"年假口径你们怎么定的？"</td><td>全书的 HR 场景</td></tr>
+</tbody></table>
+<p>一句话：<strong>不是"会调 API"，是"能上生产干活"。</strong></p>
+<h2 id="20-2-岗位分布与考察差异">20.2 岗位分布与考察差异</h2>
+<table><thead><tr><th>方向</th><th>典型系统</th><th>考察重点</th></tr></thead><tbody>
+<tr><td>工业制造</td><td>MES/ERP/PLM/SOP 问答/排产</td><td>系统集成（COM/RPC）、术语准确性、离线部署</td></tr>
+<tr><td>医疗生命</td><td>病历结构化、知识图谱、辅助决策</td><td>引用可追溯、幻觉零容忍、合规</td></tr>
+<tr><td>政务客服</td><td>工单派发、回访、Control Tower</td><td>并发、成本、话术合规、多轮稳定性</td></tr>
+<tr><td>企业内部效率（HR/财务/OA）</td><td>审批流、跨系统读写、报表</td><td>权限、审计、HITL、幂等</td></tr>
+<tr><td>AI 原生产品</td><td>多模态、长任务生成</td><td>流式体验、任务恢复、成本控制</td></tr>
+</tbody></table>
+<p>共同点：<strong>接系统、调工具、读知识、跑流程、出结果、可验收。</strong></p>
+<h2 id="20-3-一份可写的简历句式">20.3 一份可写的简历句式</h2>
+<p>不要写"熟悉 LangChain / Agent / RAG"，写<strong>你解决的具体问题 + 数字</strong>：</p>
+<blockquote>基于 LangGraph 设计 HR 审批 Agent，落地 Offer 发放流程；用状态机 + CAS 版本控制保证并发安全，HITL 四道校验拦下自批/超时/越权；Golden Case 回归覆盖 12 条核心用例，上线后任务成功率 94%，P95 延迟 2.1s，单任务成本降到 T3 独占方案的 1/4。</blockquote>
+<p>这段话里的每个数字，本书都有对应的一章能让你真的做出来。</p>
+<h2 id="20-4-五周路径-按本书章节">20.4 五周路径（按本书章节）</h2>
+<table><thead><tr><th>周</th><th>章节</th><th>产出（能拿给别人看的）</th></tr></thead><tbody>
+<tr><td>1</td><td>00–04</td><td>一条带结构化输出的链 + 一个能选对工具、能回填错误的 Agent</td></tr>
+<tr><td>2</td><td>05–08</td><td>一个带重规划的 Plan-and-Execute + 一个审批状态机 + 记忆与上下文预算</td></tr>
+<tr><td>3</td><td>09–12</td><td>一套"混合检索 + 版本治理 + 引用校验"的 RAG，加一个 MCP 工具服务</td></tr>
+<tr><td>4</td><td>13–17</td><td>多智能体评审 + HITL offer 审批 + 可靠性五件套 + 长任务 + 评测集</td></tr>
+<tr><td>5</td><td>18–20</td><td>Vue3 前端工作台 + 成本测算表 + 简历与作品集</td></tr>
+</tbody></table>
+<p><strong>每周都要留一个"可运行的仓库"</strong>，比读完 21 章更有用。</p>
+<h2 id="20-5-三个作品建议-面试最有效">20.5 三个作品建议（面试最有效）</h2>
+<ol>
+<li><strong>一个 RAG（有版本治理 + 引用校验）</strong>：证明你不是"接了个向量库"。</li>
+<li><strong>一个带 HITL 的流程 Agent（审批/发信/写库）</strong>：证明你懂"不可逆动作"。</li>
+<li><strong>一套评测集 + 一份 bad case 迭代记录</strong>：证明你会迭代，这是最稀缺的。</li>
+</ol>
+<h2 id="20-6-常见误区">20.6 常见误区</h2>
+<table><thead><tr><th>误区</th><th>现实</th></tr></thead><tbody>
+<tr><td>"把 demo 跑通就能面试"</td><td>面试问的是"如果并发两个审批人怎么办"</td></tr>
+<tr><td>"模型越强越好"</td><td>成本与延迟是硬约束，分档才是常态</td></tr>
+<tr><td>"Prompt 万能"</td><td>该定死的地方必须写进代码（第 06 章）</td></tr>
+<tr><td>"多智能体更先进"</td><td>单 Agent + 门禁能解决 80% 的场景（第 13 章）</td></tr>
+<tr><td>"评测是上线后的事"</td><td>没有评测，你连"变好了"都说不出来（第 17 章）</td></tr>
+</tbody></table>
+<h2 id="20-7-继续深入的方向">20.7 继续深入的方向</h2>
+<ul>
+<li><strong>LangGraph 深水区</strong>：subgraph、<code>Command</code> 路由、持久化后端（Postgres saver）、时间旅行（<code>get_state_history</code>）。</li>
+<li><strong>RAG 深水区</strong>：增量索引、chunk 级版本 diff、cross-encoder 重排、query 改写与多跳。</li>
+<li><strong>观测深水区</strong>：OpenTelemetry 打通、Token 级成本归因、线上 A/B。</li>
+<li><strong>安全</strong>：Prompt 注入防御、工具权限最小化、输出脱敏、审计留存。</li>
+</ul>
+<h2 id="20-8-结课自检">20.8 结课自检</h2>
+<ul>
+<li>[ ] 我能独立画出"一个 Agent 的完整状态图"（含终止条件与失败分支）</li>
+<li>[ ] 我能说清"哪些交给模型、哪些必须由代码保证"</li>
+<li>[ ] 我能为一个 RAG 设计切片、元数据、版本、引用四件事</li>
+<li>[ ] 我能为一个写操作设计幂等键、超时、降级、熔断</li>
+<li>[ ] 我能用 Golden Case 证明一次改动有效</li>
+</ul>
+<p>五条都能答，你已经具备"上生产干活"的底子，剩下的只是项目经验。</p>
+<h2 id="20-9-最后一句">20.9 最后一句</h2>
+<p>这本书里所有 demo 都用了真的 LangChain / LangGraph 原语，没有一句"伪代码"。 你现在缺的不是知识，是<strong>把一个场景做到能验收</strong>。挑一个你公司真实存在的流程，按第 05/06/14/15/17 章的顺序做一遍，那就是你的项目经验。</p></article>
+  <footer class="pager"><a class="pr" href="19-模型工程与部署.html">← 19 · 模型工程：选档、路由、成本、部署</a></footer>
+  <div class="foot">本教程示例数据均为虚构，仅用于教学。</div>
+</main>
+</body></html>

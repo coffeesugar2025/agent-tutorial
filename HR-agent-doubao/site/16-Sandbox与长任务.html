@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>16 · 长任务：断点续跑、分批、沙箱、预算 · HR Agent 工程实战教程</title>
+<style>
+
+:root{--bg:#fbfcfc;--fg:#1a1f23;--muted:#657076;--line:#e3e8ea;--brand:#0f766e;
+      --brand-soft:#e8f4f2;--code-bg:#11202b;--code-fg:#dfe9ee}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);
+     font:16px/1.75 -apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+a{color:var(--brand);text-decoration:none}
+a:hover{text-decoration:underline}
+.side{position:fixed;top:0;left:0;bottom:0;width:280px;overflow-y:auto;
+      border-right:1px solid var(--line);background:#fff;padding:20px 16px 40px}
+.brand a{display:block;font-weight:700;font-size:15px;line-height:1.4}
+.brand span{display:block;color:var(--muted);font-size:12px;margin-top:4px}
+nav{margin-top:18px;font-size:14px}
+nav a{display:block;padding:5px 8px;border-radius:6px;color:#33414a;line-height:1.45}
+nav a:hover{background:#f2f6f7;text-decoration:none}
+nav a.cur{background:var(--brand-soft);color:#0b5d56;font-weight:600}
+nav .grp{margin:14px 0 4px;font-size:11.5px;letter-spacing:.06em;color:#9aa5aa;
+          text-transform:uppercase;padding-left:8px}
+main{margin-left:280px;padding:44px 48px 80px;max-width:920px}
+.doc h1{font-size:27px;line-height:1.35;margin:0 0 6px;letter-spacing:-.01em}
+.doc h1+p{color:var(--muted)}
+.doc h2{font-size:20px;margin:38px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+.doc h3{font-size:17px;margin:26px 0 10px}
+.doc h4{font-size:15px;margin:20px 0 8px;color:#33414a}
+.doc p{margin:12px 0}
+.doc ul,.doc ol{margin:12px 0;padding-left:24px}
+.doc li{margin:5px 0}
+.doc blockquote{margin:16px 0;padding:12px 16px;background:#f5f8f8;border-left:3px solid var(--brand);
+                border-radius:0 8px 8px 0;color:#3d4a51}
+.doc blockquote p{margin:0}
+.doc pre{background:var(--code-bg);color:var(--code-fg);padding:14px 16px;border-radius:10px;
+         overflow-x:auto;font:13.5px/1.65 ui-monospace,SFMono-Regular,Consolas,monospace;
+         margin:16px 0;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.doc code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:13.5px;
+          background:#eef3f4;padding:1px 5px;border-radius:4px}
+.doc pre code{background:none;padding:0;color:inherit;font-size:inherit}
+.doc table{border-collapse:collapse;width:100%;margin:16px 0;font-size:14.5px}
+.doc th,.doc td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+.doc th{background:#f3f7f7;font-weight:600}
+.doc hr{border:none;border-top:1px solid var(--line);margin:32px 0}
+.doc img{max-width:100%}
+.pager{display:flex;justify-content:space-between;gap:16px;margin-top:48px;
+       padding-top:20px;border-top:1px solid var(--line);font-size:14px}
+.pager a{display:block;padding:10px 14px;border:1px solid var(--line);border-radius:8px;
+         max-width:46%;background:#fff}
+.pager .nx{text-align:right;margin-left:auto}
+.foot{margin-top:36px;color:#a4adb2;font-size:12px}
+@media(max-width:860px){
+  .side{position:static;width:auto;border-right:none;border-bottom:1px solid var(--line)}
+  main{margin:0;padding:24px 18px 60px}
+  .doc h1{font-size:23px}
+}
+
+</style></head><body>
+<aside class="side">
+  <div class="brand"><a href="index.html">HR Agent 工程实战教程</a>
+    <span>Python 3.12 · Vue 3 · HR 场景</span></div>
+  <nav><div class="grp">总目录</div>
+<a href="index.html" data-href="index.html">HR 场景 Agent 工程教程（LangChain / LangGraph 全程实战）</a>
+<div class="grp">一 · 打地基</div>
+<a href="00-导读与环境准备.html" data-href="00-导读与环境准备.html">00 · 导读与环境准备</a>
+<a href="01-第一次调用大模型.html" data-href="01-第一次调用大模型.html">01 · 第一次调用大模型（LangChain 版）</a>
+<a href="02-Prompt与结构化输出.html" data-href="02-Prompt与结构化输出.html">02 · Prompt 与结构化输出</a>
+<div class="grp">二 · Agent 内核</div>
+<a href="03-Agent-Loop.html" data-href="03-Agent-Loop.html">03 · Agent Loop：从 `create_agent` 到自己搭图</a>
+<a href="04-Tool-Calling.html" data-href="04-Tool-Calling.html">04 · Tool Calling：模型选错工具，90% 是描述写糊了</a>
+<a href="05-Planning.html" data-href="05-Planning.html">05 · Planning：把"计划"变成可校验的数据</a>
+<a href="06-Workflow与状态机.html" data-href="06-Workflow与状态机.html">06 · Workflow 与状态机：该定死的地方别让模型发挥</a>
+<div class="grp">三 · 记忆与上下文</div>
+<a href="07-Memory.html" data-href="07-Memory.html">07 · Memory：会话记忆、长期记忆、用户记忆</a>
+<a href="08-Context-Engineering.html" data-href="08-Context-Engineering.html">08 · Context Engineering：Token 预算、裁剪、压缩</a>
+<div class="grp">四 · RAG 与知识</div>
+<a href="09-RAG基础.html" data-href="09-RAG基础.html">09 · RAG 基础：解析、切片、向量化、召回、拼 Prompt</a>
+<a href="10-RAG进阶.html" data-href="10-RAG进阶.html">10 · RAG 进阶：混合检索、Rerank、版本治理、引用质量</a>
+<a href="11-RAG高阶.html" data-href="11-RAG高阶.html">11 · RAG 高阶：结构化知识、Text2SQL、Text2Cypher</a>
+<div class="grp">五 · 协作与生态</div>
+<a href="12-MCP与Skill.html" data-href="12-MCP与Skill.html">12 · MCP / Skill / Plugin：工具的"插座标准"</a>
+<a href="13-Multi-Agent.html" data-href="13-Multi-Agent.html">13 · Multi-Agent：分工、交接、仲裁</a>
+<a href="14-Human-in-the-loop.html" data-href="14-Human-in-the-loop.html">14 · Human-in-the-loop：该停的地方必须停下来等人</a>
+<div class="grp">六 · 生产级可靠性</div>
+<a href="15-可靠性工程.html" data-href="15-可靠性工程.html">15 · 可靠性工程：重试、超时、降级、幂等、熔断</a>
+<a href="16-Sandbox与长任务.html" data-href="16-Sandbox与长任务.html" class="cur">16 · 长任务：断点续跑、分批、沙箱、预算</a>
+<a href="17-可观测性与评测.html" data-href="17-可观测性与评测.html">17 · 可观测性与评测：没有评测就没有迭代</a>
+<div class="grp">七 · 交付与落地</div>
+<a href="18-Vue3前端工作台.html" data-href="18-Vue3前端工作台.html">18 · Vue3 前端工作台：SSE 把"Agent 在想什么"显示出来</a>
+<a href="19-模型工程与部署.html" data-href="19-模型工程与部署.html">19 · 模型工程：选档、路由、成本、部署</a>
+<a href="20-岗位地图与学习路径.html" data-href="20-岗位地图与学习路径.html">20 · 岗位地图与学习路径</a></nav>
+</aside>
+<main>
+  <article class="doc"><h1 id="16-长任务-断点续跑-分批-沙箱-预算">16 · 长任务：断点续跑、分批、沙箱、预算</h1>
+<h2 id="16-1-本章目标">16.1 本章目标</h2>
+<p>一个"跑一晚上"的任务必须回答四个问题：</p>
+<table><thead><tr><th>问题</th><th>本章做法</th></tr></thead><tbody>
+<tr><td>跑到一半崩了，从哪继续？</td><td>checkpoint 文件 + 幂等键</td></tr>
+<tr><td>一次塞 500 份简历会爆吗？</td><td>分批 + 批间隔 + 每批上限</td></tr>
+<tr><td>模型写的代码能直接执行吗？</td><td>沙箱：禁项、限额、真隔离</td></tr>
+<tr><td>花多少钱？</td><td>预算闸门，超了就停并保留现场</td></tr>
+</tbody></table>
+<p>跑法：<code>python ch16_long_task/main.py</code></p>
+<h2 id="16-2-断点续跑的粒度">16.2 断点续跑的粒度</h2>
+<pre><code class="lang-python">def save_ckpt(ck): CKPT.write_text(json.dumps(ck, ensure_ascii=False, indent=2), encoding="utf-8")
+
+for bi in range(ck["batch"], total_batches):
+    for r in batch:
+        if r["id"] in ck["done"]: continue      # ← 幂等：重跑不重复写
+        ...
+        ck["done"].append(r["id"])
+        save_ckpt(ck)                            # ← 每条落盘
+    ck["batch"] = bi + 1
+    save_ckpt(ck)</code></pre>
+<p>★ <strong>粒度决定代价</strong>：每批落盘 → 崩了最多丢一批；每条落盘 → 最多丢一条。500 条任务每条落盘，IO 是能接受的；每条都写数据库事务就要想清楚。</p>
+<p>实测：</p>
+<pre><code>  上次进度：已完成 0 份，第 0 批之后中断
+  第 1 批（4 份）：
+    C1001 年限 3 → 82 分（累计 60 tokens）
+    ...
+  第 3 批（4 份）：
+    C10011 年限 3 → 65 分（累计 660 tokens）
+    ⛔ 预算闸门：已用 660 tokens &gt; 600，停止并保留现场</code></pre>
+<p>注意最后一个成功的是 C10011，C10012 还没跑——<strong>checkpoint 保留了现场</strong>，下次从 C10012 继续。</p>
+<h2 id="16-3-分批与退避">16.3 分批与退避</h2>
+<pre><code class="lang-python">BATCH = 4
+time.sleep(0.2)     # 批间退避：给下游喘息，也避免触发限流</code></pre>
+<p>三个经验值：</p>
+<ul>
+<li>批量大小按"下游能承受的 QPS"定，不是按"想跑多快"定；</li>
+<li>批间必须 sleep（哪怕 200ms），否则 4 个并发就能把小系统打挂；</li>
+<li><strong>失败单条重试，不要整批回滚</strong>。整批回滚会让你永远跑不完那批里的毒丸数据。</li>
+</ul>
+<h2 id="16-4-沙箱-字符串黑名单只是第一道闸">16.4 沙箱：字符串黑名单只是第一道闸</h2>
+<pre><code class="lang-python">FORBIDDEN = ("import", "open", "exec", "eval", "__", "subprocess", "os.", "socket")
+
+def sandbox(code, max_chars=2000):
+    if len(code) &gt; max_chars: return "⛔ 代码过长"
+    for bad in FORBIDDEN:
+        if bad in code: return f"⛔ 命中禁止项：{bad}"
+    exec(compile(code, ...), {"__builtins__": {...白名单...}}, {})</code></pre>
+<p>实测：</p>
+<pre><code>  ① 正常计算：✅ 执行完成
+  ② 读文件：⛔ 命中禁止项：open
+  ③ 偷环境：⛔ 命中禁止项：import
+  ④ 死循环：⛔ 运行失败…（真沙箱靠超时杀掉，不是靠字符串检查）</code></pre>
+<p>★ <strong>不要用字符串黑名单冒充沙箱。</strong> 生产做法：</p>
+<table><thead><tr><th>手段</th><th>具体</th></tr></thead><tbody>
+<tr><td>隔离</td><td>Docker（gVisor）/ Firecracker / 微虚拟机（E2B）</td></tr>
+<tr><td>网络</td><td>无网络（这是最重要的一条）</td></tr>
+<tr><td>资源</td><td>CPU / 内存 / 磁盘限额，进程级超时</td></tr>
+<tr><td>文件</td><td>只挂一个临时目录，跑完销毁</td></tr>
+<tr><td>权限</td><td>非 root、无 docker socket</td></tr>
+</tbody></table>
+<p>demo 的 <code>exec</code> 沙箱只够演示"四道闸的思路"，一行 <code>().__class__.__bases__</code> 就能绕过。</p>
+<p><strong>Code Mode 的正确姿势</strong>：让模型写代码，但代码在容器里执行，结果只回传 stdout 的摘要。这样既利用了模型的代码能力，又不用信任它。</p>
+<h2 id="16-5-预算闸门">16.5 预算闸门</h2>
+<pre><code class="lang-python">if ck["spent_tokens"] &gt; BUDGET_TOKENS:
+    save_ckpt(ck)
+    raise SystemExit(0)</code></pre>
+<p>三个要点：</p>
+<ol>
+<li><strong>闸门要检查在"做之前"</strong>，不是做完才发现超了；</li>
+<li><strong>超了要保留现场</strong>（checkpoint 已存），供人工接手；</li>
+<li><strong>预算要有三个维度</strong>：token、时长、金额。任何一个超都停。</li>
+</ol>
+<h2 id="16-6-LangGraph-版本-长任务的正规做法">16.6 LangGraph 版本（长任务的正规做法）</h2>
+<p>本章用文件做 checkpoint 是为了讲清"最小可行"。真项目用 LangGraph 的 checkpointer + <code>Send</code> 分批：</p>
+<pre><code class="lang-python">graph = builder.compile(checkpointer=SqliteSaver.from_conn_string("long.db"))
+graph.invoke(input, config={"configurable": {"thread_id": "batch-2026-11-15"}})</code></pre>
+<p>好处：状态自动落库、可随时 resume、可配合 <code>interrupt()</code> 做"跑到一半停下来问人"（第 14 章）。</p>
+<h2 id="16-7-常见坑">16.7 常见坑</h2>
+<ol>
+<li><strong>checkpoint 只存"完成列表"不存"中间结果"</strong>：续跑时要重算前面的。存 <code>{id: result}</code> 而不是 <code>[id]</code>。</li>
+<li><strong><code>save_ckpt</code> 并发写</strong>：多线程/多进程同时写同一个 json，会写坏。用临时文件 + 原子 rename，或换 sqlite。</li>
+<li><strong>毒丸数据</strong>：某一条永远失败，整批卡住。要有"失败 N 次就跳过并记录"。</li>
+<li><strong>沙箱里能联网</strong>：模型写的代码把数据传出去，一次事故。</li>
+<li><strong>预算只算 token 不算重试</strong>：重试 3 次就是 3 倍成本，别忘了算。</li>
+</ol>
+<h2 id="16-8-自检清单">16.8 自检清单</h2>
+<ul>
+<li>[ ] 能说出 checkpoint 粒度与代价的关系</li>
+<li>[ ] 知道批量大小该按什么定</li>
+<li>[ ] 能列出沙箱的五个要素</li>
+<li>[ ] 理解预算闸门为什么要"做之前检查 + 保留现场"</li>
+</ul>
+<h2 id="16-9-练习">16.9 练习</h2>
+<ol>
+<li>把 <code>BUDGET_TOKENS</code> 调到 200，观察在第几批停下、checkpoint 是否正确。</li>
+<li>删掉 checkpoint 里几条 <code>done</code>，模拟"数据损坏"，看续跑会不会被骗（会重复打分）。</li>
+<li>用 <code>concurrent.futures</code> 把每批改成并发，处理 <code>save_ckpt</code> 的并发写冲突。</li>
+</ol></article>
+  <footer class="pager"><a class="pr" href="15-可靠性工程.html">← 15 · 可靠性工程：重试、超时、降级、幂等、熔断</a>
+<a class="nx" href="17-可观测性与评测.html">17 · 可观测性与评测：没有评测就没有迭代 →</a></footer>
+  <div class="foot">本教程示例数据均为虚构，仅用于教学。</div>
+</main>
+</body></html>

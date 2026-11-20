@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>18 · Vue3 前端工作台：SSE 把"Agent 在想什么"显示出来 · HR Agent 工程实战教程</title>
+<style>
+
+:root{--bg:#fbfcfc;--fg:#1a1f23;--muted:#657076;--line:#e3e8ea;--brand:#0f766e;
+      --brand-soft:#e8f4f2;--code-bg:#11202b;--code-fg:#dfe9ee}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);
+     font:16px/1.75 -apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+a{color:var(--brand);text-decoration:none}
+a:hover{text-decoration:underline}
+.side{position:fixed;top:0;left:0;bottom:0;width:280px;overflow-y:auto;
+      border-right:1px solid var(--line);background:#fff;padding:20px 16px 40px}
+.brand a{display:block;font-weight:700;font-size:15px;line-height:1.4}
+.brand span{display:block;color:var(--muted);font-size:12px;margin-top:4px}
+nav{margin-top:18px;font-size:14px}
+nav a{display:block;padding:5px 8px;border-radius:6px;color:#33414a;line-height:1.45}
+nav a:hover{background:#f2f6f7;text-decoration:none}
+nav a.cur{background:var(--brand-soft);color:#0b5d56;font-weight:600}
+nav .grp{margin:14px 0 4px;font-size:11.5px;letter-spacing:.06em;color:#9aa5aa;
+          text-transform:uppercase;padding-left:8px}
+main{margin-left:280px;padding:44px 48px 80px;max-width:920px}
+.doc h1{font-size:27px;line-height:1.35;margin:0 0 6px;letter-spacing:-.01em}
+.doc h1+p{color:var(--muted)}
+.doc h2{font-size:20px;margin:38px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+.doc h3{font-size:17px;margin:26px 0 10px}
+.doc h4{font-size:15px;margin:20px 0 8px;color:#33414a}
+.doc p{margin:12px 0}
+.doc ul,.doc ol{margin:12px 0;padding-left:24px}
+.doc li{margin:5px 0}
+.doc blockquote{margin:16px 0;padding:12px 16px;background:#f5f8f8;border-left:3px solid var(--brand);
+                border-radius:0 8px 8px 0;color:#3d4a51}
+.doc blockquote p{margin:0}
+.doc pre{background:var(--code-bg);color:var(--code-fg);padding:14px 16px;border-radius:10px;
+         overflow-x:auto;font:13.5px/1.65 ui-monospace,SFMono-Regular,Consolas,monospace;
+         margin:16px 0;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.doc code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:13.5px;
+          background:#eef3f4;padding:1px 5px;border-radius:4px}
+.doc pre code{background:none;padding:0;color:inherit;font-size:inherit}
+.doc table{border-collapse:collapse;width:100%;margin:16px 0;font-size:14.5px}
+.doc th,.doc td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+.doc th{background:#f3f7f7;font-weight:600}
+.doc hr{border:none;border-top:1px solid var(--line);margin:32px 0}
+.doc img{max-width:100%}
+.pager{display:flex;justify-content:space-between;gap:16px;margin-top:48px;
+       padding-top:20px;border-top:1px solid var(--line);font-size:14px}
+.pager a{display:block;padding:10px 14px;border:1px solid var(--line);border-radius:8px;
+         max-width:46%;background:#fff}
+.pager .nx{text-align:right;margin-left:auto}
+.foot{margin-top:36px;color:#a4adb2;font-size:12px}
+@media(max-width:860px){
+  .side{position:static;width:auto;border-right:none;border-bottom:1px solid var(--line)}
+  main{margin:0;padding:24px 18px 60px}
+  .doc h1{font-size:23px}
+}
+
+</style></head><body>
+<aside class="side">
+  <div class="brand"><a href="index.html">HR Agent 工程实战教程</a>
+    <span>Python 3.12 · Vue 3 · HR 场景</span></div>
+  <nav><div class="grp">总目录</div>
+<a href="index.html" data-href="index.html">HR 场景 Agent 工程教程（LangChain / LangGraph 全程实战）</a>
+<div class="grp">一 · 打地基</div>
+<a href="00-导读与环境准备.html" data-href="00-导读与环境准备.html">00 · 导读与环境准备</a>
+<a href="01-第一次调用大模型.html" data-href="01-第一次调用大模型.html">01 · 第一次调用大模型（LangChain 版）</a>
+<a href="02-Prompt与结构化输出.html" data-href="02-Prompt与结构化输出.html">02 · Prompt 与结构化输出</a>
+<div class="grp">二 · Agent 内核</div>
+<a href="03-Agent-Loop.html" data-href="03-Agent-Loop.html">03 · Agent Loop：从 `create_agent` 到自己搭图</a>
+<a href="04-Tool-Calling.html" data-href="04-Tool-Calling.html">04 · Tool Calling：模型选错工具，90% 是描述写糊了</a>
+<a href="05-Planning.html" data-href="05-Planning.html">05 · Planning：把"计划"变成可校验的数据</a>
+<a href="06-Workflow与状态机.html" data-href="06-Workflow与状态机.html">06 · Workflow 与状态机：该定死的地方别让模型发挥</a>
+<div class="grp">三 · 记忆与上下文</div>
+<a href="07-Memory.html" data-href="07-Memory.html">07 · Memory：会话记忆、长期记忆、用户记忆</a>
+<a href="08-Context-Engineering.html" data-href="08-Context-Engineering.html">08 · Context Engineering：Token 预算、裁剪、压缩</a>
+<div class="grp">四 · RAG 与知识</div>
+<a href="09-RAG基础.html" data-href="09-RAG基础.html">09 · RAG 基础：解析、切片、向量化、召回、拼 Prompt</a>
+<a href="10-RAG进阶.html" data-href="10-RAG进阶.html">10 · RAG 进阶：混合检索、Rerank、版本治理、引用质量</a>
+<a href="11-RAG高阶.html" data-href="11-RAG高阶.html">11 · RAG 高阶：结构化知识、Text2SQL、Text2Cypher</a>
+<div class="grp">五 · 协作与生态</div>
+<a href="12-MCP与Skill.html" data-href="12-MCP与Skill.html">12 · MCP / Skill / Plugin：工具的"插座标准"</a>
+<a href="13-Multi-Agent.html" data-href="13-Multi-Agent.html">13 · Multi-Agent：分工、交接、仲裁</a>
+<a href="14-Human-in-the-loop.html" data-href="14-Human-in-the-loop.html">14 · Human-in-the-loop：该停的地方必须停下来等人</a>
+<div class="grp">六 · 生产级可靠性</div>
+<a href="15-可靠性工程.html" data-href="15-可靠性工程.html">15 · 可靠性工程：重试、超时、降级、幂等、熔断</a>
+<a href="16-Sandbox与长任务.html" data-href="16-Sandbox与长任务.html">16 · 长任务：断点续跑、分批、沙箱、预算</a>
+<a href="17-可观测性与评测.html" data-href="17-可观测性与评测.html">17 · 可观测性与评测：没有评测就没有迭代</a>
+<div class="grp">七 · 交付与落地</div>
+<a href="18-Vue3前端工作台.html" data-href="18-Vue3前端工作台.html" class="cur">18 · Vue3 前端工作台：SSE 把"Agent 在想什么"显示出来</a>
+<a href="19-模型工程与部署.html" data-href="19-模型工程与部署.html">19 · 模型工程：选档、路由、成本、部署</a>
+<a href="20-岗位地图与学习路径.html" data-href="20-岗位地图与学习路径.html">20 · 岗位地图与学习路径</a></nav>
+</aside>
+<main>
+  <article class="doc"><h1 id="18-Vue3-前端工作台-SSE-把-Agent-在想什么-显示出来">18 · Vue3 前端工作台：SSE 把"Agent 在想什么"显示出来</h1>
+<h2 id="18-1-本章目标">18.1 本章目标</h2>
+<ol>
+<li>用 <code>astream_events(version="v2")</code> 把 Agent 的内部动作变成事件流；</li>
+<li>用一个 stdlib 的 HTTP 服务把事件以 SSE 推送出去；</li>
+<li>用 Vue3（单文件 + importmap）渲染时间线，不用装 Node；</li>
+<li>提供一个无浏览器也能验收的 <code>client.py</code>。</li>
+</ol>
+<p>跑法：</p>
+<pre><code class="lang-powershell"># 终端 A
+.\.venv\Scripts\python.exe ch18_vue_frontend\server.py
+# 终端 B
+.\.venv\Scripts\python.exe ch18_vue_frontend\client.py
+# 浏览器（可选）
+http://127.0.0.1:8765/</code></pre>
+<h2 id="18-2-为什么是-SSE-不是干脆等">18.2 为什么是 SSE，不是干脆等</h2>
+<p>Agent 一次回答可能要 3–8 秒，中间调 2 个工具。用户面对的如果是白屏，体感是"卡死了"。</p>
+<p>SSE 的价值不是"打字机效果"，是<strong>把过程可视化</strong>：</p>
+<pre><code>start → thinking → get_leave_balance → tool_end → thinking → get_headcount → tool_end
+      → thinking → answer → done</code></pre>
+<p>用户看到"正在查年假余额""正在查在职人数"，就知道系统没死、也知道它凭什么这么说。</p>
+<h2 id="18-3-关键坑-同步-stream_events-不支持-v2">18.3 关键坑：同步 <code>stream_events</code> 不支持 v2</h2>
+<pre><code class="lang-python">agent.stream_events(input, version="v2")
+# NotImplementedError: Use astream_events() for v1/v2</code></pre>
+<p>1.x 里<strong>只有 async 版本</strong>支持 v2 事件。而 <code>server.py</code> 是同步的 <code>ThreadingHTTPServer</code>，所以要包一层：</p>
+<pre><code class="lang-python">def stream_events(message):
+    async def gen():
+        async for ev in agent.astream_events({"messages": [{"role": "user", "content": message}]},
+                                             version="v2"):
+            yield ev
+    loop = asyncio.new_event_loop()
+    try:
+        for ev in _iterate(loop, gen()):        # 把 async 生成器在同步循环里消费
+            ...</code></pre>
+<h2 id="18-4-事件-帧">18.4 事件 → 帧</h2>
+<p>只挑三种事件，其余丢掉（事件类型有几十种，前端不该全知道）：</p>
+<table><thead><tr><th><code>event</code></th><th>用途</th></tr></thead><tbody>
+<tr><td><code>on_chat_model_stream</code></td><td>模型的 token（打字机效果）</td></tr>
+<tr><td><code>on_tool_start</code></td><td>工具开始（显示"正在查…"）</td></tr>
+<tr><td><code>on_tool_end</code></td><td>工具结束（显示耗时）</td></tr>
+</tbody></table>
+<p>SSE 帧格式（必须严格，浏览器 EventSource 才认）：</p>
+<pre><code>event: tool_start
+data: {"name": "get_leave_balance", "args": {...}}
+
+event: answer
+data: {"text": "结论：张伟 2026 年年假剩 7 天；技术中心在职 3 人。"}</code></pre>
+<h2 id="18-5-实测-客户端看到的完整事件链">18.5 实测：客户端看到的完整事件链</h2>
+<pre><code>[event] start
+[event] thinking  ""
+[event] tool_start get_leave_balance {'emp_id': 'E1001', 'year': 2026}
+[event] tool_end   get_leave_balance 剩余 7 天
+[event] thinking  ""
+[event] tool_start get_headcount {'dept': '技术中心'}
+[event] tool_end   get_headcount 在职 3 人
+[event] thinking  ""
+[event] answer    结论：张伟 2026 年年假剩 7 天；技术中心在职 3 人。
+[event] done</code></pre>
+<p>★ 用 <code>client.py</code> 验收的好处：<strong>不依赖浏览器、不依赖 CDN</strong>，CI 里也能跑。</p>
+<h2 id="18-6-Vue3-单文件页面">18.6 Vue3 单文件页面</h2>
+<pre><code class="lang-html">&lt;script type="importmap"&gt;
+{"imports": {"vue": "https://unpkg.com/vue@3/dist/vue.esm-browser.prod.js"}}
+&lt;/script&gt;
+&lt;script type="module"&gt;
+import { createApp, ref, onMounted } from 'vue';
+createApp({
+  setup() {
+    const items = ref([]);
+    onMounted(() =&gt; {
+      const es = new EventSource('/events?q=' + encodeURIComponent(q));
+      es.addEventListener('tool_start', e =&gt; items.value.push({kind:'tool', text: ...}));
+      es.addEventListener('answer',     e =&gt; items.value.push({kind:'answer', text: ...}));
+      es.addEventListener('done',       () =&gt; es.close());
+    });
+    return { items };
+  }
+}).mount('#app');
+&lt;/script&gt;</code></pre>
+<p>时间线上不同 kind 用不同颜色/图标：thinking 灰、tool 蓝、answer 绿。<strong>这是 Agent 前端和普通聊天前端最大的区别——它有一条"可读的执行轨迹"。</strong></p>
+<p>注意：页面依赖 unpkg CDN，<strong>离线环境不渲染</strong>。所以验收以 <code>client.py</code> 为准（这也是本章给两个入口的原因）。</p>
+<h2 id="18-7-生产上要补什么">18.7 生产上要补什么</h2>
+<table><thead><tr><th>教学版</th><th>生产版</th></tr></thead><tbody>
+<tr><td><code>ThreadingHTTPServer</code></td><td>FastAPI + <code>sse-starlette</code></td></tr>
+<tr><td>无鉴权</td><td>登录态 + 会话隔离（<code>thread_id</code> 按用户）</td></tr>
+<tr><td>单轮问答</td><td>多轮（把 <code>thread_id</code> 交给 checkpointer，第 07/14 章）</td></tr>
+<tr><td>无断线处理</td><td>心跳（15s 一次 <code>: ping</code>）+ 断线重连 <code>Last-Event-ID</code></td></tr>
+<tr><td>前端直连</td><td>网关后面的 SSE 要关缓冲（nginx <code>proxy_buffering off</code>）</td></tr>
+</tbody></table>
+<p><strong>最容易踩的生产坑</strong>：nginx 默认缓冲 SSE，你本地好好的，上线后一次性吐出来。必须 <code>proxy_buffering: off</code> + <code>X-Accel-Buffering: no</code>。</p>
+<h2 id="18-8-常见坑">18.8 常见坑</h2>
+<ol>
+<li><strong>同步 <code>stream_events(version="v2")</code></strong> —— 不支持（见 18.3）。</li>
+<li><strong><code>event:</code> / <code>data:</code> 帧格式不对</strong>（少了空行），浏览器不触发。</li>
+<li><strong>忘了 <code>done</code> 后 <code>es.close()</code></strong>：连接不释放，服务端线程越积越多。</li>
+<li><strong>把全部事件都转发</strong>：前端处理不过来，日志也爆炸。只转发用户需要看的。</li>
+<li><strong>中文乱码</strong>：响应头必须有 <code>charset=utf-8</code>。</li>
+<li><strong>跨域</strong>：本地 8765 → 前端 5173 时，要加 CORS 头。</li>
+</ol>
+<h2 id="18-9-自检清单">18.9 自检清单</h2>
+<ul>
+<li>[ ] 知道为什么 SSE 比"等完整结果"体验好</li>
+<li>[ ] 能说出 v2 事件必须用 async 的原因</li>
+<li>[ ] 知道 SSE 帧的最小格式</li>
+<li>[ ] 能列出生产版与教学版的五个差别</li>
+</ul>
+<h2 id="18-10-练习">18.10 练习</h2>
+<ol>
+<li>给前端加"取消"按钮，服务端收到 <code>cancel</code> 后中断（提示：<code>asyncio</code> 任务取消）。</li>
+<li>把 <code>thinking</code> 事件也渲染成可折叠的"模型内部输出"（调试模式）。</li>
+<li>换 FastAPI + <code>sse-starlette</code> 重写服务端，对比两份代码的复杂度。</li>
+</ol></article>
+  <footer class="pager"><a class="pr" href="17-可观测性与评测.html">← 17 · 可观测性与评测：没有评测就没有迭代</a>
+<a class="nx" href="19-模型工程与部署.html">19 · 模型工程：选档、路由、成本、部署 →</a></footer>
+  <div class="foot">本教程示例数据均为虚构，仅用于教学。</div>
+</main>
+</body></html>

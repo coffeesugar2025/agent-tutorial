@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>04 · Tool Calling：模型选错工具，90% 是描述写糊了 · HR Agent 工程实战教程</title>
+<style>
+
+:root{--bg:#fbfcfc;--fg:#1a1f23;--muted:#657076;--line:#e3e8ea;--brand:#0f766e;
+      --brand-soft:#e8f4f2;--code-bg:#11202b;--code-fg:#dfe9ee}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);
+     font:16px/1.75 -apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+a{color:var(--brand);text-decoration:none}
+a:hover{text-decoration:underline}
+.side{position:fixed;top:0;left:0;bottom:0;width:280px;overflow-y:auto;
+      border-right:1px solid var(--line);background:#fff;padding:20px 16px 40px}
+.brand a{display:block;font-weight:700;font-size:15px;line-height:1.4}
+.brand span{display:block;color:var(--muted);font-size:12px;margin-top:4px}
+nav{margin-top:18px;font-size:14px}
+nav a{display:block;padding:5px 8px;border-radius:6px;color:#33414a;line-height:1.45}
+nav a:hover{background:#f2f6f7;text-decoration:none}
+nav a.cur{background:var(--brand-soft);color:#0b5d56;font-weight:600}
+nav .grp{margin:14px 0 4px;font-size:11.5px;letter-spacing:.06em;color:#9aa5aa;
+          text-transform:uppercase;padding-left:8px}
+main{margin-left:280px;padding:44px 48px 80px;max-width:920px}
+.doc h1{font-size:27px;line-height:1.35;margin:0 0 6px;letter-spacing:-.01em}
+.doc h1+p{color:var(--muted)}
+.doc h2{font-size:20px;margin:38px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+.doc h3{font-size:17px;margin:26px 0 10px}
+.doc h4{font-size:15px;margin:20px 0 8px;color:#33414a}
+.doc p{margin:12px 0}
+.doc ul,.doc ol{margin:12px 0;padding-left:24px}
+.doc li{margin:5px 0}
+.doc blockquote{margin:16px 0;padding:12px 16px;background:#f5f8f8;border-left:3px solid var(--brand);
+                border-radius:0 8px 8px 0;color:#3d4a51}
+.doc blockquote p{margin:0}
+.doc pre{background:var(--code-bg);color:var(--code-fg);padding:14px 16px;border-radius:10px;
+         overflow-x:auto;font:13.5px/1.65 ui-monospace,SFMono-Regular,Consolas,monospace;
+         margin:16px 0;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.doc code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:13.5px;
+          background:#eef3f4;padding:1px 5px;border-radius:4px}
+.doc pre code{background:none;padding:0;color:inherit;font-size:inherit}
+.doc table{border-collapse:collapse;width:100%;margin:16px 0;font-size:14.5px}
+.doc th,.doc td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+.doc th{background:#f3f7f7;font-weight:600}
+.doc hr{border:none;border-top:1px solid var(--line);margin:32px 0}
+.doc img{max-width:100%}
+.pager{display:flex;justify-content:space-between;gap:16px;margin-top:48px;
+       padding-top:20px;border-top:1px solid var(--line);font-size:14px}
+.pager a{display:block;padding:10px 14px;border:1px solid var(--line);border-radius:8px;
+         max-width:46%;background:#fff}
+.pager .nx{text-align:right;margin-left:auto}
+.foot{margin-top:36px;color:#a4adb2;font-size:12px}
+@media(max-width:860px){
+  .side{position:static;width:auto;border-right:none;border-bottom:1px solid var(--line)}
+  main{margin:0;padding:24px 18px 60px}
+  .doc h1{font-size:23px}
+}
+
+</style></head><body>
+<aside class="side">
+  <div class="brand"><a href="index.html">HR Agent 工程实战教程</a>
+    <span>Python 3.12 · Vue 3 · HR 场景</span></div>
+  <nav><div class="grp">总目录</div>
+<a href="index.html" data-href="index.html">HR 场景 Agent 工程教程（LangChain / LangGraph 全程实战）</a>
+<div class="grp">一 · 打地基</div>
+<a href="00-导读与环境准备.html" data-href="00-导读与环境准备.html">00 · 导读与环境准备</a>
+<a href="01-第一次调用大模型.html" data-href="01-第一次调用大模型.html">01 · 第一次调用大模型（LangChain 版）</a>
+<a href="02-Prompt与结构化输出.html" data-href="02-Prompt与结构化输出.html">02 · Prompt 与结构化输出</a>
+<div class="grp">二 · Agent 内核</div>
+<a href="03-Agent-Loop.html" data-href="03-Agent-Loop.html">03 · Agent Loop：从 `create_agent` 到自己搭图</a>
+<a href="04-Tool-Calling.html" data-href="04-Tool-Calling.html" class="cur">04 · Tool Calling：模型选错工具，90% 是描述写糊了</a>
+<a href="05-Planning.html" data-href="05-Planning.html">05 · Planning：把"计划"变成可校验的数据</a>
+<a href="06-Workflow与状态机.html" data-href="06-Workflow与状态机.html">06 · Workflow 与状态机：该定死的地方别让模型发挥</a>
+<div class="grp">三 · 记忆与上下文</div>
+<a href="07-Memory.html" data-href="07-Memory.html">07 · Memory：会话记忆、长期记忆、用户记忆</a>
+<a href="08-Context-Engineering.html" data-href="08-Context-Engineering.html">08 · Context Engineering：Token 预算、裁剪、压缩</a>
+<div class="grp">四 · RAG 与知识</div>
+<a href="09-RAG基础.html" data-href="09-RAG基础.html">09 · RAG 基础：解析、切片、向量化、召回、拼 Prompt</a>
+<a href="10-RAG进阶.html" data-href="10-RAG进阶.html">10 · RAG 进阶：混合检索、Rerank、版本治理、引用质量</a>
+<a href="11-RAG高阶.html" data-href="11-RAG高阶.html">11 · RAG 高阶：结构化知识、Text2SQL、Text2Cypher</a>
+<div class="grp">五 · 协作与生态</div>
+<a href="12-MCP与Skill.html" data-href="12-MCP与Skill.html">12 · MCP / Skill / Plugin：工具的"插座标准"</a>
+<a href="13-Multi-Agent.html" data-href="13-Multi-Agent.html">13 · Multi-Agent：分工、交接、仲裁</a>
+<a href="14-Human-in-the-loop.html" data-href="14-Human-in-the-loop.html">14 · Human-in-the-loop：该停的地方必须停下来等人</a>
+<div class="grp">六 · 生产级可靠性</div>
+<a href="15-可靠性工程.html" data-href="15-可靠性工程.html">15 · 可靠性工程：重试、超时、降级、幂等、熔断</a>
+<a href="16-Sandbox与长任务.html" data-href="16-Sandbox与长任务.html">16 · 长任务：断点续跑、分批、沙箱、预算</a>
+<a href="17-可观测性与评测.html" data-href="17-可观测性与评测.html">17 · 可观测性与评测：没有评测就没有迭代</a>
+<div class="grp">七 · 交付与落地</div>
+<a href="18-Vue3前端工作台.html" data-href="18-Vue3前端工作台.html">18 · Vue3 前端工作台：SSE 把"Agent 在想什么"显示出来</a>
+<a href="19-模型工程与部署.html" data-href="19-模型工程与部署.html">19 · 模型工程：选档、路由、成本、部署</a>
+<a href="20-岗位地图与学习路径.html" data-href="20-岗位地图与学习路径.html">20 · 岗位地图与学习路径</a></nav>
+</aside>
+<main>
+  <article class="doc"><h1 id="04-Tool-Calling-模型选错工具-90-是描述写糊了">04 · Tool Calling：模型选错工具，90% 是描述写糊了</h1>
+<h2 id="4-1-本章目标">4.1 本章目标</h2>
+<ol>
+<li>用 <code>@tool</code> + <code>args_schema</code> 写一个"模型能选对、参数能传对"的工具；</li>
+<li>同一件事，用含糊描述 vs 合格描述，看模型的选择差别；</li>
+<li>工具报错要<strong>回填给模型</strong>（<code>ToolMessage(status="error")</code>），让它自己改参数；</li>
+<li>写操作要用门禁（<code>build_tools(allow_write)</code>）把权限压到工具层。</li>
+</ol>
+<p>跑法：<code>python ch04_tools/main.py</code></p>
+<h2 id="4-2-工具的三要素">4.2 工具的三要素</h2>
+<pre><code class="lang-python">@tool("get_employee", args_schema=EmployeeArgs)
+def get_employee(emp_id: str) -&gt; str:
+    """按工号查询在职员工的基本信息（姓名、部门、城市、职级、状态）。"""
+    ...</code></pre>
+<p>模型选工具只看两样东西：<strong>name</strong> 和 <strong>description</strong>。参数靠 <code>args_schema</code> 的 JSON Schema 约束。</p>
+<p>所以描述要写"什么时候用它"，不是"它内部做了什么"：</p>
+<table><thead><tr><th>写法</th><th>模型的反应</th></tr></thead><tbody>
+<tr><td><code>"查信息"</code> + 参数名 <code>e</code></td><td>不知道查什么，也不知道 <code>e</code> 是什么；大概率不调，或者传字符串 <code>"张伟"</code></td></tr>
+<tr><td><code>"按工号查询在职员工的基本信息（姓名、部门、城市、职级、状态）。"</code> + <code>emp_id</code></td><td>知道该在"问员工信息"时用，且知道要传工号</td></tr>
+</tbody></table>
+<p>实测输出：</p>
+<pre><code>  含糊版 q_emp：        description='查信息'    args=['e']
+  合格版 get_employee： description='按工号查询在职员工的基本信息…'  args={'emp_id': {...}}
+  ★ 模型选工具只看两样：name + description。描述含糊 = 100% 调错或干脆不调</code></pre>
+<h2 id="4-3-args_schema-把约束写进-schema-而不是写进-prompt">4.3 <code>args_schema</code>：把约束写进 schema，而不是写进 prompt</h2>
+<pre><code class="lang-python">class LeaveArgs(BaseModel):
+    emp_id: str = Field(pattern=r"^E\d{5}$", description="工号，形如 E10086")
+    year: int = Field(ge=2020, le=2030, description="自然年")
+    leave_type: Literal["年假", "调休", "病假"] = Field(description="假期类型")</code></pre>
+<p><code>pattern</code> / <code>ge</code> / <code>le</code> / <code>Literal</code> 会被翻译进 JSON Schema，模型看得到。这比在 prompt 里写"工号必须是 E 加五位数字"有效得多——因为它在<strong>工具的调用契约</strong>里，而不是在一段可能被忽略的文字里。</p>
+<h2 id="4-4-工具报错必须回填">4.4 工具报错必须回填</h2>
+<pre><code class="lang-python">class ToolException_(...)</code></pre>
+<p>实测（这是本章最重要的一段）：</p>
+<pre><code>  问：张伟还有几天年假？
+  调 {'emp_id': 'E1008', 'year': 2026, 'leave_type': '年假'}
+  返回（status=error）：emp_id: String should match pattern '^E\d{5}$'
+                        Please fix the error and try again.
+  调 {'emp_id': 'E10086', 'year': 2026, 'leave_type': '年假'}
+  返回（status=success）：E10086 2026 年年假剩余 7 天
+  回答：张伟 2026 年还剩 7 天年假。
+  ★ ToolMessage 带 status='error' —— 模型看得见这次失败，才有机会改</code></pre>
+<p>机制：工具抛出 <code>ToolException</code> 时，<code>ToolNode</code> 不会让整个 Agent 崩，而是把它变成一条 <code>ToolMessage(status="error")</code> 放回对话。模型下一轮就能读到"你上次参数错了，正确格式是..."。</p>
+<p><strong>关键取舍</strong>：工具内部异常要不要伪装成"成功但内容里写错误"？不要。用 <code>ToolMessage</code> 的 error 状态，模型对它的处理策略完全不同（更倾向修正）。</p>
+<h2 id="4-5-写操作门禁">4.5 写操作门禁</h2>
+<pre><code class="lang-python">def build_tools(allow_write: bool) -&gt; list:
+    tools = [get_employee, get_leave_balance]
+    if allow_write:
+        tools.append(create_interview)
+    return tools</code></pre>
+<p>实测：</p>
+<pre><code>  ① allow_write=False → 模型能看到 3 个工具，其中没有 create_interview
+     回答：我目前只能查询，不能创建面试。请先在系统里走面试申请流程。</code></pre>
+<p>这就是"权限不写在 prompt 里"的做法：<strong>不给它工具，比告诉它"别用"可靠一万倍</strong>。真实系统里还要叠加"按角色挂载工具"和"服务端鉴权"（工具内部再查一次调用者有没有权限，不能只信 Agent）。</p>
+<h2 id="4-6-常见坑">4.6 常见坑</h2>
+<ol>
+<li><strong>描述写成内部实现</strong>：<code>"调用 SQL 查 emp 表"</code> —— 模型不需要知道你怎么实现，它需要知道"什么时候用"。</li>
+<li><strong>参数名起缩写</strong>：<code>e</code>、<code>n</code>、<code>d</code>。模型会猜错。<code>emp_id</code>、<code>year</code>、<code>dept</code> 明确得多。</li>
+<li><strong>工具太多</strong>：一次给 20 个工具，选择准确率断崖式下跌。按角色分组挂载（第 12 章讲）。</li>
+<li><strong>返回值太长</strong>：工具返回一大坨 JSON，会挤掉上下文。只回"结论 + 关键字段"，细节让模型再调一次拿（第 08 章的工具结果瘦身）。</li>
+<li><strong>在工具里做业务决策</strong>：工具只负责"取数/写数"，判断放外层。否则你会在工具里写出一堆 if-else 业务逻辑，改不动。</li>
+</ol>
+<h2 id="4-7-自检清单">4.7 自检清单</h2>
+<ul>
+<li>[ ] 能说出模型靠什么选工具、靠什么填参数</li>
+<li>[ ] 知道 <code>ToolException</code> 与 <code>ToolMessage(status="error")</code> 的关系</li>
+<li>[ ] 知道为什么"不给工具"比"禁止使用"更安全</li>
+<li>[ ] 能判断一个工具描述是好还是糊</li>
+</ul>
+<h2 id="4-8-练习">4.8 练习</h2>
+<ol>
+<li>把 <code>get_employee</code> 的 description 改成 <code>"查信息"</code>，接真模型跑 10 次，统计选错率。</li>
+<li>给 <code>create_interview</code> 加一个"面试时间必须在未来 7 天内"的校验，用 <code>ToolException</code> 抛出来，看模型怎么反应。</li>
+<li>把工具返回值从完整 JSON 改成一行摘要，对比同一问题的输出 token 数。</li>
+</ol></article>
+  <footer class="pager"><a class="pr" href="03-Agent-Loop.html">← 03 · Agent Loop：从 `create_agent` 到自己搭图</a>
+<a class="nx" href="05-Planning.html">05 · Planning：把"计划"变成可校验的数据 →</a></footer>
+  <div class="foot">本教程示例数据均为虚构，仅用于教学。</div>
+</main>
+</body></html>

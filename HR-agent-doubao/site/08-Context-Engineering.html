@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>08 · Context Engineering：Token 预算、裁剪、压缩 · HR Agent 工程实战教程</title>
+<style>
+
+:root{--bg:#fbfcfc;--fg:#1a1f23;--muted:#657076;--line:#e3e8ea;--brand:#0f766e;
+      --brand-soft:#e8f4f2;--code-bg:#11202b;--code-fg:#dfe9ee}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);
+     font:16px/1.75 -apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+a{color:var(--brand);text-decoration:none}
+a:hover{text-decoration:underline}
+.side{position:fixed;top:0;left:0;bottom:0;width:280px;overflow-y:auto;
+      border-right:1px solid var(--line);background:#fff;padding:20px 16px 40px}
+.brand a{display:block;font-weight:700;font-size:15px;line-height:1.4}
+.brand span{display:block;color:var(--muted);font-size:12px;margin-top:4px}
+nav{margin-top:18px;font-size:14px}
+nav a{display:block;padding:5px 8px;border-radius:6px;color:#33414a;line-height:1.45}
+nav a:hover{background:#f2f6f7;text-decoration:none}
+nav a.cur{background:var(--brand-soft);color:#0b5d56;font-weight:600}
+nav .grp{margin:14px 0 4px;font-size:11.5px;letter-spacing:.06em;color:#9aa5aa;
+          text-transform:uppercase;padding-left:8px}
+main{margin-left:280px;padding:44px 48px 80px;max-width:920px}
+.doc h1{font-size:27px;line-height:1.35;margin:0 0 6px;letter-spacing:-.01em}
+.doc h1+p{color:var(--muted)}
+.doc h2{font-size:20px;margin:38px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+.doc h3{font-size:17px;margin:26px 0 10px}
+.doc h4{font-size:15px;margin:20px 0 8px;color:#33414a}
+.doc p{margin:12px 0}
+.doc ul,.doc ol{margin:12px 0;padding-left:24px}
+.doc li{margin:5px 0}
+.doc blockquote{margin:16px 0;padding:12px 16px;background:#f5f8f8;border-left:3px solid var(--brand);
+                border-radius:0 8px 8px 0;color:#3d4a51}
+.doc blockquote p{margin:0}
+.doc pre{background:var(--code-bg);color:var(--code-fg);padding:14px 16px;border-radius:10px;
+         overflow-x:auto;font:13.5px/1.65 ui-monospace,SFMono-Regular,Consolas,monospace;
+         margin:16px 0;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.doc code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:13.5px;
+          background:#eef3f4;padding:1px 5px;border-radius:4px}
+.doc pre code{background:none;padding:0;color:inherit;font-size:inherit}
+.doc table{border-collapse:collapse;width:100%;margin:16px 0;font-size:14.5px}
+.doc th,.doc td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+.doc th{background:#f3f7f7;font-weight:600}
+.doc hr{border:none;border-top:1px solid var(--line);margin:32px 0}
+.doc img{max-width:100%}
+.pager{display:flex;justify-content:space-between;gap:16px;margin-top:48px;
+       padding-top:20px;border-top:1px solid var(--line);font-size:14px}
+.pager a{display:block;padding:10px 14px;border:1px solid var(--line);border-radius:8px;
+         max-width:46%;background:#fff}
+.pager .nx{text-align:right;margin-left:auto}
+.foot{margin-top:36px;color:#a4adb2;font-size:12px}
+@media(max-width:860px){
+  .side{position:static;width:auto;border-right:none;border-bottom:1px solid var(--line)}
+  main{margin:0;padding:24px 18px 60px}
+  .doc h1{font-size:23px}
+}
+
+</style></head><body>
+<aside class="side">
+  <div class="brand"><a href="index.html">HR Agent 工程实战教程</a>
+    <span>Python 3.12 · Vue 3 · HR 场景</span></div>
+  <nav><div class="grp">总目录</div>
+<a href="index.html" data-href="index.html">HR 场景 Agent 工程教程（LangChain / LangGraph 全程实战）</a>
+<div class="grp">一 · 打地基</div>
+<a href="00-导读与环境准备.html" data-href="00-导读与环境准备.html">00 · 导读与环境准备</a>
+<a href="01-第一次调用大模型.html" data-href="01-第一次调用大模型.html">01 · 第一次调用大模型（LangChain 版）</a>
+<a href="02-Prompt与结构化输出.html" data-href="02-Prompt与结构化输出.html">02 · Prompt 与结构化输出</a>
+<div class="grp">二 · Agent 内核</div>
+<a href="03-Agent-Loop.html" data-href="03-Agent-Loop.html">03 · Agent Loop：从 `create_agent` 到自己搭图</a>
+<a href="04-Tool-Calling.html" data-href="04-Tool-Calling.html">04 · Tool Calling：模型选错工具，90% 是描述写糊了</a>
+<a href="05-Planning.html" data-href="05-Planning.html">05 · Planning：把"计划"变成可校验的数据</a>
+<a href="06-Workflow与状态机.html" data-href="06-Workflow与状态机.html">06 · Workflow 与状态机：该定死的地方别让模型发挥</a>
+<div class="grp">三 · 记忆与上下文</div>
+<a href="07-Memory.html" data-href="07-Memory.html">07 · Memory：会话记忆、长期记忆、用户记忆</a>
+<a href="08-Context-Engineering.html" data-href="08-Context-Engineering.html" class="cur">08 · Context Engineering：Token 预算、裁剪、压缩</a>
+<div class="grp">四 · RAG 与知识</div>
+<a href="09-RAG基础.html" data-href="09-RAG基础.html">09 · RAG 基础：解析、切片、向量化、召回、拼 Prompt</a>
+<a href="10-RAG进阶.html" data-href="10-RAG进阶.html">10 · RAG 进阶：混合检索、Rerank、版本治理、引用质量</a>
+<a href="11-RAG高阶.html" data-href="11-RAG高阶.html">11 · RAG 高阶：结构化知识、Text2SQL、Text2Cypher</a>
+<div class="grp">五 · 协作与生态</div>
+<a href="12-MCP与Skill.html" data-href="12-MCP与Skill.html">12 · MCP / Skill / Plugin：工具的"插座标准"</a>
+<a href="13-Multi-Agent.html" data-href="13-Multi-Agent.html">13 · Multi-Agent：分工、交接、仲裁</a>
+<a href="14-Human-in-the-loop.html" data-href="14-Human-in-the-loop.html">14 · Human-in-the-loop：该停的地方必须停下来等人</a>
+<div class="grp">六 · 生产级可靠性</div>
+<a href="15-可靠性工程.html" data-href="15-可靠性工程.html">15 · 可靠性工程：重试、超时、降级、幂等、熔断</a>
+<a href="16-Sandbox与长任务.html" data-href="16-Sandbox与长任务.html">16 · 长任务：断点续跑、分批、沙箱、预算</a>
+<a href="17-可观测性与评测.html" data-href="17-可观测性与评测.html">17 · 可观测性与评测：没有评测就没有迭代</a>
+<div class="grp">七 · 交付与落地</div>
+<a href="18-Vue3前端工作台.html" data-href="18-Vue3前端工作台.html">18 · Vue3 前端工作台：SSE 把"Agent 在想什么"显示出来</a>
+<a href="19-模型工程与部署.html" data-href="19-模型工程与部署.html">19 · 模型工程：选档、路由、成本、部署</a>
+<a href="20-岗位地图与学习路径.html" data-href="20-岗位地图与学习路径.html">20 · 岗位地图与学习路径</a></nav>
+</aside>
+<main>
+  <article class="doc"><h1 id="08-Context-Engineering-Token-预算-裁剪-压缩">08 · Context Engineering：Token 预算、裁剪、压缩</h1>
+<h2 id="8-1-本章目标">8.1 本章目标</h2>
+<ol>
+<li>会算 token 预算（无 Key 也能算）；</li>
+<li>用 <code>trim_messages</code> 有规则地裁剪：保 system、保最近、不留下"孤儿"消息；</li>
+<li>用摘要压缩把旧对话压成"事实清单"；</li>
+<li>知道六种压缩手段的适用场景，以及"什么不放进上下文"才是最狠的一招。</li>
+</ol>
+<p>跑法：<code>python ch08_context/main.py</code></p>
+<h2 id="8-2-先算预算">8.2 先算预算</h2>
+<pre><code class="lang-python">def count_tokens(messages) -&gt; int:
+    # 中文约 1 字 ≈ 1 token，英文约 4 字符 ≈ 1 token
+    ...</code></pre>
+<p>真实项目用 <code>tiktoken</code>（本环境已装），但<strong>粗估就够做预算决策</strong>——你要的是"什么时候该压"，不是精确计费。</p>
+<p>实测：20 条消息 ≈ 436 tokens，单条最长 29 tokens。所以"上下文爆炸"通常是<strong>条数</strong>问题，不是单条长度问题。</p>
+<h2 id="8-3-trim_messages-三个开关决定裁完还能不能用">8.3 <code>trim_messages</code>：三个开关决定裁完还能不能用</h2>
+<pre><code class="lang-python">trimmed = trim_messages(
+    msgs,
+    max_tokens=220,
+    strategy="last",            # 从最新往前留
+    token_counter=count_tokens,
+    include_system=True,        # ★ system 永远保
+    start_on="human",           # ★ 裁完不能以 AI/Tool 开头
+    allow_partial=False,
+)</code></pre>
+<ul>
+<li><code>include_system=True</code>：不然模型丢了"不许编造"这条，后面全靠猜。</li>
+<li><code>start_on="human"</code>：很多模型要求第一条是 user；裁完以 <code>ToolMessage</code> 开头会直接 400。</li>
+<li><code>strategy="last"</code> vs <code>"first"</code>：对话场景用 last；长文档分析场景用 first（前文是任务描述）。</li>
+</ul>
+<p>实测输出（很值得看）：</p>
+<pre><code>  预算 220 → 剩余 9 条，约 211 tokens
+    [System] 你是招聘助手…
+    [Human] 再帮我看看第 4 个候选人的情况…
+    [Human] 再帮我看看第 5 个候选人的情况…
+    ...</code></pre>
+<p><strong>注意：早期那几条工具结果（张伟/带宽/特批流程）被裁掉了，留下的是一串同质化的重复提问。</strong> 这就是"纯截断"的根本问题：它按位置裁，不按价值裁。所以需要下面的摘要压缩。</p>
+<h2 id="8-4-摘要压缩-压事实-不压标点">8.4 摘要压缩：压事实，不压标点</h2>
+<pre><code class="lang-python">SUMMARIZE = ChatPromptTemplate.from_messages([
+    ("system", "把下面的对话压成不超过 80 字的事实清单。只保留：已确认的数据、已做的决定、待办。"
+               "丢掉寒暄、重复、模型的解释过程。"),
+    ("human", "{history}"),
+])
+summary = (SUMMARIZE | model).invoke({"history": flat}).content</code></pre>
+<p>实测：</p>
+<pre><code>  压缩前 156 tokens → 压缩后 55 tokens
+  摘要：已确认：P1001 高级前端，带宽 22-25K；C1001 张伟，技术中心，一面通过，
+        期望 28K 超带宽 3K。待办：走薪酬特批（HRBP 发起→薪酬审批→HRD 确认）。
+  重建后的上下文：4 条 / 132 tokens</code></pre>
+<p>摘要必须保留三类东西：<strong>数字、决定、待办</strong>。只写"用户询问了年假政策，助手进行了回答"的摘要，等于把上下文压成了噪声。</p>
+<h2 id="8-5-六种压缩手段-按信息损失从低到高">8.5 六种压缩手段（按信息损失从低到高）</h2>
+<table><thead><tr><th>手段</th><th>具体做法</th><th>什么时候用</th></tr></thead><tbody>
+<tr><td>工具结果瘦身</td><td>ToolMessage 只留用到的字段</td><td><strong>永远</strong>，优先做</td></tr>
+<tr><td>检索按需</td><td>只塞命中的 2 段，不塞整篇 SOP</td><td>RAG 场景必做</td></tr>
+<tr><td>去重合并</td><td>同一事实出现 5 次留 1 次</td><td>长会话</td></tr>
+<tr><td>结构化抽取</td><td>50 条消息 → 一张 <code>{字段:值}</code> 表</td><td>任务型对话最划算</td></tr>
+<tr><td>摘要压缩</td><td>旧对话 → 事实清单</td><td>超过 10 轮启动</td></tr>
+<tr><td>截断</td><td>只留最近 N 条</td><td>兜底，慎用</td></tr>
+</tbody></table>
+<p>工具结果瘦身还顺手解决了安全问题：</p>
+<pre><code>    工具结果：43 → 22 tokens（同时把敏感字段挡在模型之外）</code></pre>
+<p>原始工具返回里有 <code>id_card</code>、<code>bank</code>、<code>salary</code>——<strong>模型看到就等于泄露风险</strong>。瘦身不只是省钱，是权限控制。</p>
+<h2 id="8-6-水位线-别等爆了再压">8.6 水位线：别等爆了再压</h2>
+<pre><code class="lang-python">def water_level(used, limit):
+    r = used / limit
+    if r &lt; 0.6:  return "🟢 正常：全量保留"
+    if r &lt; 0.85: return "🟡 预警：启动结构化抽取 / 检索按需"
+    return "🔴 危险：强制摘要压缩 + 外置状态，并告诉用户'我需要重新确认一下'"</code></pre>
+<p>最后一句很重要：压缩会丢信息，<strong>丢信息时要说出来</strong>。"我需要重新确认一下您刚才提到的城市"比默默答错强得多。</p>
+<h2 id="8-7-最狠的一招-决定什么不放进上下文">8.7 最狠的一招：决定什么不放进上下文</h2>
+<ul>
+<li>计划、待办、已执行步骤 → 放 LangGraph state / 数据库，按需取摘要</li>
+<li>大文档 → 放向量库，按需检索两段</li>
+<li>长工具输出 → 放文件/对象存储，只回填"结果 + 关键字段"</li>
+</ul>
+<p>★ <strong>上下文工程的核心不是压缩技巧，是"什么不进上下文"。</strong> 一个 200 行的工具输出，从头就不该进 prompt。</p>
+<h2 id="8-8-常见坑">8.8 常见坑</h2>
+<ol>
+<li><strong><code>max_tokens</code> 当字符数</strong>：<code>trim_messages</code> 的 <code>max_tokens</code> 走你给的 <code>token_counter</code>，别混用字符数函数。</li>
+<li><strong>裁完不留余地</strong>：裁剪到刚好 220/220，下一轮再加一条就爆。留 20% 余量。</li>
+<li><strong>摘要每轮都做</strong>：成本翻倍。按水位线触发（比如每 5 轮或超过 60%）。</li>
+<li><strong>摘要后不保留原始</strong>：用户追问细节时无法回溯。摘要 + 原始落库，两者都要。</li>
+<li><strong>忘了 system 里也可能有敏感信息</strong>：system 塞了完整制度文档，等于每轮都在泄露。</li>
+</ol>
+<h2 id="8-9-自检清单">8.9 自检清单</h2>
+<ul>
+<li>[ ] 能解释 <code>include_system</code> 与 <code>start_on</code> 的作用</li>
+<li>[ ] 知道"纯截断"为什么会丢掉最关键的早期结论</li>
+<li>[ ] 能说出六种压缩手段的适用场景</li>
+<li>[ ] 理解"不放进上下文"比"压缩"更有效</li>
+</ul>
+<h2 id="8-10-练习">8.10 练习</h2>
+<ol>
+<li>把 <code>count_tokens</code> 换成 tiktoken（<code>cl100k_base</code>），对比估算误差。</li>
+<li>用 <code>max_tokens=120</code> 裁一次，看早期"不许编造"的约束是否被裁掉，以及后果。</li>
+<li>写一个"每 5 轮自动摘要"的循环，观察摘要里最先丢的是哪类信息（通常是具体数字）。</li>
+</ol></article>
+  <footer class="pager"><a class="pr" href="07-Memory.html">← 07 · Memory：会话记忆、长期记忆、用户记忆</a>
+<a class="nx" href="09-RAG基础.html">09 · RAG 基础：解析、切片、向量化、召回、拼 Prompt →</a></footer>
+  <div class="foot">本教程示例数据均为虚构，仅用于教学。</div>
+</main>
+</body></html>

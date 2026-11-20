@@ -1,0 +1,32 @@
+# HR Agent 从零到生产 · LangChain 版
+# Python 3.12 推荐；教程全程使用 LangChain / LangGraph，框架依赖是必装项
+# 安装：pip install -r requirements.txt
+
+# ---- Web 层 ----
+fastapi>=0.115
+uvicorn[standard]>=0.30
+pydantic>=2.7
+httpx>=0.27
+python-dotenv>=1.0
+
+# ---- LangChain 核心（LCEL / ChatModel / Tools / Retriever / Callbacks）----
+langchain>=0.3,<1.0
+langchain-core>=0.3,<1.0
+
+# ---- LangGraph（StateGraph / ToolNode / checkpointer / Store / interrupt）----
+langgraph>=0.2,<0.4
+
+# ---- 模型与向量（本地 Ollama，零 API 费用）----
+langchain-ollama>=0.2,<0.4
+langchain-community>=0.3,<0.4
+
+# ---- MCP 适配器（第 10 章真实 stdio 对接 + 第 16 章全链路）----
+# 版本约束：langchain-mcp-adapters 0.1.x 必须配 mcp 1.x；
+# mcp 2.x 会报 No module named 'mcp.shared.session'，所以锁 <2
+langchain-mcp-adapters>=0.1,<0.2
+mcp>=1.9,<2
+
+# ---- 生产替换时才需要，教程各章末尾给出适配器写法（不装也能跑完全部 16 章）----
+# chromadb / qdrant-client / pymilvus / llama-index / neo4j / elasticsearch
+# langfuse / langsmith / openinference-instrumentation-langchain
+# vllm / sglang / xinference / peft / trl / bitsandbytes

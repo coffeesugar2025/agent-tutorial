@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>12 · MCP / Skill / Plugin：工具的"插座标准" · HR Agent 工程实战教程</title>
+<style>
+
+:root{--bg:#fbfcfc;--fg:#1a1f23;--muted:#657076;--line:#e3e8ea;--brand:#0f766e;
+      --brand-soft:#e8f4f2;--code-bg:#11202b;--code-fg:#dfe9ee}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);
+     font:16px/1.75 -apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+a{color:var(--brand);text-decoration:none}
+a:hover{text-decoration:underline}
+.side{position:fixed;top:0;left:0;bottom:0;width:280px;overflow-y:auto;
+      border-right:1px solid var(--line);background:#fff;padding:20px 16px 40px}
+.brand a{display:block;font-weight:700;font-size:15px;line-height:1.4}
+.brand span{display:block;color:var(--muted);font-size:12px;margin-top:4px}
+nav{margin-top:18px;font-size:14px}
+nav a{display:block;padding:5px 8px;border-radius:6px;color:#33414a;line-height:1.45}
+nav a:hover{background:#f2f6f7;text-decoration:none}
+nav a.cur{background:var(--brand-soft);color:#0b5d56;font-weight:600}
+nav .grp{margin:14px 0 4px;font-size:11.5px;letter-spacing:.06em;color:#9aa5aa;
+          text-transform:uppercase;padding-left:8px}
+main{margin-left:280px;padding:44px 48px 80px;max-width:920px}
+.doc h1{font-size:27px;line-height:1.35;margin:0 0 6px;letter-spacing:-.01em}
+.doc h1+p{color:var(--muted)}
+.doc h2{font-size:20px;margin:38px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+.doc h3{font-size:17px;margin:26px 0 10px}
+.doc h4{font-size:15px;margin:20px 0 8px;color:#33414a}
+.doc p{margin:12px 0}
+.doc ul,.doc ol{margin:12px 0;padding-left:24px}
+.doc li{margin:5px 0}
+.doc blockquote{margin:16px 0;padding:12px 16px;background:#f5f8f8;border-left:3px solid var(--brand);
+                border-radius:0 8px 8px 0;color:#3d4a51}
+.doc blockquote p{margin:0}
+.doc pre{background:var(--code-bg);color:var(--code-fg);padding:14px 16px;border-radius:10px;
+         overflow-x:auto;font:13.5px/1.65 ui-monospace,SFMono-Regular,Consolas,monospace;
+         margin:16px 0;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.doc code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:13.5px;
+          background:#eef3f4;padding:1px 5px;border-radius:4px}
+.doc pre code{background:none;padding:0;color:inherit;font-size:inherit}
+.doc table{border-collapse:collapse;width:100%;margin:16px 0;font-size:14.5px}
+.doc th,.doc td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+.doc th{background:#f3f7f7;font-weight:600}
+.doc hr{border:none;border-top:1px solid var(--line);margin:32px 0}
+.doc img{max-width:100%}
+.pager{display:flex;justify-content:space-between;gap:16px;margin-top:48px;
+       padding-top:20px;border-top:1px solid var(--line);font-size:14px}
+.pager a{display:block;padding:10px 14px;border:1px solid var(--line);border-radius:8px;
+         max-width:46%;background:#fff}
+.pager .nx{text-align:right;margin-left:auto}
+.foot{margin-top:36px;color:#a4adb2;font-size:12px}
+@media(max-width:860px){
+  .side{position:static;width:auto;border-right:none;border-bottom:1px solid var(--line)}
+  main{margin:0;padding:24px 18px 60px}
+  .doc h1{font-size:23px}
+}
+
+</style></head><body>
+<aside class="side">
+  <div class="brand"><a href="index.html">HR Agent 工程实战教程</a>
+    <span>Python 3.12 · Vue 3 · HR 场景</span></div>
+  <nav><div class="grp">总目录</div>
+<a href="index.html" data-href="index.html">HR 场景 Agent 工程教程（LangChain / LangGraph 全程实战）</a>
+<div class="grp">一 · 打地基</div>
+<a href="00-导读与环境准备.html" data-href="00-导读与环境准备.html">00 · 导读与环境准备</a>
+<a href="01-第一次调用大模型.html" data-href="01-第一次调用大模型.html">01 · 第一次调用大模型（LangChain 版）</a>
+<a href="02-Prompt与结构化输出.html" data-href="02-Prompt与结构化输出.html">02 · Prompt 与结构化输出</a>
+<div class="grp">二 · Agent 内核</div>
+<a href="03-Agent-Loop.html" data-href="03-Agent-Loop.html">03 · Agent Loop：从 `create_agent` 到自己搭图</a>
+<a href="04-Tool-Calling.html" data-href="04-Tool-Calling.html">04 · Tool Calling：模型选错工具，90% 是描述写糊了</a>
+<a href="05-Planning.html" data-href="05-Planning.html">05 · Planning：把"计划"变成可校验的数据</a>
+<a href="06-Workflow与状态机.html" data-href="06-Workflow与状态机.html">06 · Workflow 与状态机：该定死的地方别让模型发挥</a>
+<div class="grp">三 · 记忆与上下文</div>
+<a href="07-Memory.html" data-href="07-Memory.html">07 · Memory：会话记忆、长期记忆、用户记忆</a>
+<a href="08-Context-Engineering.html" data-href="08-Context-Engineering.html">08 · Context Engineering：Token 预算、裁剪、压缩</a>
+<div class="grp">四 · RAG 与知识</div>
+<a href="09-RAG基础.html" data-href="09-RAG基础.html">09 · RAG 基础：解析、切片、向量化、召回、拼 Prompt</a>
+<a href="10-RAG进阶.html" data-href="10-RAG进阶.html">10 · RAG 进阶：混合检索、Rerank、版本治理、引用质量</a>
+<a href="11-RAG高阶.html" data-href="11-RAG高阶.html">11 · RAG 高阶：结构化知识、Text2SQL、Text2Cypher</a>
+<div class="grp">五 · 协作与生态</div>
+<a href="12-MCP与Skill.html" data-href="12-MCP与Skill.html" class="cur">12 · MCP / Skill / Plugin：工具的"插座标准"</a>
+<a href="13-Multi-Agent.html" data-href="13-Multi-Agent.html">13 · Multi-Agent：分工、交接、仲裁</a>
+<a href="14-Human-in-the-loop.html" data-href="14-Human-in-the-loop.html">14 · Human-in-the-loop：该停的地方必须停下来等人</a>
+<div class="grp">六 · 生产级可靠性</div>
+<a href="15-可靠性工程.html" data-href="15-可靠性工程.html">15 · 可靠性工程：重试、超时、降级、幂等、熔断</a>
+<a href="16-Sandbox与长任务.html" data-href="16-Sandbox与长任务.html">16 · 长任务：断点续跑、分批、沙箱、预算</a>
+<a href="17-可观测性与评测.html" data-href="17-可观测性与评测.html">17 · 可观测性与评测：没有评测就没有迭代</a>
+<div class="grp">七 · 交付与落地</div>
+<a href="18-Vue3前端工作台.html" data-href="18-Vue3前端工作台.html">18 · Vue3 前端工作台：SSE 把"Agent 在想什么"显示出来</a>
+<a href="19-模型工程与部署.html" data-href="19-模型工程与部署.html">19 · 模型工程：选档、路由、成本、部署</a>
+<a href="20-岗位地图与学习路径.html" data-href="20-岗位地图与学习路径.html">20 · 岗位地图与学习路径</a></nav>
+</aside>
+<main>
+  <article class="doc"><h1 id="12-MCP-Skill-Plugin-工具的-插座标准">12 · MCP / Skill / Plugin：工具的"插座标准"</h1>
+<h2 id="12-1-三个词先分清-面试高频">12.1 三个词先分清（面试高频）</h2>
+<table><thead><tr><th>概念</th><th>是什么</th><th>解决什么</th></tr></thead><tbody>
+<tr><td><strong>Tool</strong></td><td>一个函数（<code>@tool</code>）</td><td>模型能调它</td></tr>
+<tr><td><strong>MCP</strong></td><td>跨进程/跨语言的<strong>工具协议</strong>（JSON-RPC）</td><td>工具装在别人的服务里，也能被你的 Agent 调</td></tr>
+<tr><td><strong>Skill / Plugin</strong></td><td>一份"能力包"（工具 + 提示词 + 使用规范 + 触发条件）</td><td>把"专家怎么做这件事"固化下来</td></tr>
+</tbody></table>
+<p>跑法：<code>python ch12_mcp/main.py</code></p>
+<h2 id="12-2-MCP-只规定三件事">12.2 MCP 只规定三件事</h2>
+<pre><code class="lang-python">class MockMCPServer:
+    def handle(self, method, params) -&gt; dict:
+        if method == "tools/list":  return {"tools": [...]}
+        if method == "tools/call":  return {"content": [{"type": "text", "text": "..."}]}</code></pre>
+<ol>
+<li><strong>怎么发现工具</strong>（<code>tools/list</code>，返回 name + description + inputSchema）</li>
+<li><strong>怎么调用</strong>（<code>tools/call</code>，传 name + arguments，返回 content 数组）</li>
+<li><strong>怎么报错</strong>（<code>isError: true</code> + 错误文本）</li>
+</ol>
+<p>它<strong>不规定</strong>工具内部业务逻辑——这正是它能跨厂商通用的原因。</p>
+<p>实测：</p>
+<pre><code>  服务名：hr-tools
+    - get_leave_balance: 查询员工某年度某类假期余额
+    - get_headcount: 按部门查询在职人数（聚合口径）
+  tools/call → 技术中心 在职 3 人</code></pre>
+<h2 id="12-3-适配层-JSON-Schema-LangChain-Tool">12.3 适配层：JSON Schema → LangChain Tool</h2>
+<p>这是 MCP 接入的唯一技术活：</p>
+<pre><code class="lang-python">def mcp_tool_to_langchain(client, spec):
+    # ① JSON Schema 的 properties → pydantic 字段
+    fields = {k: (TYPE_MAP.get(v.get("type","string"), str), ... if k in required else None)
+              for k, v in spec["inputSchema"]["properties"].items()}
+    args_model = create_model(f"{spec['name']}_args", **fields)
+
+    # ② 调用时把结果转成字符串（模型只认字符串）
+    def _call(**kwargs):
+        out = client.handle("tools/call", {"name": spec["name"], "arguments": kwargs})
+        if out.get("isError"): raise ValueError(out["content"][0]["text"])
+        return "\n".join(c.get("text","") for c in out["content"])
+
+    return StructuredTool.from_function(func=_call, name=spec["name"],
+                                        description=spec["description"], args_schema=args_model)</code></pre>
+<p>生产上这一步由 <code>langchain-mcp-adapters</code> 的 <code>load_mcp_tools()</code> 完成。但<strong>你要知道它做了什么</strong>，否则工具参数对不上时无从排查。</p>
+<p>跑通：</p>
+<pre><code>  工具往返 2 次
+  最终回答：技术中心在职 3 人；张伟 2026 年年假剩 7 天。</code></pre>
+<h2 id="12-4-接真-MCP-的标准写法">12.4 接真 MCP 的标准写法</h2>
+<pre><code class="lang-python">from langchain_mcp_adapters.client import MultiServerMCPClient
+from langgraph.prebuilt import create_react_agent
+
+async with MultiServerMCPClient({
+    "hr": {"command": "python", "args": ["ch12_mcp/server.py"], "transport": "stdio"},
+    "fs": {"url": "http://localhost:8000/mcp", "transport": "streamable_http"},
+}) as client:
+    tools = await client.get_tools()
+    agent = create_react_agent(model, tools)
+    await agent.ainvoke({"messages": [("user", "查一下张伟的年假")]})</code></pre>
+<p>需要 <code>pip install langchain-mcp-adapters mcp</code>。本章的 <code>ch12_mcp/server.py</code> 是一个可跑的 stdio 服务端样例。</p>
+<h2 id="12-5-MCP-落地的四个现实问题">12.5 MCP 落地的四个现实问题</h2>
+<ol>
+<li><strong>工具太多 → 模型选错</strong>：一个服务可能一次给十几个工具。解法：<strong>按角色分组挂载</strong>（HR 助手只挂 hr 服务），别全塞。</li>
+<li><strong>权限不在你这侧</strong>：MCP 服务自己要按调用者身份鉴权，不能只靠 Agent 的 prompt。传 <code>user_id</code> 进 params 是最基本的做法。</li>
+<li><strong>网络抖动</strong>：MCP 走本地 stdio 还好，走 HTTP 必须加超时与降级（第 15 章）。</li>
+<li><strong>结果格式不统一</strong>：有的返回 JSON 字符串，有的返回 markdown。适配层统一转成"结论 + 关键字段"，别让模型猜。</li>
+</ol>
+<h2 id="12-6-Skill-写-什么时候用-比写工具更重要">12.6 Skill：写"什么时候用"，比写工具更重要</h2>
+<p>一份 Skill 至少包含四部分：</p>
+<pre><code class="lang-markdown"># 离职办理 Skill
+## 触发条件       员工提出离职 / HR 发起离职流程
+## 前置检查       合同类型、试用期状态、是否有竞业协议
+## 步骤           ① 确认离职类型 ② 计算最后工作日 ③ 走审批 ④ 交接 ⑤ 结算
+## 禁止事项       不得口头承诺补偿金额；不得跳过交接</code></pre>
+<p>★ <strong>写 Skill 的关键不是写工具，是写"什么时候用、按什么顺序用、什么情况下不许用"。</strong> 这也是它和 Tool 的本质区别：Tool 是能力，Skill 是纪律。</p>
+<h2 id="12-7-常见坑">12.7 常见坑</h2>
+<ol>
+<li><strong><code>@tool(name)</code> 用在动态函数上</strong>：会报 <code>Function must have a docstring if description not provided</code>。动态生成的工具要用 <code>StructuredTool.from_function</code>，显式传 <code>name</code> / <code>description</code> / <code>args_schema</code>。</li>
+<li><strong>JSON Schema 的 <code>required</code> 漏处理</strong>：全设成可选，模型会省参数。</li>
+<li><strong>把 MCP 当"遥测"用</strong>：MCP 不保证顺序、不保证幂等，写操作要自己加幂等键。</li>
+<li><strong>一个 Agent 挂 30 个工具</strong>：选择准确率崩。分组。</li>
+</ol>
+<h2 id="12-8-自检清单">12.8 自检清单</h2>
+<ul>
+<li>[ ] 能说出 Tool / MCP / Skill 的区别</li>
+<li>[ ] 知道 MCP 的三步握手</li>
+<li>[ ] 能解释适配层做了哪两件事</li>
+<li>[ ] 理解"工具太多"为什么要分组</li>
+</ul>
+<h2 id="12-9-练习">12.9 练习</h2>
+<ol>
+<li>给 <code>MockMCPServer</code> 加一个写工具 <code>create_interview</code>，用 <code>allow_write</code> 门禁控制。</li>
+<li>装 <code>langchain-mcp-adapters</code>，真跑 <code>server.py</code>，对比 <code>load_mcp_tools</code> 与自己适配的差异。</li>
+<li>写一份"入职办理" Skill，把 6 步流程、每步工具、禁止事项写全，再让 Agent 按它执行。</li>
+</ol></article>
+  <footer class="pager"><a class="pr" href="11-RAG高阶.html">← 11 · RAG 高阶：结构化知识、Text2SQL、Text2Cypher</a>
+<a class="nx" href="13-Multi-Agent.html">13 · Multi-Agent：分工、交接、仲裁 →</a></footer>
+  <div class="foot">本教程示例数据均为虚构，仅用于教学。</div>
+</main>
+</body></html>

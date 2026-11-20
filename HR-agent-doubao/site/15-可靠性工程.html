@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>15 · 可靠性工程：重试、超时、降级、幂等、熔断 · HR Agent 工程实战教程</title>
+<style>
+
+:root{--bg:#fbfcfc;--fg:#1a1f23;--muted:#657076;--line:#e3e8ea;--brand:#0f766e;
+      --brand-soft:#e8f4f2;--code-bg:#11202b;--code-fg:#dfe9ee}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);
+     font:16px/1.75 -apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+a{color:var(--brand);text-decoration:none}
+a:hover{text-decoration:underline}
+.side{position:fixed;top:0;left:0;bottom:0;width:280px;overflow-y:auto;
+      border-right:1px solid var(--line);background:#fff;padding:20px 16px 40px}
+.brand a{display:block;font-weight:700;font-size:15px;line-height:1.4}
+.brand span{display:block;color:var(--muted);font-size:12px;margin-top:4px}
+nav{margin-top:18px;font-size:14px}
+nav a{display:block;padding:5px 8px;border-radius:6px;color:#33414a;line-height:1.45}
+nav a:hover{background:#f2f6f7;text-decoration:none}
+nav a.cur{background:var(--brand-soft);color:#0b5d56;font-weight:600}
+nav .grp{margin:14px 0 4px;font-size:11.5px;letter-spacing:.06em;color:#9aa5aa;
+          text-transform:uppercase;padding-left:8px}
+main{margin-left:280px;padding:44px 48px 80px;max-width:920px}
+.doc h1{font-size:27px;line-height:1.35;margin:0 0 6px;letter-spacing:-.01em}
+.doc h1+p{color:var(--muted)}
+.doc h2{font-size:20px;margin:38px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+.doc h3{font-size:17px;margin:26px 0 10px}
+.doc h4{font-size:15px;margin:20px 0 8px;color:#33414a}
+.doc p{margin:12px 0}
+.doc ul,.doc ol{margin:12px 0;padding-left:24px}
+.doc li{margin:5px 0}
+.doc blockquote{margin:16px 0;padding:12px 16px;background:#f5f8f8;border-left:3px solid var(--brand);
+                border-radius:0 8px 8px 0;color:#3d4a51}
+.doc blockquote p{margin:0}
+.doc pre{background:var(--code-bg);color:var(--code-fg);padding:14px 16px;border-radius:10px;
+         overflow-x:auto;font:13.5px/1.65 ui-monospace,SFMono-Regular,Consolas,monospace;
+         margin:16px 0;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.doc code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:13.5px;
+          background:#eef3f4;padding:1px 5px;border-radius:4px}
+.doc pre code{background:none;padding:0;color:inherit;font-size:inherit}
+.doc table{border-collapse:collapse;width:100%;margin:16px 0;font-size:14.5px}
+.doc th,.doc td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+.doc th{background:#f3f7f7;font-weight:600}
+.doc hr{border:none;border-top:1px solid var(--line);margin:32px 0}
+.doc img{max-width:100%}
+.pager{display:flex;justify-content:space-between;gap:16px;margin-top:48px;
+       padding-top:20px;border-top:1px solid var(--line);font-size:14px}
+.pager a{display:block;padding:10px 14px;border:1px solid var(--line);border-radius:8px;
+         max-width:46%;background:#fff}
+.pager .nx{text-align:right;margin-left:auto}
+.foot{margin-top:36px;color:#a4adb2;font-size:12px}
+@media(max-width:860px){
+  .side{position:static;width:auto;border-right:none;border-bottom:1px solid var(--line)}
+  main{margin:0;padding:24px 18px 60px}
+  .doc h1{font-size:23px}
+}
+
+</style></head><body>
+<aside class="side">
+  <div class="brand"><a href="index.html">HR Agent 工程实战教程</a>
+    <span>Python 3.12 · Vue 3 · HR 场景</span></div>
+  <nav><div class="grp">总目录</div>
+<a href="index.html" data-href="index.html">HR 场景 Agent 工程教程（LangChain / LangGraph 全程实战）</a>
+<div class="grp">一 · 打地基</div>
+<a href="00-导读与环境准备.html" data-href="00-导读与环境准备.html">00 · 导读与环境准备</a>
+<a href="01-第一次调用大模型.html" data-href="01-第一次调用大模型.html">01 · 第一次调用大模型（LangChain 版）</a>
+<a href="02-Prompt与结构化输出.html" data-href="02-Prompt与结构化输出.html">02 · Prompt 与结构化输出</a>
+<div class="grp">二 · Agent 内核</div>
+<a href="03-Agent-Loop.html" data-href="03-Agent-Loop.html">03 · Agent Loop：从 `create_agent` 到自己搭图</a>
+<a href="04-Tool-Calling.html" data-href="04-Tool-Calling.html">04 · Tool Calling：模型选错工具，90% 是描述写糊了</a>
+<a href="05-Planning.html" data-href="05-Planning.html">05 · Planning：把"计划"变成可校验的数据</a>
+<a href="06-Workflow与状态机.html" data-href="06-Workflow与状态机.html">06 · Workflow 与状态机：该定死的地方别让模型发挥</a>
+<div class="grp">三 · 记忆与上下文</div>
+<a href="07-Memory.html" data-href="07-Memory.html">07 · Memory：会话记忆、长期记忆、用户记忆</a>
+<a href="08-Context-Engineering.html" data-href="08-Context-Engineering.html">08 · Context Engineering：Token 预算、裁剪、压缩</a>
+<div class="grp">四 · RAG 与知识</div>
+<a href="09-RAG基础.html" data-href="09-RAG基础.html">09 · RAG 基础：解析、切片、向量化、召回、拼 Prompt</a>
+<a href="10-RAG进阶.html" data-href="10-RAG进阶.html">10 · RAG 进阶：混合检索、Rerank、版本治理、引用质量</a>
+<a href="11-RAG高阶.html" data-href="11-RAG高阶.html">11 · RAG 高阶：结构化知识、Text2SQL、Text2Cypher</a>
+<div class="grp">五 · 协作与生态</div>
+<a href="12-MCP与Skill.html" data-href="12-MCP与Skill.html">12 · MCP / Skill / Plugin：工具的"插座标准"</a>
+<a href="13-Multi-Agent.html" data-href="13-Multi-Agent.html">13 · Multi-Agent：分工、交接、仲裁</a>
+<a href="14-Human-in-the-loop.html" data-href="14-Human-in-the-loop.html">14 · Human-in-the-loop：该停的地方必须停下来等人</a>
+<div class="grp">六 · 生产级可靠性</div>
+<a href="15-可靠性工程.html" data-href="15-可靠性工程.html" class="cur">15 · 可靠性工程：重试、超时、降级、幂等、熔断</a>
+<a href="16-Sandbox与长任务.html" data-href="16-Sandbox与长任务.html">16 · 长任务：断点续跑、分批、沙箱、预算</a>
+<a href="17-可观测性与评测.html" data-href="17-可观测性与评测.html">17 · 可观测性与评测：没有评测就没有迭代</a>
+<div class="grp">七 · 交付与落地</div>
+<a href="18-Vue3前端工作台.html" data-href="18-Vue3前端工作台.html">18 · Vue3 前端工作台：SSE 把"Agent 在想什么"显示出来</a>
+<a href="19-模型工程与部署.html" data-href="19-模型工程与部署.html">19 · 模型工程：选档、路由、成本、部署</a>
+<a href="20-岗位地图与学习路径.html" data-href="20-岗位地图与学习路径.html">20 · 岗位地图与学习路径</a></nav>
+</aside>
+<main>
+  <article class="doc"><h1 id="15-可靠性工程-重试-超时-降级-幂等-熔断">15 · 可靠性工程：重试、超时、降级、幂等、熔断</h1>
+<h2 id="15-1-本章目标">15.1 本章目标</h2>
+<p>把"能跑通"变成"敢上线"。五个手段各有分工，<strong>别混</strong>：</p>
+<table><thead><tr><th>手段</th><th>回答的问题</th><th>LangChain 原语 / 自写</th></tr></thead><tbody>
+<tr><td>重试</td><td>这次失败可不可以再试一次？</td><td><code>runnable.with_retry(...)</code></td></tr>
+<tr><td>超时</td><td>等多久该放弃？</td><td>自包 <code>asyncio.wait_for</code></td></tr>
+<tr><td>降级</td><td>放弃之后用什么代替？</td><td><code>runnable.with_fallbacks([...])</code></td></tr>
+<tr><td>幂等</td><td>重发了会不会写两条？</td><td>自写幂等键</td></tr>
+<tr><td>熔断</td><td>连续失败到多少就别再试？</td><td>自写 breaker</td></tr>
+</tbody></table>
+<p>跑法：<code>python ch15_reliability/main.py</code></p>
+<h2 id="15-2-重试-with_retry">15.2 重试：<code>with_retry</code></h2>
+<pre><code class="lang-python">chain = RunnableLambda(flaky).with_retry(stop_after_attempt=3, wait_exponential_jitter=True)</code></pre>
+<p>实测：</p>
+<pre><code>  结果：成功（第 3 次尝试）
+  不可重试错误：参数非法：emp_id 格式不对（这类错误重试 3 次只是浪费钱）</code></pre>
+<p>★ <strong>只对"瞬时故障"重试</strong>：超时、502、限流、连接断开。</p>
+<p>一律<strong>不重试</strong>的：参数校验失败、权限错误、业务规则拒绝（余额不足、超带宽）。 对它们重试，等于把一次用户错误放大成三次成本 + 三次延迟。</p>
+<h2 id="15-3-超时-LCEL-不带-必须自己包">15.3 超时：LCEL 不带，必须自己包</h2>
+<pre><code class="lang-python">async def with_timeout(x, seconds):
+    try:
+        return await asyncio.wait_for(slow(x), timeout=seconds)
+    except asyncio.TimeoutError:
+        return "⛔ 超时，已放弃并转兜底"</code></pre>
+<p>实测：<code>1.0s 上限 → 超时放弃</code> / <code>5.0s 上限 → 迟到的答案</code>。</p>
+<p>三个层级都要有超时：</p>
+<ol>
+<li><strong>单次模型调用</strong>（通常 30–60s）</li>
+<li><strong>单个工具调用</strong>（通常 5–10s，写操作 15s）</li>
+<li><strong>整个任务</strong>（按 SLA 定，超时就转人工）</li>
+</ol>
+<h2 id="15-4-降级-with_fallbacks">15.4 降级：<code>with_fallbacks</code></h2>
+<pre><code class="lang-python">chain = primary.with_fallbacks([backup_model, rule_based])</code></pre>
+<p>实测：主模型抛 500 → 备模型接住（<code>备模型接住了</code>）。</p>
+<p>降级的三个层次（越往下越便宜、越稳、越难看）：</p>
+<ol>
+<li>换模型（同厂商另一区域/另一版本）</li>
+<li>换小模型（复杂推理 → 简单抽取）</li>
+<li><strong>退化为规则/固定话术</strong>（"请到 OA 自助查询"）—— 必须有这一层</li>
+</ol>
+<p>第 3 层是最多人漏的。没有它，模型全挂时你的 Agent 就是 500 页面。</p>
+<h2 id="15-5-幂等-重发三次只能有一条记录">15.5 幂等：重发三次只能有一条记录</h2>
+<pre><code class="lang-python">class IdempotentWriter:
+    def submit(self, idem_key, payload):
+        if idem_key in self.records:
+            return f"命中幂等键，返回已有记录 {self.records[idem_key]['id']}"
+        ...</code></pre>
+<p>实测：</p>
+<pre><code>  第 1 次提交 → 新建记录 R1
+  第 2 次提交 → 命中幂等键，返回已有记录 R1
+  第 3 次提交 → 命中幂等键，返回已有记录 R1
+  尝试 3 次，实际记录 1 条</code></pre>
+<p>★ <strong>幂等键要由业务语义拼</strong>：<code>谁 + 什么事 + 哪个时间点</code>。</p>
+<pre><code>leave:E1001:2026-12-01:年假
+offer:K1001:v3</code></pre>
+<p>用随机 UUID 做键，等于没有幂等（每次重发都是新键）。</p>
+<p>真实场景：网络超时后"重发"，你不知道第一次到底成功没有——<strong>幂等键是唯一能让你安全重发的机制</strong>。</p>
+<h2 id="15-6-熔断">15.6 熔断</h2>
+<pre><code class="lang-python">class Breaker:
+    def call(self, fn):
+        if time.time() &lt; self.open_at:
+            return "⛔ 熔断中，直接返回兜底（不再调用下游）"
+        ...</code></pre>
+<p>实测：</p>
+<pre><code>    第 1 次：失败（累计 1）
+    第 2 次：失败（累计 2）
+    第 3 次：失败（累计 3）
+    第 4 次：⛔ 熔断中（不再调用下游）
+    第 5 次：⛔ 熔断中</code></pre>
+<p>熔断保护的是<strong>下游</strong>和<strong>你的预算</strong>。没有它，一个挂掉的薪酬系统会被你的重试打穿。</p>
+<h2 id="15-7-一张决策表">15.7 一张决策表</h2>
+<table><thead><tr><th>现象</th><th>该做什么</th></tr></thead><tbody>
+<tr><td>偶发 502、连接超时</td><td>重试（最多 3 次，指数退避）</td></tr>
+<tr><td>参数错误、权限拒绝</td><td>不重试，直接返回用户</td></tr>
+<tr><td>慢但最终会成功</td><td>提高超时，或改异步任务（第 16 章）</td></tr>
+<tr><td>主模型不稳</td><td>降级链</td></tr>
+<tr><td>全挂</td><td>规则兜底 + 告知用户"稍后再试"</td></tr>
+<tr><td>重复提交</td><td>幂等键</td></tr>
+<tr><td>下游持续失败</td><td>熔断 + 告警</td></tr>
+</tbody></table>
+<h2 id="15-8-常见坑">15.8 常见坑</h2>
+<ol>
+<li><strong>对业务错误重试</strong>：余额不足重试三次还是不足，只是让用户多等 9 秒。</li>
+<li><strong>重试没有退避</strong>：瞬间三次请求打过去，把限流打成封禁。</li>
+<li><strong><code>with_retry</code> 包在整条 Agent 上</strong>：整条重跑会重复执行工具（写操作就出事了）。只包"单次调用"，幂等靠键。</li>
+<li><strong>超时值 &gt; 上游超时</strong>：你的 30s 超时毫无意义，因为调用方 10s 就断了。</li>
+<li><strong>降级链里没有规则兜底</strong>：全模型挂了直接白屏。</li>
+<li><strong>幂等键用了 UUID</strong>。</li>
+</ol>
+<h2 id="15-9-自检清单">15.9 自检清单</h2>
+<ul>
+<li>[ ] 能区分"可重试"与"不可重试"错误</li>
+<li>[ ] 知道需要设超时的三个层级</li>
+<li>[ ] 能画出三级降级链</li>
+<li>[ ] 能说出幂等键的构造规则</li>
+</ul>
+<h2 id="15-10-练习">15.10 练习</h2>
+<ol>
+<li>把 <code>stop_after_attempt</code> 改成 1，观察 flaky 直接失败——这就是"不重试"的代价。</li>
+<li>给 <code>Breaker</code> 加 half-open 状态：冷却后放一个请求试探。</li>
+<li>把幂等键存到 sqlite，进程重启后验证仍然去重。</li>
+</ol></article>
+  <footer class="pager"><a class="pr" href="14-Human-in-the-loop.html">← 14 · Human-in-the-loop：该停的地方必须停下来等人</a>
+<a class="nx" href="16-Sandbox与长任务.html">16 · 长任务：断点续跑、分批、沙箱、预算 →</a></footer>
+  <div class="foot">本教程示例数据均为虚构，仅用于教学。</div>
+</main>
+</body></html>

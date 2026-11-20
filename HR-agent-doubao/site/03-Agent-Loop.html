@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>03 · Agent Loop：从 `create_agent` 到自己搭图 · HR Agent 工程实战教程</title>
+<style>
+
+:root{--bg:#fbfcfc;--fg:#1a1f23;--muted:#657076;--line:#e3e8ea;--brand:#0f766e;
+      --brand-soft:#e8f4f2;--code-bg:#11202b;--code-fg:#dfe9ee}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);
+     font:16px/1.75 -apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+a{color:var(--brand);text-decoration:none}
+a:hover{text-decoration:underline}
+.side{position:fixed;top:0;left:0;bottom:0;width:280px;overflow-y:auto;
+      border-right:1px solid var(--line);background:#fff;padding:20px 16px 40px}
+.brand a{display:block;font-weight:700;font-size:15px;line-height:1.4}
+.brand span{display:block;color:var(--muted);font-size:12px;margin-top:4px}
+nav{margin-top:18px;font-size:14px}
+nav a{display:block;padding:5px 8px;border-radius:6px;color:#33414a;line-height:1.45}
+nav a:hover{background:#f2f6f7;text-decoration:none}
+nav a.cur{background:var(--brand-soft);color:#0b5d56;font-weight:600}
+nav .grp{margin:14px 0 4px;font-size:11.5px;letter-spacing:.06em;color:#9aa5aa;
+          text-transform:uppercase;padding-left:8px}
+main{margin-left:280px;padding:44px 48px 80px;max-width:920px}
+.doc h1{font-size:27px;line-height:1.35;margin:0 0 6px;letter-spacing:-.01em}
+.doc h1+p{color:var(--muted)}
+.doc h2{font-size:20px;margin:38px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+.doc h3{font-size:17px;margin:26px 0 10px}
+.doc h4{font-size:15px;margin:20px 0 8px;color:#33414a}
+.doc p{margin:12px 0}
+.doc ul,.doc ol{margin:12px 0;padding-left:24px}
+.doc li{margin:5px 0}
+.doc blockquote{margin:16px 0;padding:12px 16px;background:#f5f8f8;border-left:3px solid var(--brand);
+                border-radius:0 8px 8px 0;color:#3d4a51}
+.doc blockquote p{margin:0}
+.doc pre{background:var(--code-bg);color:var(--code-fg);padding:14px 16px;border-radius:10px;
+         overflow-x:auto;font:13.5px/1.65 ui-monospace,SFMono-Regular,Consolas,monospace;
+         margin:16px 0;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.doc code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:13.5px;
+          background:#eef3f4;padding:1px 5px;border-radius:4px}
+.doc pre code{background:none;padding:0;color:inherit;font-size:inherit}
+.doc table{border-collapse:collapse;width:100%;margin:16px 0;font-size:14.5px}
+.doc th,.doc td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+.doc th{background:#f3f7f7;font-weight:600}
+.doc hr{border:none;border-top:1px solid var(--line);margin:32px 0}
+.doc img{max-width:100%}
+.pager{display:flex;justify-content:space-between;gap:16px;margin-top:48px;
+       padding-top:20px;border-top:1px solid var(--line);font-size:14px}
+.pager a{display:block;padding:10px 14px;border:1px solid var(--line);border-radius:8px;
+         max-width:46%;background:#fff}
+.pager .nx{text-align:right;margin-left:auto}
+.foot{margin-top:36px;color:#a4adb2;font-size:12px}
+@media(max-width:860px){
+  .side{position:static;width:auto;border-right:none;border-bottom:1px solid var(--line)}
+  main{margin:0;padding:24px 18px 60px}
+  .doc h1{font-size:23px}
+}
+
+</style></head><body>
+<aside class="side">
+  <div class="brand"><a href="index.html">HR Agent 工程实战教程</a>
+    <span>Python 3.12 · Vue 3 · HR 场景</span></div>
+  <nav><div class="grp">总目录</div>
+<a href="index.html" data-href="index.html">HR 场景 Agent 工程教程（LangChain / LangGraph 全程实战）</a>
+<div class="grp">一 · 打地基</div>
+<a href="00-导读与环境准备.html" data-href="00-导读与环境准备.html">00 · 导读与环境准备</a>
+<a href="01-第一次调用大模型.html" data-href="01-第一次调用大模型.html">01 · 第一次调用大模型（LangChain 版）</a>
+<a href="02-Prompt与结构化输出.html" data-href="02-Prompt与结构化输出.html">02 · Prompt 与结构化输出</a>
+<div class="grp">二 · Agent 内核</div>
+<a href="03-Agent-Loop.html" data-href="03-Agent-Loop.html" class="cur">03 · Agent Loop：从 `create_agent` 到自己搭图</a>
+<a href="04-Tool-Calling.html" data-href="04-Tool-Calling.html">04 · Tool Calling：模型选错工具，90% 是描述写糊了</a>
+<a href="05-Planning.html" data-href="05-Planning.html">05 · Planning：把"计划"变成可校验的数据</a>
+<a href="06-Workflow与状态机.html" data-href="06-Workflow与状态机.html">06 · Workflow 与状态机：该定死的地方别让模型发挥</a>
+<div class="grp">三 · 记忆与上下文</div>
+<a href="07-Memory.html" data-href="07-Memory.html">07 · Memory：会话记忆、长期记忆、用户记忆</a>
+<a href="08-Context-Engineering.html" data-href="08-Context-Engineering.html">08 · Context Engineering：Token 预算、裁剪、压缩</a>
+<div class="grp">四 · RAG 与知识</div>
+<a href="09-RAG基础.html" data-href="09-RAG基础.html">09 · RAG 基础：解析、切片、向量化、召回、拼 Prompt</a>
+<a href="10-RAG进阶.html" data-href="10-RAG进阶.html">10 · RAG 进阶：混合检索、Rerank、版本治理、引用质量</a>
+<a href="11-RAG高阶.html" data-href="11-RAG高阶.html">11 · RAG 高阶：结构化知识、Text2SQL、Text2Cypher</a>
+<div class="grp">五 · 协作与生态</div>
+<a href="12-MCP与Skill.html" data-href="12-MCP与Skill.html">12 · MCP / Skill / Plugin：工具的"插座标准"</a>
+<a href="13-Multi-Agent.html" data-href="13-Multi-Agent.html">13 · Multi-Agent：分工、交接、仲裁</a>
+<a href="14-Human-in-the-loop.html" data-href="14-Human-in-the-loop.html">14 · Human-in-the-loop：该停的地方必须停下来等人</a>
+<div class="grp">六 · 生产级可靠性</div>
+<a href="15-可靠性工程.html" data-href="15-可靠性工程.html">15 · 可靠性工程：重试、超时、降级、幂等、熔断</a>
+<a href="16-Sandbox与长任务.html" data-href="16-Sandbox与长任务.html">16 · 长任务：断点续跑、分批、沙箱、预算</a>
+<a href="17-可观测性与评测.html" data-href="17-可观测性与评测.html">17 · 可观测性与评测：没有评测就没有迭代</a>
+<div class="grp">七 · 交付与落地</div>
+<a href="18-Vue3前端工作台.html" data-href="18-Vue3前端工作台.html">18 · Vue3 前端工作台：SSE 把"Agent 在想什么"显示出来</a>
+<a href="19-模型工程与部署.html" data-href="19-模型工程与部署.html">19 · 模型工程：选档、路由、成本、部署</a>
+<a href="20-岗位地图与学习路径.html" data-href="20-岗位地图与学习路径.html">20 · 岗位地图与学习路径</a></nav>
+</aside>
+<main>
+  <article class="doc"><h1 id="03-Agent-Loop-从-create_agent-到自己搭图">03 · Agent Loop：从 <code>create_agent</code> 到自己搭图</h1>
+<h2 id="3-1-本章目标">3.1 本章目标</h2>
+<p>跑通一个真正的工具循环，并且<strong>亲手拆开它</strong>：</p>
+<ol>
+<li>先用 <code>create_agent</code> 一行拿到"能用"的 Agent；</li>
+<li>再用 <code>StateGraph(MessagesState) + ToolNode + tools_condition</code> 复现同一个循环——证明它不是黑魔法；</li>
+<li>最后加三种刹车，否则它一定会在某天转圈烧钱。</li>
+</ol>
+<p>跑法：<code>python ch03_agent_loop/main.py</code></p>
+<h2 id="3-2-一行版-create_agent">3.2 一行版：<code>create_agent</code></h2>
+<pre><code class="lang-python">from langchain.agents import create_agent
+
+agent = create_agent(model, tools=[get_employee, get_leave_balance],
+                     system_prompt="查员工数据必须调工具，不许估算。")
+out = agent.invoke({"messages": [{"role": "user", "content": "张伟是哪个部门的？"}]})</code></pre>
+<p>一次调用内部发生了什么：</p>
+<pre><code>Human("张伟是哪个部门的？")
+  → AIMessage(tool_calls=[{name: "get_employee", args: {"emp_id": "E1001"}}])
+  → ToolMessage("张伟 / 技术中心 / 苏州 / P6 / active")
+  → AIMessage("张伟在技术中心。")          ← 没有 tool_calls，循环结束</code></pre>
+<p><code>create_agent</code> 帮你做了三件事：绑定工具 schema、跑循环、把消息按序放进 state。 <strong>但它只内置了一种刹车：<code>recursion_limit</code>。</strong></p>
+<h2 id="3-3-手搭版-把循环画出来">3.3 手搭版：把循环画出来</h2>
+<pre><code class="lang-python">from langgraph.graph import StateGraph, END
+from langgraph.graph import MessagesState
+from langgraph.prebuilt import ToolNode, tools_condition
+
+builder = StateGraph(MessagesState)
+builder.add_node("model", model_node)        # 调模型
+builder.add_node("tools", ToolNode(TOOLS))   # 执行工具
+builder.add_edge(START, "model")
+builder.add_conditional_edges("model", tools_condition,
+                              {"tools": "tools", END: END})   # 有 tool_calls → 去工具
+builder.add_edge("tools", "model")                            # 工具跑完 → 回模型
+graph = builder.compile()</code></pre>
+<p>看懂这张图，你就理解了所有 Agent 框架的共同骨架：</p>
+<ul>
+<li><strong>节点</strong>负责"干活"（调模型 / 跑工具）；</li>
+<li><strong>条件边</strong>负责"往哪走"（<code>tools_condition</code> 只看一件事：最后一条 AIMessage 有没有 <code>tool_calls</code>）；</li>
+<li><strong>回边</strong> <code>tools → model</code> 就是"循环"本身。</li>
+</ul>
+<p><code>messages</code> 用的是 <code>MessagesState</code> 预置的 reducer（<code>operator.add</code>）：每个节点返回的消息会<strong>追加</strong>而不是覆盖。这是 LangGraph 里最容易忘的一条：自定义 state 字段不加 <code>Annotated[list, operator.add]</code>，两个节点写同一个字段就会互相覆盖。</p>
+<h2 id="3-4-三种刹车-真跑出来的">3.4 三种刹车（真跑出来的）</h2>
+<h3 id="①-步数上限-recursion_limit">① 步数上限：<code>recursion_limit</code></h3>
+<pre><code class="lang-python">graph.invoke(input, config={"recursion_limit": 4})
+# → GraphRecursionError: Recursion limit of 4 reached without hitting a stop condition.</code></pre>
+<p>步数上限是<strong>最硬</strong>的刹车，也是最容易设错的。经验值：一次正常任务 ≈ 工具数 × 2 + 3。别按"怕它多想"设成 30，那等于没设。</p>
+<h3 id="②-重复动作检测">② 重复动作检测</h3>
+<p>模型有时会拿同一个参数反复调同一个工具（"我觉得它没生效，再试一次"）。做法是在回边之前查一遍最近的动作：</p>
+<pre><code class="lang-python">def guard(state):
+    last = next((m for m in reversed(state["messages"]) if m.tool_calls), None)
+    sig = [(c["name"], json.dumps(c["args"], sort_keys=True)) for c in last.tool_calls]
+    ...  # 同一签名出现 &gt;2 次 → 直接 END + 报"空转"</code></pre>
+<p>★ 这里有个真实的坑：<code>guard</code> 如果排在 <code>tools</code> <strong>之后</strong>，state 里最后一条是 <code>ToolMessage</code>（它没有 <code>tool_calls</code>），你得<strong>反向找最近一条带 tool_calls 的 AIMessage</strong> 才数得对。我第一次就写错在这。</p>
+<h3 id="③-空转-模型不说话也不调工具">③ 空转（模型不说话也不调工具）</h3>
+<p>最后一条 AIMessage 既没有 content 又没有 tool_calls → 继续跑只会空转，必须收口。</p>
+<h2 id="3-5-四道刹车的分工">3.5 四道刹车的分工</h2>
+<table><thead><tr><th>刹车</th><th>管什么</th><th><code>create_agent</code> 有吗</th></tr></thead><tbody>
+<tr><td>步数（recursion_limit）</td><td>不问"为什么"，只防跑飞</td><td>✅ 有</td></tr>
+<tr><td>token 预算</td><td>防单个任务烧光预算</td><td>❌ 要自己写</td></tr>
+<tr><td>时长</td><td>防超时拖死上游</td><td>❌ 要自己写</td></tr>
+<tr><td>重复动作</td><td>防"同样的错试 20 次"</td><td>❌ 要自己写</td></tr>
+</tbody></table>
+<p>实测输出：</p>
+<pre><code>  ① 步数上限（recursion_limit）：触发上限：GraphRecursionError →
+     Recursion limit of 4 reached without hitting a stop condition.
+  ② 重复动作检测（同一工具 + 同参数调太多次）：
+     【中止】重复动作 get_position:{'position_id': 'P1001'} 超过 2 次，模型在空转
+  ★ 四道刹车：步数、token、时长、重复动作。create_agent 只内置了第一个</code></pre>
+<h2 id="3-6-常见坑">3.6 常见坑</h2>
+<ol>
+<li><strong><code>tools_condition</code> 认的是"最后一条消息"</strong>。你在中间插了别的消息（比如日志节点往 messages 里塞了一条 Human），判断就会错。</li>
+<li><strong><code>ToolNode</code> 要求工具名对得上</strong>。模型的 <code>tool_calls[].name</code> 必须和 <code>@tool</code> 的 name 完全一致，否则报"没有这个工具"。</li>
+<li><strong><code>MessagesState</code> 之外别乱加字段</strong>。想加 <code>steps: int</code>，得声明 reducer，否则多个节点写同一个键会互相覆盖（第 05、06 章都踩过）。</li>
+<li><strong>同步 <code>stream_events(version="v2")</code> 已不支持</strong>（1.x）。要看事件流用 <code>astream_events(version="v2")</code>，第 18 章会写。</li>
+<li><strong>以为 <code>create_agent</code> 会自动重试工具失败</strong>。它不会。工具抛异常会变成 <code>ToolMessage(status="error")</code> 交回模型，模型可能自己改，也可能就此放弃。</li>
+</ol>
+<h2 id="3-7-自检清单">3.7 自检清单</h2>
+<ul>
+<li>[ ] 能画出 Human → AI(tool_calls) → Tool → AI 这条环</li>
+<li>[ ] 知道 <code>tools_condition</code> 依据什么做判断</li>
+<li>[ ] 能说出 <code>create_agent</code> 没给你哪三道刹车</li>
+<li>[ ] 知道为什么 <code>guard</code> 节点要反向找 AIMessage</li>
+</ul>
+<h2 id="3-8-练习">3.8 练习</h2>
+<ol>
+<li>把 <code>recursion_limit</code> 设成 2，观察正常任务会在哪一步被砍断（体会"设太小的代价"）。</li>
+<li>给图加一个 <code>log</code> 节点（只往一个自定义字段写"第几步"），练习给 state 加 reducer。</li>
+<li>用 <code>graph.stream(...)</code> 打印每个节点的输入输出，看清一次循环里 state 是怎么变的。</li>
+</ol></article>
+  <footer class="pager"><a class="pr" href="02-Prompt与结构化输出.html">← 02 · Prompt 与结构化输出</a>
+<a class="nx" href="04-Tool-Calling.html">04 · Tool Calling：模型选错工具，90% 是描述写糊了 →</a></footer>
+  <div class="foot">本教程示例数据均为虚构，仅用于教学。</div>
+</main>
+</body></html>

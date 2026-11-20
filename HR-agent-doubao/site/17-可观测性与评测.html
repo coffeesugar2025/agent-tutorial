@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>17 · 可观测性与评测：没有评测就没有迭代 · HR Agent 工程实战教程</title>
+<style>
+
+:root{--bg:#fbfcfc;--fg:#1a1f23;--muted:#657076;--line:#e3e8ea;--brand:#0f766e;
+      --brand-soft:#e8f4f2;--code-bg:#11202b;--code-fg:#dfe9ee}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);
+     font:16px/1.75 -apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+a{color:var(--brand);text-decoration:none}
+a:hover{text-decoration:underline}
+.side{position:fixed;top:0;left:0;bottom:0;width:280px;overflow-y:auto;
+      border-right:1px solid var(--line);background:#fff;padding:20px 16px 40px}
+.brand a{display:block;font-weight:700;font-size:15px;line-height:1.4}
+.brand span{display:block;color:var(--muted);font-size:12px;margin-top:4px}
+nav{margin-top:18px;font-size:14px}
+nav a{display:block;padding:5px 8px;border-radius:6px;color:#33414a;line-height:1.45}
+nav a:hover{background:#f2f6f7;text-decoration:none}
+nav a.cur{background:var(--brand-soft);color:#0b5d56;font-weight:600}
+nav .grp{margin:14px 0 4px;font-size:11.5px;letter-spacing:.06em;color:#9aa5aa;
+          text-transform:uppercase;padding-left:8px}
+main{margin-left:280px;padding:44px 48px 80px;max-width:920px}
+.doc h1{font-size:27px;line-height:1.35;margin:0 0 6px;letter-spacing:-.01em}
+.doc h1+p{color:var(--muted)}
+.doc h2{font-size:20px;margin:38px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+.doc h3{font-size:17px;margin:26px 0 10px}
+.doc h4{font-size:15px;margin:20px 0 8px;color:#33414a}
+.doc p{margin:12px 0}
+.doc ul,.doc ol{margin:12px 0;padding-left:24px}
+.doc li{margin:5px 0}
+.doc blockquote{margin:16px 0;padding:12px 16px;background:#f5f8f8;border-left:3px solid var(--brand);
+                border-radius:0 8px 8px 0;color:#3d4a51}
+.doc blockquote p{margin:0}
+.doc pre{background:var(--code-bg);color:var(--code-fg);padding:14px 16px;border-radius:10px;
+         overflow-x:auto;font:13.5px/1.65 ui-monospace,SFMono-Regular,Consolas,monospace;
+         margin:16px 0;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.doc code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:13.5px;
+          background:#eef3f4;padding:1px 5px;border-radius:4px}
+.doc pre code{background:none;padding:0;color:inherit;font-size:inherit}
+.doc table{border-collapse:collapse;width:100%;margin:16px 0;font-size:14.5px}
+.doc th,.doc td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+.doc th{background:#f3f7f7;font-weight:600}
+.doc hr{border:none;border-top:1px solid var(--line);margin:32px 0}
+.doc img{max-width:100%}
+.pager{display:flex;justify-content:space-between;gap:16px;margin-top:48px;
+       padding-top:20px;border-top:1px solid var(--line);font-size:14px}
+.pager a{display:block;padding:10px 14px;border:1px solid var(--line);border-radius:8px;
+         max-width:46%;background:#fff}
+.pager .nx{text-align:right;margin-left:auto}
+.foot{margin-top:36px;color:#a4adb2;font-size:12px}
+@media(max-width:860px){
+  .side{position:static;width:auto;border-right:none;border-bottom:1px solid var(--line)}
+  main{margin:0;padding:24px 18px 60px}
+  .doc h1{font-size:23px}
+}
+
+</style></head><body>
+<aside class="side">
+  <div class="brand"><a href="index.html">HR Agent 工程实战教程</a>
+    <span>Python 3.12 · Vue 3 · HR 场景</span></div>
+  <nav><div class="grp">总目录</div>
+<a href="index.html" data-href="index.html">HR 场景 Agent 工程教程（LangChain / LangGraph 全程实战）</a>
+<div class="grp">一 · 打地基</div>
+<a href="00-导读与环境准备.html" data-href="00-导读与环境准备.html">00 · 导读与环境准备</a>
+<a href="01-第一次调用大模型.html" data-href="01-第一次调用大模型.html">01 · 第一次调用大模型（LangChain 版）</a>
+<a href="02-Prompt与结构化输出.html" data-href="02-Prompt与结构化输出.html">02 · Prompt 与结构化输出</a>
+<div class="grp">二 · Agent 内核</div>
+<a href="03-Agent-Loop.html" data-href="03-Agent-Loop.html">03 · Agent Loop：从 `create_agent` 到自己搭图</a>
+<a href="04-Tool-Calling.html" data-href="04-Tool-Calling.html">04 · Tool Calling：模型选错工具，90% 是描述写糊了</a>
+<a href="05-Planning.html" data-href="05-Planning.html">05 · Planning：把"计划"变成可校验的数据</a>
+<a href="06-Workflow与状态机.html" data-href="06-Workflow与状态机.html">06 · Workflow 与状态机：该定死的地方别让模型发挥</a>
+<div class="grp">三 · 记忆与上下文</div>
+<a href="07-Memory.html" data-href="07-Memory.html">07 · Memory：会话记忆、长期记忆、用户记忆</a>
+<a href="08-Context-Engineering.html" data-href="08-Context-Engineering.html">08 · Context Engineering：Token 预算、裁剪、压缩</a>
+<div class="grp">四 · RAG 与知识</div>
+<a href="09-RAG基础.html" data-href="09-RAG基础.html">09 · RAG 基础：解析、切片、向量化、召回、拼 Prompt</a>
+<a href="10-RAG进阶.html" data-href="10-RAG进阶.html">10 · RAG 进阶：混合检索、Rerank、版本治理、引用质量</a>
+<a href="11-RAG高阶.html" data-href="11-RAG高阶.html">11 · RAG 高阶：结构化知识、Text2SQL、Text2Cypher</a>
+<div class="grp">五 · 协作与生态</div>
+<a href="12-MCP与Skill.html" data-href="12-MCP与Skill.html">12 · MCP / Skill / Plugin：工具的"插座标准"</a>
+<a href="13-Multi-Agent.html" data-href="13-Multi-Agent.html">13 · Multi-Agent：分工、交接、仲裁</a>
+<a href="14-Human-in-the-loop.html" data-href="14-Human-in-the-loop.html">14 · Human-in-the-loop：该停的地方必须停下来等人</a>
+<div class="grp">六 · 生产级可靠性</div>
+<a href="15-可靠性工程.html" data-href="15-可靠性工程.html">15 · 可靠性工程：重试、超时、降级、幂等、熔断</a>
+<a href="16-Sandbox与长任务.html" data-href="16-Sandbox与长任务.html">16 · 长任务：断点续跑、分批、沙箱、预算</a>
+<a href="17-可观测性与评测.html" data-href="17-可观测性与评测.html" class="cur">17 · 可观测性与评测：没有评测就没有迭代</a>
+<div class="grp">七 · 交付与落地</div>
+<a href="18-Vue3前端工作台.html" data-href="18-Vue3前端工作台.html">18 · Vue3 前端工作台：SSE 把"Agent 在想什么"显示出来</a>
+<a href="19-模型工程与部署.html" data-href="19-模型工程与部署.html">19 · 模型工程：选档、路由、成本、部署</a>
+<a href="20-岗位地图与学习路径.html" data-href="20-岗位地图与学习路径.html">20 · 岗位地图与学习路径</a></nav>
+</aside>
+<main>
+  <article class="doc"><h1 id="17-可观测性与评测-没有评测就没有迭代">17 · 可观测性与评测：没有评测就没有迭代</h1>
+<h2 id="17-1-本章目标">17.1 本章目标</h2>
+<ol>
+<li>用 <code>BaseCallbackHandler</code> 采集每次模型/工具调用的耗时与 token；</li>
+<li>用 Golden Case 做回归，并区分 v1（合格）与 v2（退步）；</li>
+<li>四个必看指标：任务成功率、工具准确率、幻觉率、成本/P95；</li>
+<li>知道 Trace 该记什么、不该记什么（隐私）。</li>
+</ol>
+<p>跑法：<code>python ch17_observability/main.py</code></p>
+<h2 id="17-2-埋点-BaseCallbackHandler">17.2 埋点：<code>BaseCallbackHandler</code></h2>
+<pre><code class="lang-python">class Tracer(BaseCallbackHandler):
+    def on_llm_start(self, *a, **kw):  self.stack.append({"kind": "llm",  "t0": time.time()})
+    def on_llm_end(self, *a, **kw):    self.spans.append({**自, "ms": ...})
+    def on_tool_start(self, *a, **kw): ...
+    def on_tool_end(self, *a, **kw):   ...</code></pre>
+<p>接进去：</p>
+<pre><code class="lang-python">agent.invoke({"messages": [...]}, config={"callbacks": [tracer]})</code></pre>
+<p>实测：</p>
+<pre><code>  span 记录：
+    {'kind': 'llm',  'ms': 0.2, 'tokens': 0}
+    {'kind': 'tool', 'ms': 0.1}
+  汇总：llm_calls=3, tool_calls=2, total_ms=0.3</code></pre>
+<p>★ 一个 span 至少记六样：<strong>谁（node/工具名）、什么时候、多久、多少 token、成功没、输入摘要（脱敏）</strong>。少一样，出事时都查不下去。</p>
+<p>生产上直接用 <strong>LangSmith</strong>：</p>
+<pre><code class="lang-python">import os
+os.environ["LANGCHAIN_TRACING_V2"] = "true"
+os.environ["LANGCHAIN_API_KEY"] = "..."
+os.environ["LANGCHAIN_PROJECT"] = "hr-agent"</code></pre>
+<p>不用写任何埋点代码，每次 <code>invoke</code> 自动上报。但<strong>仍要知道 span 里该有什么</strong>，否则你看的是一堆看不懂的瀑布图。</p>
+<h2 id="17-3-Golden-Case-三到五条起步就够">17.3 Golden Case：三到五条起步就够</h2>
+<pre><code class="lang-python">GOLDEN = [
+    {"id": "leave_balance",
+     "q": "张伟 2026 年还剩几天年假",
+     "must_call": "get_leave_balance",
+     "bad": ["我无法查询", "请自行登录"],
+     "must_contain": ["7 天"],
+     "cite": "leave_bal"},
+    ...
+]</code></pre>
+<p>一条 case 至少四个字段：</p>
+<table><thead><tr><th>字段</th><th>判断什么</th></tr></thead><tbody>
+<tr><td><code>must_call</code></td><td>该调的工具调了没（工具准确率）</td></tr>
+<tr><td><code>must_contain</code></td><td>关键事实说对没（正确性）</td></tr>
+<tr><td><code>bad</code></td><td>有没有出现"我不知道""请自己查"这类废话（可用性）</td></tr>
+<tr><td><code>cite</code></td><td>有没有给出处（可追溯性）</td></tr>
+</tbody></table>
+<h2 id="17-4-一个真实的坑-剧本被消费完了">17.4 一个真实的坑：剧本被消费完了</h2>
+<p>最初三个 case 共用一份可消费的剧本列表，结果全部返回第一条答案：</p>
+<pre><code>  v1 通过率：0/3</code></pre>
+<p>原因：<code>FakeMessagesListChatModel</code> 的剧本是<strong>有状态、会被消费</strong>的。改法：每个 case 按版本现场生成独立剧本：</p>
+<pre><code class="lang-python">def build_script(case, version):
+    return [ai_tool(case["must_call"], case["args"]),
+            ai_text("..." if version == "v1" else "我无法查询，请自行登录")]</code></pre>
+<p>实测：</p>
+<pre><code>  v1 通过率： 3/3 = 100%
+  v2 通过率： 0/3 = 0%
+  ★ 同一批 case，两种版本，一个通过一个挂 —— 这才叫回归测试</code></pre>
+<p>★ 教训：<strong>评测脚本本身要能被信任。</strong> 评测全部失败时，先怀疑评测，再怀疑 Agent。</p>
+<h2 id="17-5-四个指标-三个百分位">17.5 四个指标 + 三个百分位</h2>
+<table><thead><tr><th>指标</th><th>怎么算</th><th>目标</th></tr></thead><tbody>
+<tr><td>任务成功率</td><td>Golden 通过数 / 总数</td><td>≥ 90%（核心流程）</td></tr>
+<tr><td>工具调用准确率</td><td><code>must_call</code> 命中率</td><td>≥ 95%</td></tr>
+<tr><td>幻觉率</td><td>evidence 对不上 / 总数（第 02 章）</td><td>&lt; 3%</td></tr>
+<tr><td>成本</td><td>每任务 token × 单价</td><td>按业务定</td></tr>
+<tr><td>P50/P95/P99 延迟</td><td>span 的 <code>ms</code> 分布</td><td>P95 &lt; 3s（对话型）</td></tr>
+</tbody></table>
+<p><strong>只报平均值是最常见的自欺</strong>：P50 好看、P99 是 20 秒，用户体验照样崩。</p>
+<h2 id="17-6-Bad-Case-回归用例的闭环">17.6 Bad Case → 回归用例的闭环</h2>
+<pre><code>线上发现 bad case → 脱敏 → 写成 GOLDEN 一条 → 每次改动跑回归 → 不红才发</code></pre>
+<p>这一步把"感觉变好了"变成"数字没退步"。没有这个闭环，Agent 项目就是"每次改 prompt 像抽奖"。</p>
+<h2 id="17-7-Trace-的隐私红线">17.7 Trace 的隐私红线</h2>
+<table><thead><tr><th>该记</th><th>不记（或脱敏）</th></tr></thead><tbody>
+<tr><td>工具名、耗时、token 数</td><td>身份证、银行卡、完整薪资</td></tr>
+<tr><td>输入摘要（截断 + 打码）</td><td>完整简历原文</td></tr>
+<tr><td>错误类型</td><td>用户手机号、住址</td></tr>
+<tr><td><code>user_id</code> 的哈希</td><td>真实 <code>user_id</code></td></tr>
+</tbody></table>
+<p>★ Trace 系统本身是最大的数据泄露面：三年日志全带身份证，等于把全公司信息存了一份。</p>
+<h2 id="17-8-常见坑">17.8 常见坑</h2>
+<ol>
+<li><strong>只记成功路径</strong>：失败/重试不记，出事时完全瞎。</li>
+<li><strong>评测用线上真实数据</strong>：既不合规，也不稳定（数据会变）。</li>
+<li><strong>Golden 用例只有 1 条</strong>：改 A 过、改 B 挂，你在两个用例间反复横跳。</li>
+<li><strong>上线后不跑回归</strong>：模型厂商升级一次，全站悄悄退化。</li>
+<li><strong>把"用户满意度"当唯一指标</strong>：用户点"有帮助"不代表答对了（第 02 章的 evidence 才是硬指标）。</li>
+</ol>
+<h2 id="17-9-自检清单">17.9 自检清单</h2>
+<ul>
+<li>[ ] 能说出一个 span 至少要记的六样东西</li>
+<li>[ ] 知道 Golden Case 的四个字段各判断什么</li>
+<li>[ ] 能解释为什么"只报平均值"会掩盖问题</li>
+<li>[ ] 知道 Trace 的隐私红线</li>
+</ul>
+<h2 id="17-10-练习">17.10 练习</h2>
+<ol>
+<li>给 <code>Tracer</code> 加 <code>on_chain_start/end</code>，观察 LangGraph 节点的耗时分布。</li>
+<li>加第 4 条 Golden case（多工具串联），看通过率变化。</li>
+<li>把 v2 的退步原因定位到具体 case，改 prompt 后重新跑，验证是否修好（这就是一次完整的迭代）。</li>
+</ol></article>
+  <footer class="pager"><a class="pr" href="16-Sandbox与长任务.html">← 16 · 长任务：断点续跑、分批、沙箱、预算</a>
+<a class="nx" href="18-Vue3前端工作台.html">18 · Vue3 前端工作台：SSE 把"Agent 在想什么"显示出来 →</a></footer>
+  <div class="foot">本教程示例数据均为虚构，仅用于教学。</div>
+</main>
+</body></html>

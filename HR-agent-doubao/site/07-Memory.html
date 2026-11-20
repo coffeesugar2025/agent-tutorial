@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>07 · Memory：会话记忆、长期记忆、用户记忆 · HR Agent 工程实战教程</title>
+<style>
+
+:root{--bg:#fbfcfc;--fg:#1a1f23;--muted:#657076;--line:#e3e8ea;--brand:#0f766e;
+      --brand-soft:#e8f4f2;--code-bg:#11202b;--code-fg:#dfe9ee}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);
+     font:16px/1.75 -apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+a{color:var(--brand);text-decoration:none}
+a:hover{text-decoration:underline}
+.side{position:fixed;top:0;left:0;bottom:0;width:280px;overflow-y:auto;
+      border-right:1px solid var(--line);background:#fff;padding:20px 16px 40px}
+.brand a{display:block;font-weight:700;font-size:15px;line-height:1.4}
+.brand span{display:block;color:var(--muted);font-size:12px;margin-top:4px}
+nav{margin-top:18px;font-size:14px}
+nav a{display:block;padding:5px 8px;border-radius:6px;color:#33414a;line-height:1.45}
+nav a:hover{background:#f2f6f7;text-decoration:none}
+nav a.cur{background:var(--brand-soft);color:#0b5d56;font-weight:600}
+nav .grp{margin:14px 0 4px;font-size:11.5px;letter-spacing:.06em;color:#9aa5aa;
+          text-transform:uppercase;padding-left:8px}
+main{margin-left:280px;padding:44px 48px 80px;max-width:920px}
+.doc h1{font-size:27px;line-height:1.35;margin:0 0 6px;letter-spacing:-.01em}
+.doc h1+p{color:var(--muted)}
+.doc h2{font-size:20px;margin:38px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+.doc h3{font-size:17px;margin:26px 0 10px}
+.doc h4{font-size:15px;margin:20px 0 8px;color:#33414a}
+.doc p{margin:12px 0}
+.doc ul,.doc ol{margin:12px 0;padding-left:24px}
+.doc li{margin:5px 0}
+.doc blockquote{margin:16px 0;padding:12px 16px;background:#f5f8f8;border-left:3px solid var(--brand);
+                border-radius:0 8px 8px 0;color:#3d4a51}
+.doc blockquote p{margin:0}
+.doc pre{background:var(--code-bg);color:var(--code-fg);padding:14px 16px;border-radius:10px;
+         overflow-x:auto;font:13.5px/1.65 ui-monospace,SFMono-Regular,Consolas,monospace;
+         margin:16px 0;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.doc code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:13.5px;
+          background:#eef3f4;padding:1px 5px;border-radius:4px}
+.doc pre code{background:none;padding:0;color:inherit;font-size:inherit}
+.doc table{border-collapse:collapse;width:100%;margin:16px 0;font-size:14.5px}
+.doc th,.doc td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+.doc th{background:#f3f7f7;font-weight:600}
+.doc hr{border:none;border-top:1px solid var(--line);margin:32px 0}
+.doc img{max-width:100%}
+.pager{display:flex;justify-content:space-between;gap:16px;margin-top:48px;
+       padding-top:20px;border-top:1px solid var(--line);font-size:14px}
+.pager a{display:block;padding:10px 14px;border:1px solid var(--line);border-radius:8px;
+         max-width:46%;background:#fff}
+.pager .nx{text-align:right;margin-left:auto}
+.foot{margin-top:36px;color:#a4adb2;font-size:12px}
+@media(max-width:860px){
+  .side{position:static;width:auto;border-right:none;border-bottom:1px solid var(--line)}
+  main{margin:0;padding:24px 18px 60px}
+  .doc h1{font-size:23px}
+}
+
+</style></head><body>
+<aside class="side">
+  <div class="brand"><a href="index.html">HR Agent 工程实战教程</a>
+    <span>Python 3.12 · Vue 3 · HR 场景</span></div>
+  <nav><div class="grp">总目录</div>
+<a href="index.html" data-href="index.html">HR 场景 Agent 工程教程（LangChain / LangGraph 全程实战）</a>
+<div class="grp">一 · 打地基</div>
+<a href="00-导读与环境准备.html" data-href="00-导读与环境准备.html">00 · 导读与环境准备</a>
+<a href="01-第一次调用大模型.html" data-href="01-第一次调用大模型.html">01 · 第一次调用大模型（LangChain 版）</a>
+<a href="02-Prompt与结构化输出.html" data-href="02-Prompt与结构化输出.html">02 · Prompt 与结构化输出</a>
+<div class="grp">二 · Agent 内核</div>
+<a href="03-Agent-Loop.html" data-href="03-Agent-Loop.html">03 · Agent Loop：从 `create_agent` 到自己搭图</a>
+<a href="04-Tool-Calling.html" data-href="04-Tool-Calling.html">04 · Tool Calling：模型选错工具，90% 是描述写糊了</a>
+<a href="05-Planning.html" data-href="05-Planning.html">05 · Planning：把"计划"变成可校验的数据</a>
+<a href="06-Workflow与状态机.html" data-href="06-Workflow与状态机.html">06 · Workflow 与状态机：该定死的地方别让模型发挥</a>
+<div class="grp">三 · 记忆与上下文</div>
+<a href="07-Memory.html" data-href="07-Memory.html" class="cur">07 · Memory：会话记忆、长期记忆、用户记忆</a>
+<a href="08-Context-Engineering.html" data-href="08-Context-Engineering.html">08 · Context Engineering：Token 预算、裁剪、压缩</a>
+<div class="grp">四 · RAG 与知识</div>
+<a href="09-RAG基础.html" data-href="09-RAG基础.html">09 · RAG 基础：解析、切片、向量化、召回、拼 Prompt</a>
+<a href="10-RAG进阶.html" data-href="10-RAG进阶.html">10 · RAG 进阶：混合检索、Rerank、版本治理、引用质量</a>
+<a href="11-RAG高阶.html" data-href="11-RAG高阶.html">11 · RAG 高阶：结构化知识、Text2SQL、Text2Cypher</a>
+<div class="grp">五 · 协作与生态</div>
+<a href="12-MCP与Skill.html" data-href="12-MCP与Skill.html">12 · MCP / Skill / Plugin：工具的"插座标准"</a>
+<a href="13-Multi-Agent.html" data-href="13-Multi-Agent.html">13 · Multi-Agent：分工、交接、仲裁</a>
+<a href="14-Human-in-the-loop.html" data-href="14-Human-in-the-loop.html">14 · Human-in-the-loop：该停的地方必须停下来等人</a>
+<div class="grp">六 · 生产级可靠性</div>
+<a href="15-可靠性工程.html" data-href="15-可靠性工程.html">15 · 可靠性工程：重试、超时、降级、幂等、熔断</a>
+<a href="16-Sandbox与长任务.html" data-href="16-Sandbox与长任务.html">16 · 长任务：断点续跑、分批、沙箱、预算</a>
+<a href="17-可观测性与评测.html" data-href="17-可观测性与评测.html">17 · 可观测性与评测：没有评测就没有迭代</a>
+<div class="grp">七 · 交付与落地</div>
+<a href="18-Vue3前端工作台.html" data-href="18-Vue3前端工作台.html">18 · Vue3 前端工作台：SSE 把"Agent 在想什么"显示出来</a>
+<a href="19-模型工程与部署.html" data-href="19-模型工程与部署.html">19 · 模型工程：选档、路由、成本、部署</a>
+<a href="20-岗位地图与学习路径.html" data-href="20-岗位地图与学习路径.html">20 · 岗位地图与学习路径</a></nav>
+</aside>
+<main>
+  <article class="doc"><h1 id="07-Memory-会话记忆-长期记忆-用户记忆">07 · Memory：会话记忆、长期记忆、用户记忆</h1>
+<h2 id="7-1-本章目标">7.1 本章目标</h2>
+<p>分清三种"记忆"，并用 LangChain 的现成积木实现，再补上生产必须自己写的三件事（抽取、去重、可删除）。</p>
+<table><thead><tr><th>类型</th><th>存什么</th><th>生命周期</th><th>本章用什么</th></tr></thead><tbody>
+<tr><td>会话记忆</td><td>本次对话的消息</td><td>一次会话</td><td><code>RunnableWithMessageHistory</code> + <code>InMemoryChatMessageHistory</code></td></tr>
+<tr><td>长期记忆</td><td>"事实"（偏好、约束、背景）</td><td>跨会话、跨设备</td><td><code>InMemoryVectorStore</code> + Embeddings</td></tr>
+<tr><td>用户记忆</td><td>按用户隔离的人格化信息</td><td>永久，可删</td><td>元数据 <code>user_id</code> + 删除接口</td></tr>
+</tbody></table>
+<p>跑法：<code>python ch07_memory/main.py</code></p>
+<h2 id="7-2-会话记忆-RunnableWithMessageHistory">7.2 会话记忆：<code>RunnableWithMessageHistory</code></h2>
+<pre><code class="lang-python">chain = (
+    ChatPromptTemplate.from_messages([("placeholder", "{history}"), ("human", "{input}")])
+    | get_model([...])
+)
+chat = RunnableWithMessageHistory(chain, get_history,
+                                  input_messages_key="input", history_messages_key="history")
+chat.invoke({"input": "张伟是哪个部门的？"}, {"configurable": {"session_id": "A"}})</code></pre>
+<p>它只做一件小事：<strong>每次调用前按 <code>session_id</code> 把历史消息捞出来，塞进 <code>{history}</code> 占位符</strong>。</p>
+<p>实测：</p>
+<pre><code>  会话 A 第一轮：张伟在技术中心。
+  会话 A 第二轮：你刚问过张伟的部门，还需要别的吗？
+  会话 B 第一轮：没有你的工号记录，先告诉我工号。
+  会话 A 里的消息数：4，会话 B：2
+  ★ 只做隔离，不做裁剪：历史长了它照发，token 会炸（第 08 章解决）</code></pre>
+<h3 id="1-x-的弃用提示-必须知道">1.x 的弃用提示（必须知道）</h3>
+<p>跑这个 demo 你会看到两条 <code>LangChainDeprecationWarning</code>：</p>
+<ul>
+<li><code>RunnableWithMessageHistory is deprecated. Use LangGraph's built-in persistence instead.</code></li>
+<li><code>InMemoryChatMessageHistory was deprecated in LangChain 1.6.4, will be removed in 2.0.0</code></li>
+</ul>
+<p>官方推荐的新写法是 <strong>LangGraph 的 checkpointer</strong>：把消息放进 graph state，<code>compile(checkpointer=...)</code> 就自动按 <code>thread_id</code> 持久化。第 06、14 章用的就是这个。</p>
+<p><strong>本书的口径</strong>：<code>RunnableWithMessageHistory</code> 当作"过渡写法"讲（因为大量存量项目还在用，面试也会问），新项目直接上 checkpointer。两处口径一致：看到 deprecated 不慌，但别在 2026 年的新项目里继续用它。</p>
+<h2 id="7-3-长期记忆-存事实-不存聊天记录">7.3 长期记忆：存事实，不存聊天记录</h2>
+<pre><code class="lang-python">class Fact(BaseModel):
+    kind: Literal["preference", "constraint", "background"]
+    text: str = Field(description="一句话事实，不超过 40 字")
+    source: str = Field(description="从哪句话抽出来的原文片段")</code></pre>
+<p>三个设计决定：</p>
+<ol>
+<li><strong>存"事实"而不是"原话"</strong>：聊天记录里 90% 是寒暄，塞进向量库只会污染召回。</li>
+<li><strong><code>kind</code> 分类型</strong>：<code>constraint</code>（硬约束，如"不接受倒班"）在召回时必须<strong>优先注入</strong>，不能被相似度排掉。</li>
+<li><strong><code>source</code> 必填</strong>：任何一条记忆都要能追回原文。用户问"你凭什么记我这个"，你要答得出来。</li>
+</ol>
+<h2 id="7-4-写入三件事-抽取-去重-打标">7.4 写入三件事：抽取 → 去重 → 打标</h2>
+<pre><code class="lang-python">def remember(user_id, utterance, max_facts=3):
+    facts = extractor.invoke({"utterance": utterance}).facts[:max_facts]
+    for f in facts:
+        hit = store.similarity_search_with_score(f.text, k=1, filter=_mine(user_id))
+        if hit and hit[0][1] &gt; 0.92:
+            continue                       # 太像了，视为同一条
+        store.add_texts([f.text], metadatas=[{"user_id": user_id, "kind": f.kind, "source": f.source}])</code></pre>
+<p><code>max_facts</code> 上限很重要：一段话抽出 20 条"事实"，说明抽取器在瞎编。</p>
+<p>实测：</p>
+<pre><code>  用户说：'我不接受倒班，夜班也不行，最好在园区这边'
+    + constraint: 不接受倒班与夜班
+    + preference: 倾向苏州园区内的岗位
+  再次说一遍同样的约束（应被去重）：
+    ~ 跳过重复：不接受倒班与夜班
+  召回（问'能安排夜班岗位吗？'）：
+    · [必须遵守] 不接受倒班与夜班
+    · 倾向苏州园区内的岗位</code></pre>
+<h2 id="7-5-filter-是函数不是-dict-1-x-高频坑">7.5 <code>filter</code> 是函数不是 dict（1.x 高频坑）</h2>
+<pre><code class="lang-python">def _mine(user_id: str):
+    return lambda doc: doc.metadata.get("user_id") == user_id</code></pre>
+<p>在 <code>langchain-core 1.8.0</code> 里，<code>InMemoryVectorStore.similarity_search_with_score(..., filter=...)</code> 的 <code>filter</code> 类型是 <code>Callable[[Document], bool]</code>。传 dict 会得到：</p>
+<pre><code>TypeError: 'dict' object is not callable</code></pre>
+<p>而且这个报错栈落在 <code>in_memory.py</code> 构造 <code>Document</code> 的地方，看起来跟 filter 完全无关，非常难猜。<strong>记住这一条就能省两小时。</strong></p>
+<p>顺带：<code>store.store</code> 里存的是 <strong>dict</strong>（<code>{'id','text','metadata','vector'}</code>），不是 <code>Document</code>。要按元数据删除时：</p>
+<pre><code class="lang-python">ids = [key for key, row in store.store.items() if row["metadata"].get("user_id") == user_id]
+for i in ids: store.delete([i])</code></pre>
+<h2 id="7-6-合规-用户说-忘掉我-必须真删">7.6 合规：用户说"忘掉我"，必须真删</h2>
+<pre><code>  删除前 2 条，删除 2 条，剩余 0 条
+  删完再召回：[]</code></pre>
+<p>红线清单：</p>
+<table><thead><tr><th>不该记</th><th>该记</th><th>必须有的机制</th></tr></thead><tbody>
+<tr><td>身份证号、银行卡、住址</td><td>偏好（班次/城市）</td><td>来源标注</td></tr>
+<tr><td>健康诊断、绩效排名</td><td>硬约束</td><td>时间戳</td></tr>
+<tr><td>离职倾向</td><td>已办事项</td><td>可删除</td></tr>
+<tr><td>家庭情况</td><td>沟通语言与称呼</td><td>按用户隔离（filter 永远带 <code>user_id</code>）</td></tr>
+</tbody></table>
+<h2 id="7-7-常见坑">7.7 常见坑</h2>
+<ol>
+<li><strong>把整段对话塞进向量库</strong>：召回一堆寒暄，且每条都在泄露隐私。</li>
+<li><strong>去重阈值拍脑袋</strong>：0.92 是经验值。换 Embeddings 模型就要重调（不同模型的相似度分布不同）。</li>
+<li><strong>忘了 <code>user_id</code> 隔离</strong>：A 用户的记忆被 B 用户召回，这是最严重的事故类型。</li>
+<li><strong>会话记忆不裁剪</strong>：第 20 轮时上下文爆掉，模型开始"忘记"最早的约束（第 08 章）。</li>
+<li><strong>只写不删</strong>：合规审计时"无法删除"比"存了不该存的"更致命。</li>
+</ol>
+<h2 id="7-8-自检清单">7.8 自检清单</h2>
+<ul>
+<li>[ ] 三种记忆各自的存储介质与生命周期</li>
+<li>[ ] 为什么长期记忆要存"事实 + 类型 + 来源"</li>
+<li>[ ] <code>filter</code> 参数在 1.x 里为什么是函数</li>
+<li>[ ] 删除接口为什么是合规红线</li>
+</ul>
+<h2 id="7-9-练习">7.9 练习</h2>
+<ol>
+<li>把 <code>DeterministicFakeEmbedding</code> 换成真 Embeddings（BGE/OpenAI），重调 0.92 阈值。</li>
+<li>给 <code>Fact</code> 加 <code>expired_at</code>，召回时过滤过期事实（记忆衰减）。</li>
+<li>用 LangGraph checkpointer 重写会话记忆，对比 <code>RunnableWithMessageHistory</code> 的差别。</li>
+</ol></article>
+  <footer class="pager"><a class="pr" href="06-Workflow与状态机.html">← 06 · Workflow 与状态机：该定死的地方别让模型发挥</a>
+<a class="nx" href="08-Context-Engineering.html">08 · Context Engineering：Token 预算、裁剪、压缩 →</a></footer>
+  <div class="foot">本教程示例数据均为虚构，仅用于教学。</div>
+</main>
+</body></html>

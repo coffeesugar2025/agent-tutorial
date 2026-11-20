@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>06 · Workflow 与状态机：该定死的地方别让模型发挥 · HR Agent 工程实战教程</title>
+<style>
+
+:root{--bg:#fbfcfc;--fg:#1a1f23;--muted:#657076;--line:#e3e8ea;--brand:#0f766e;
+      --brand-soft:#e8f4f2;--code-bg:#11202b;--code-fg:#dfe9ee}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);
+     font:16px/1.75 -apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+a{color:var(--brand);text-decoration:none}
+a:hover{text-decoration:underline}
+.side{position:fixed;top:0;left:0;bottom:0;width:280px;overflow-y:auto;
+      border-right:1px solid var(--line);background:#fff;padding:20px 16px 40px}
+.brand a{display:block;font-weight:700;font-size:15px;line-height:1.4}
+.brand span{display:block;color:var(--muted);font-size:12px;margin-top:4px}
+nav{margin-top:18px;font-size:14px}
+nav a{display:block;padding:5px 8px;border-radius:6px;color:#33414a;line-height:1.45}
+nav a:hover{background:#f2f6f7;text-decoration:none}
+nav a.cur{background:var(--brand-soft);color:#0b5d56;font-weight:600}
+nav .grp{margin:14px 0 4px;font-size:11.5px;letter-spacing:.06em;color:#9aa5aa;
+          text-transform:uppercase;padding-left:8px}
+main{margin-left:280px;padding:44px 48px 80px;max-width:920px}
+.doc h1{font-size:27px;line-height:1.35;margin:0 0 6px;letter-spacing:-.01em}
+.doc h1+p{color:var(--muted)}
+.doc h2{font-size:20px;margin:38px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+.doc h3{font-size:17px;margin:26px 0 10px}
+.doc h4{font-size:15px;margin:20px 0 8px;color:#33414a}
+.doc p{margin:12px 0}
+.doc ul,.doc ol{margin:12px 0;padding-left:24px}
+.doc li{margin:5px 0}
+.doc blockquote{margin:16px 0;padding:12px 16px;background:#f5f8f8;border-left:3px solid var(--brand);
+                border-radius:0 8px 8px 0;color:#3d4a51}
+.doc blockquote p{margin:0}
+.doc pre{background:var(--code-bg);color:var(--code-fg);padding:14px 16px;border-radius:10px;
+         overflow-x:auto;font:13.5px/1.65 ui-monospace,SFMono-Regular,Consolas,monospace;
+         margin:16px 0;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.doc code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:13.5px;
+          background:#eef3f4;padding:1px 5px;border-radius:4px}
+.doc pre code{background:none;padding:0;color:inherit;font-size:inherit}
+.doc table{border-collapse:collapse;width:100%;margin:16px 0;font-size:14.5px}
+.doc th,.doc td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+.doc th{background:#f3f7f7;font-weight:600}
+.doc hr{border:none;border-top:1px solid var(--line);margin:32px 0}
+.doc img{max-width:100%}
+.pager{display:flex;justify-content:space-between;gap:16px;margin-top:48px;
+       padding-top:20px;border-top:1px solid var(--line);font-size:14px}
+.pager a{display:block;padding:10px 14px;border:1px solid var(--line);border-radius:8px;
+         max-width:46%;background:#fff}
+.pager .nx{text-align:right;margin-left:auto}
+.foot{margin-top:36px;color:#a4adb2;font-size:12px}
+@media(max-width:860px){
+  .side{position:static;width:auto;border-right:none;border-bottom:1px solid var(--line)}
+  main{margin:0;padding:24px 18px 60px}
+  .doc h1{font-size:23px}
+}
+
+</style></head><body>
+<aside class="side">
+  <div class="brand"><a href="index.html">HR Agent 工程实战教程</a>
+    <span>Python 3.12 · Vue 3 · HR 场景</span></div>
+  <nav><div class="grp">总目录</div>
+<a href="index.html" data-href="index.html">HR 场景 Agent 工程教程（LangChain / LangGraph 全程实战）</a>
+<div class="grp">一 · 打地基</div>
+<a href="00-导读与环境准备.html" data-href="00-导读与环境准备.html">00 · 导读与环境准备</a>
+<a href="01-第一次调用大模型.html" data-href="01-第一次调用大模型.html">01 · 第一次调用大模型（LangChain 版）</a>
+<a href="02-Prompt与结构化输出.html" data-href="02-Prompt与结构化输出.html">02 · Prompt 与结构化输出</a>
+<div class="grp">二 · Agent 内核</div>
+<a href="03-Agent-Loop.html" data-href="03-Agent-Loop.html">03 · Agent Loop：从 `create_agent` 到自己搭图</a>
+<a href="04-Tool-Calling.html" data-href="04-Tool-Calling.html">04 · Tool Calling：模型选错工具，90% 是描述写糊了</a>
+<a href="05-Planning.html" data-href="05-Planning.html">05 · Planning：把"计划"变成可校验的数据</a>
+<a href="06-Workflow与状态机.html" data-href="06-Workflow与状态机.html" class="cur">06 · Workflow 与状态机：该定死的地方别让模型发挥</a>
+<div class="grp">三 · 记忆与上下文</div>
+<a href="07-Memory.html" data-href="07-Memory.html">07 · Memory：会话记忆、长期记忆、用户记忆</a>
+<a href="08-Context-Engineering.html" data-href="08-Context-Engineering.html">08 · Context Engineering：Token 预算、裁剪、压缩</a>
+<div class="grp">四 · RAG 与知识</div>
+<a href="09-RAG基础.html" data-href="09-RAG基础.html">09 · RAG 基础：解析、切片、向量化、召回、拼 Prompt</a>
+<a href="10-RAG进阶.html" data-href="10-RAG进阶.html">10 · RAG 进阶：混合检索、Rerank、版本治理、引用质量</a>
+<a href="11-RAG高阶.html" data-href="11-RAG高阶.html">11 · RAG 高阶：结构化知识、Text2SQL、Text2Cypher</a>
+<div class="grp">五 · 协作与生态</div>
+<a href="12-MCP与Skill.html" data-href="12-MCP与Skill.html">12 · MCP / Skill / Plugin：工具的"插座标准"</a>
+<a href="13-Multi-Agent.html" data-href="13-Multi-Agent.html">13 · Multi-Agent：分工、交接、仲裁</a>
+<a href="14-Human-in-the-loop.html" data-href="14-Human-in-the-loop.html">14 · Human-in-the-loop：该停的地方必须停下来等人</a>
+<div class="grp">六 · 生产级可靠性</div>
+<a href="15-可靠性工程.html" data-href="15-可靠性工程.html">15 · 可靠性工程：重试、超时、降级、幂等、熔断</a>
+<a href="16-Sandbox与长任务.html" data-href="16-Sandbox与长任务.html">16 · 长任务：断点续跑、分批、沙箱、预算</a>
+<a href="17-可观测性与评测.html" data-href="17-可观测性与评测.html">17 · 可观测性与评测：没有评测就没有迭代</a>
+<div class="grp">七 · 交付与落地</div>
+<a href="18-Vue3前端工作台.html" data-href="18-Vue3前端工作台.html">18 · Vue3 前端工作台：SSE 把"Agent 在想什么"显示出来</a>
+<a href="19-模型工程与部署.html" data-href="19-模型工程与部署.html">19 · 模型工程：选档、路由、成本、部署</a>
+<a href="20-岗位地图与学习路径.html" data-href="20-岗位地图与学习路径.html">20 · 岗位地图与学习路径</a></nav>
+</aside>
+<main>
+  <article class="doc"><h1 id="06-Workflow-与状态机-该定死的地方别让模型发挥">06 · Workflow 与状态机：该定死的地方别让模型发挥</h1>
+<h2 id="6-1-本章目标">6.1 本章目标</h2>
+<ol>
+<li>把"审批流程"写成<strong>转移表</strong>（纯数据，可审查），而不是写进 prompt；</li>
+<li>用 <code>StateGraph</code> 一个节点推进一格，条件边做守卫；</li>
+<li>用 <code>InMemorySaver</code> 做 checkpointer，让"走到哪一步"可持久、可恢复；</li>
+<li>用版本号（CAS）解决并发，用"非法转移校验"堵住跳步。</li>
+</ol>
+<p>跑法：<code>python ch06_workflow/main.py</code></p>
+<h2 id="6-2-转移表">6.2 转移表</h2>
+<pre><code class="lang-python">STATES = ["草稿", "业务审批", "HRBP审批", "薪酬审批", "待发出", "已发出"]
+TRANSITIONS = {
+    ("草稿", "业务审批"):      {"guard": lambda p: bool(p.get("candidate_id")), "why": "缺候选人号"},
+    ("业务审批", "HRBP审批"):  {"guard": lambda p: p.get("biz_ok") is True,     "why": "业务未通过"},
+    ("HRBP审批", "薪酬审批"):  {"guard": lambda p: p.get("hb_ok") is True,      "why": "HRBP 未通过"},
+    ("薪酬审批", "待发出"):    {"guard": lambda p: p.get("salary_ok") is True,  "why": "薪酬超带宽未特批"},
+    ("待发出", "已发出"):      {"guard": lambda p: p.get("mail_sent") is True,  "why": "邮件未发出"},
+}</code></pre>
+<p>注意这里<strong>没有任何一条边能从"草稿"直达"薪酬审批"</strong>。跳步不是靠 prompt 拦的，是这张表里根本不存在。</p>
+<h2 id="6-3-图的形状">6.3 图的形状</h2>
+<pre><code class="lang-python">builder.add_node("transition", transition_node)
+builder.add_edge(START, "transition")
+builder.add_conditional_edges("transition", route, {"transition": "transition", END: END})
+graph = builder.compile(checkpointer=InMemorySaver())</code></pre>
+<p><code>transition_node</code> 每次只推一格：</p>
+<pre><code class="lang-python">for (frm, to), rule in TRANSITIONS.items():
+    if frm != cur: continue
+    if not rule["guard"](payload):
+        return {"log": ..., "stalled": True}      # 推不动
+    row = store.cas(offer_id, version, to)         # 乐观锁
+    return {"state": row["state"], "version": row["version"], "log": row["log"], "stalled": False}</code></pre>
+<h2 id="6-4-第一个必须自己加的终止条件">6.4 第一个必须自己加的终止条件</h2>
+<p><code>route</code> 最初只有"到终态就 END"：</p>
+<pre><code class="lang-python">return END if state["state"] in TERMINAL else "transition"</code></pre>
+<p>结果：停在"业务审批"等人时，守卫一直不放行，图就<strong>在同一个状态上无限自旋</strong>，直到 <code>GraphRecursionError</code>。</p>
+<p>正确的写法是加一个 <code>stalled</code> 标记：</p>
+<pre><code class="lang-python">return END if (state["state"] in TERMINAL or state.get("stalled")) else "transition"</code></pre>
+<p>★ <strong>工作流也需要终止条件。</strong> 这一条很多人以为只有 Agent 循环才需要。</p>
+<h2 id="6-5-CAS-版本号解决并发">6.5 CAS：版本号解决并发</h2>
+<pre><code class="lang-python">def cas(self, offer_id, expect_version, new_state, patch=None):
+    row = self.rows[offer_id]
+    if new_state != row["state"] and (row["state"], new_state) not in TRANSITIONS:
+        raise RuntimeError(f"非法转移：{row['state']} → {new_state}（SOP 里没有这条边）")
+    if row["version"] != expect_version:
+        raise RuntimeError(f"版本冲突：期望 v{expect_version}，实际 v{row['version']}")
+    row["state"] = new_state
+    row["payload"] = {**row["payload"], **(patch or {})}
+    row["version"] += 1
+    row["log"].append(f"{new_state}@v{row['version']}")</code></pre>
+<p>两个校验都必须有：</p>
+<ul>
+<li><strong>非法转移</strong>：<code>cas</code> 是数据的最后一道门。没有它，"跳步"只是没人试过——一旦有人试，它真的会成功。我第一次写 demo 就漏了这个，结果"草稿 → 薪酬审批"静默成功，把后面的演示全带歪了。</li>
+<li><strong>版本冲突</strong>：两个审批人同时点"通过"，只有一个能成功（实测：<code>期望 v10，实际 v11（有人先改了）</code>）。</li>
+</ul>
+<p>外部系统写数据（审批人点通过、上传附件）走 <code>patch()</code>：只改 payload，不动状态，但<strong>照样 bump 版本号</strong>——因为版本号描述的是"这条记录被改过几次"，不是"状态走了几步"。</p>
+<h2 id="6-6-实测-一条-offer-的完整审计流水">6.6 实测：一条 offer 的完整审计流水</h2>
+<pre><code>  第 1 次推进后：业务审批@v2（停在'业务审批'等人）
+  checkpoint 里的状态：业务审批 v2
+  业务审批通过 → HRBP审批@v4
+  HRBP 通过 → 薪酬审批@v6
+  薪酬特批通过 → 待发出@v8
+  offer 邮件发出 → 已发出@v10
+  最终：已发出
+  审计流水：['草稿@v1','业务审批@v2','HRBP审批@v4','薪酬审批@v6','待发出@v8','已发出@v10']</code></pre>
+<p>审计流水里版本号是跳着涨的（v2→v4）：因为每次外部审批写入也占一个版本。这正是真实系统该有的样子——<strong>流水记录所有变更，不只是状态变更</strong>。</p>
+<h2 id="6-7-checkpoint-的意义">6.7 checkpoint 的意义</h2>
+<pre><code class="lang-python">snapshot = graph.get_state({"configurable": {"thread_id": "K1001"}})
+snapshot.values["state"]      # 现在停在哪一步</code></pre>
+<p>进程崩了、服务重启了、要人工介入——都能从 checkpoint 原地恢复。这是 LangGraph 相比"自己写状态机"最实际的优势：<code>InMemorySaver</code> 换成 <code>SqliteSaver</code> 就是生产可用的持久化。</p>
+<h2 id="6-8-模型在这套流程里的位置">6.8 模型在这套流程里的位置</h2>
+<pre><code class="lang-python">model.invoke("行，就这样吧")     # → {"intent":"approve","confidence":0.92}
+model.invoke("给 C1024 生成 offer 通知邮件正文")   # → 文案</code></pre>
+<ul>
+<li><strong>不该交给模型</strong>：能不能跳步、能不能发出、走哪条分支；</li>
+<li><strong>可以交给模型</strong>：这句用户话是什么意图、这段文案怎么写、这条异常怎么解释给用户。</li>
+</ul>
+<p>这是 HR / 财务 / 审批类系统的通用架构：<strong>模型做事件分类与状态内执行器，流程由代码保证。</strong></p>
+<h2 id="6-9-常见坑">6.9 常见坑</h2>
+<ol>
+<li><strong>状态机没有终止条件</strong> → 自旋（见 6.4）。</li>
+<li><strong>把 SOP 写进 prompt</strong> → 模型迟早跳步。SOP 必须是数据 + 校验。</li>
+<li><strong>只校验版本、不校验边</strong> → 非法转移静默成功。</li>
+<li><strong>状态字段用自由文本</strong> → <code>"已通过"</code> / <code>"通过"</code> / <code>"approved"</code> 三种写法混着来，没过两周就查不清。用枚举。</li>
+<li><strong>忘记把外部写入也 bump 版本</strong> → 图里的版本号永远落后，恢复时状态对不上。</li>
+</ol>
+<h2 id="6-10-自检清单">6.10 自检清单</h2>
+<ul>
+<li>[ ] 能说清 <code>TRANSITIONS</code> 与 prompt 的分工</li>
+<li>[ ] 知道工作流为什么也需要终止条件</li>
+<li>[ ] 能解释 CAS 两个校验各自防的什么</li>
+<li>[ ] 知道 checkpoint 在生产上换成什么</li>
+</ul>
+<h2 id="6-11-练习">6.11 练习</h2>
+<ol>
+<li>加一条"驳回"边（回到草稿并记录原因），跑完看审计流水是否完整。</li>
+<li>把 <code>InMemorySaver</code> 换成 <code>SqliteSaver</code>，杀进程后 <code>get_state</code> 恢复。</li>
+<li>把意图分类改成 <code>with_structured_output(Intent)</code>，比较两种写法在"含糊回答"上的稳定性。</li>
+</ol></article>
+  <footer class="pager"><a class="pr" href="05-Planning.html">← 05 · Planning：把"计划"变成可校验的数据</a>
+<a class="nx" href="07-Memory.html">07 · Memory：会话记忆、长期记忆、用户记忆 →</a></footer>
+  <div class="foot">本教程示例数据均为虚构，仅用于教学。</div>
+</main>
+</body></html>

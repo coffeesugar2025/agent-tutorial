@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>09 · RAG 基础：解析、切片、向量化、召回、拼 Prompt · HR Agent 工程实战教程</title>
+<style>
+
+:root{--bg:#fbfcfc;--fg:#1a1f23;--muted:#657076;--line:#e3e8ea;--brand:#0f766e;
+      --brand-soft:#e8f4f2;--code-bg:#11202b;--code-fg:#dfe9ee}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);
+     font:16px/1.75 -apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+a{color:var(--brand);text-decoration:none}
+a:hover{text-decoration:underline}
+.side{position:fixed;top:0;left:0;bottom:0;width:280px;overflow-y:auto;
+      border-right:1px solid var(--line);background:#fff;padding:20px 16px 40px}
+.brand a{display:block;font-weight:700;font-size:15px;line-height:1.4}
+.brand span{display:block;color:var(--muted);font-size:12px;margin-top:4px}
+nav{margin-top:18px;font-size:14px}
+nav a{display:block;padding:5px 8px;border-radius:6px;color:#33414a;line-height:1.45}
+nav a:hover{background:#f2f6f7;text-decoration:none}
+nav a.cur{background:var(--brand-soft);color:#0b5d56;font-weight:600}
+nav .grp{margin:14px 0 4px;font-size:11.5px;letter-spacing:.06em;color:#9aa5aa;
+          text-transform:uppercase;padding-left:8px}
+main{margin-left:280px;padding:44px 48px 80px;max-width:920px}
+.doc h1{font-size:27px;line-height:1.35;margin:0 0 6px;letter-spacing:-.01em}
+.doc h1+p{color:var(--muted)}
+.doc h2{font-size:20px;margin:38px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+.doc h3{font-size:17px;margin:26px 0 10px}
+.doc h4{font-size:15px;margin:20px 0 8px;color:#33414a}
+.doc p{margin:12px 0}
+.doc ul,.doc ol{margin:12px 0;padding-left:24px}
+.doc li{margin:5px 0}
+.doc blockquote{margin:16px 0;padding:12px 16px;background:#f5f8f8;border-left:3px solid var(--brand);
+                border-radius:0 8px 8px 0;color:#3d4a51}
+.doc blockquote p{margin:0}
+.doc pre{background:var(--code-bg);color:var(--code-fg);padding:14px 16px;border-radius:10px;
+         overflow-x:auto;font:13.5px/1.65 ui-monospace,SFMono-Regular,Consolas,monospace;
+         margin:16px 0;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.doc code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:13.5px;
+          background:#eef3f4;padding:1px 5px;border-radius:4px}
+.doc pre code{background:none;padding:0;color:inherit;font-size:inherit}
+.doc table{border-collapse:collapse;width:100%;margin:16px 0;font-size:14.5px}
+.doc th,.doc td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+.doc th{background:#f3f7f7;font-weight:600}
+.doc hr{border:none;border-top:1px solid var(--line);margin:32px 0}
+.doc img{max-width:100%}
+.pager{display:flex;justify-content:space-between;gap:16px;margin-top:48px;
+       padding-top:20px;border-top:1px solid var(--line);font-size:14px}
+.pager a{display:block;padding:10px 14px;border:1px solid var(--line);border-radius:8px;
+         max-width:46%;background:#fff}
+.pager .nx{text-align:right;margin-left:auto}
+.foot{margin-top:36px;color:#a4adb2;font-size:12px}
+@media(max-width:860px){
+  .side{position:static;width:auto;border-right:none;border-bottom:1px solid var(--line)}
+  main{margin:0;padding:24px 18px 60px}
+  .doc h1{font-size:23px}
+}
+
+</style></head><body>
+<aside class="side">
+  <div class="brand"><a href="index.html">HR Agent 工程实战教程</a>
+    <span>Python 3.12 · Vue 3 · HR 场景</span></div>
+  <nav><div class="grp">总目录</div>
+<a href="index.html" data-href="index.html">HR 场景 Agent 工程教程（LangChain / LangGraph 全程实战）</a>
+<div class="grp">一 · 打地基</div>
+<a href="00-导读与环境准备.html" data-href="00-导读与环境准备.html">00 · 导读与环境准备</a>
+<a href="01-第一次调用大模型.html" data-href="01-第一次调用大模型.html">01 · 第一次调用大模型（LangChain 版）</a>
+<a href="02-Prompt与结构化输出.html" data-href="02-Prompt与结构化输出.html">02 · Prompt 与结构化输出</a>
+<div class="grp">二 · Agent 内核</div>
+<a href="03-Agent-Loop.html" data-href="03-Agent-Loop.html">03 · Agent Loop：从 `create_agent` 到自己搭图</a>
+<a href="04-Tool-Calling.html" data-href="04-Tool-Calling.html">04 · Tool Calling：模型选错工具，90% 是描述写糊了</a>
+<a href="05-Planning.html" data-href="05-Planning.html">05 · Planning：把"计划"变成可校验的数据</a>
+<a href="06-Workflow与状态机.html" data-href="06-Workflow与状态机.html">06 · Workflow 与状态机：该定死的地方别让模型发挥</a>
+<div class="grp">三 · 记忆与上下文</div>
+<a href="07-Memory.html" data-href="07-Memory.html">07 · Memory：会话记忆、长期记忆、用户记忆</a>
+<a href="08-Context-Engineering.html" data-href="08-Context-Engineering.html">08 · Context Engineering：Token 预算、裁剪、压缩</a>
+<div class="grp">四 · RAG 与知识</div>
+<a href="09-RAG基础.html" data-href="09-RAG基础.html" class="cur">09 · RAG 基础：解析、切片、向量化、召回、拼 Prompt</a>
+<a href="10-RAG进阶.html" data-href="10-RAG进阶.html">10 · RAG 进阶：混合检索、Rerank、版本治理、引用质量</a>
+<a href="11-RAG高阶.html" data-href="11-RAG高阶.html">11 · RAG 高阶：结构化知识、Text2SQL、Text2Cypher</a>
+<div class="grp">五 · 协作与生态</div>
+<a href="12-MCP与Skill.html" data-href="12-MCP与Skill.html">12 · MCP / Skill / Plugin：工具的"插座标准"</a>
+<a href="13-Multi-Agent.html" data-href="13-Multi-Agent.html">13 · Multi-Agent：分工、交接、仲裁</a>
+<a href="14-Human-in-the-loop.html" data-href="14-Human-in-the-loop.html">14 · Human-in-the-loop：该停的地方必须停下来等人</a>
+<div class="grp">六 · 生产级可靠性</div>
+<a href="15-可靠性工程.html" data-href="15-可靠性工程.html">15 · 可靠性工程：重试、超时、降级、幂等、熔断</a>
+<a href="16-Sandbox与长任务.html" data-href="16-Sandbox与长任务.html">16 · 长任务：断点续跑、分批、沙箱、预算</a>
+<a href="17-可观测性与评测.html" data-href="17-可观测性与评测.html">17 · 可观测性与评测：没有评测就没有迭代</a>
+<div class="grp">七 · 交付与落地</div>
+<a href="18-Vue3前端工作台.html" data-href="18-Vue3前端工作台.html">18 · Vue3 前端工作台：SSE 把"Agent 在想什么"显示出来</a>
+<a href="19-模型工程与部署.html" data-href="19-模型工程与部署.html">19 · 模型工程：选档、路由、成本、部署</a>
+<a href="20-岗位地图与学习路径.html" data-href="20-岗位地图与学习路径.html">20 · 岗位地图与学习路径</a></nav>
+</aside>
+<main>
+  <article class="doc"><h1 id="09-RAG-基础-解析-切片-向量化-召回-拼-Prompt">09 · RAG 基础：解析、切片、向量化、召回、拼 Prompt</h1>
+<h2 id="9-1-本章目标">9.1 本章目标</h2>
+<ol>
+<li>用 <code>RecursiveCharacterTextSplitter</code> 切片，理解"切断了条件—结论"的后果；</li>
+<li>用 <code>InMemoryVectorStore</code> + <code>as_retriever()</code> 做召回；</li>
+<li>用 LCEL 把"检索 → 拼 Prompt → 生成 → 解析"串成一条 RAG 链；</li>
+<li>知道三种典型失败和三个最低成本的兜底。</li>
+</ol>
+<p>跑法：<code>python ch09_rag_basics/main.py</code></p>
+<h2 id="9-2-切片-三种切法-差别很大">9.2 切片：三种切法，差别很大</h2>
+<pre><code class="lang-python">splitters = {
+    "固定 80 字（不对）": RecursiveCharacterTextSplitter(chunk_size=80, chunk_overlap=0, separators=[""]),
+    "按段落（次优）":     RecursiveCharacterTextSplitter(chunk_size=140, chunk_overlap=20, separators=["\n\n", "\n"]),
+    "按标题层级（对）":   RecursiveCharacterTextSplitter(chunk_size=110, chunk_overlap=0,
+                                                    separators=["\n## "], keep_separator=True),
+}</code></pre>
+<p>实测（同一份 332 字的《年假管理制度》）：</p>
+<pre><code>  固定 80 字（不对） → 5 块，平均 66 字
+      · 正后按司龄计算年假：满 1 年 5 天…       ← 开头被切掉了"转"
+  按段落（次优） → 3 块，平均 109 字
+  按标题层级（对） → 5 块，平均 64 字
+      · ## 年假天数 / 转正后按司龄计算年假…     ← 条件与结论在同一块里</code></pre>
+<p><strong>切片单位应该是"语义单元"，不是"字数"。</strong> 制度文档的语义单元就是"## 一节"。</p>
+<p>三个参数的经验值：</p>
+<table><thead><tr><th>参数</th><th>经验</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>chunk_size</code></td><td>中文 300–800 字</td><td>太小丢上下文，太大召回不准且浪费 token</td></tr>
+<tr><td><code>chunk_overlap</code></td><td>10%–20%</td><td>防止答案正好落在切口上</td></tr>
+<tr><td><code>separators</code></td><td>按文档结构定</td><td>Markdown 用 <code>\n## </code>；合同用条款号；代码用函数边界</td></tr>
+</tbody></table>
+<h2 id="9-3-每块都要挂元数据">9.3 每块都要挂元数据</h2>
+<pre><code class="lang-python">Document(page_content=chunk, metadata={
+    "source": "sop_leave.md", "section": "年假天数", "version": "v3", "updated": "2026-09-01"})</code></pre>
+<p>元数据不是"顺手加的"，是后面四件事的基础：<strong>引用标注</strong>（第 10 章）、<strong>版本过滤</strong>（第 10 章）、<strong>权限过滤</strong>（部门/密级）、<strong>增量更新</strong>（第 11 章）。</p>
+<h2 id="9-4-建库与召回">9.4 建库与召回</h2>
+<pre><code class="lang-python">store = InMemoryVectorStore(LocalHashEmbedding())
+store.add_documents(docs)
+retriever = store.as_retriever(search_kwargs={"k": 3})
+retriever.invoke("年假怎么请")</code></pre>
+<p><code>LocalHashEmbedding</code> 是本章提供的<strong>离线向量</strong>（中文 2-gram 哈希 + 归一化）。它不是 SOTA 模型，但保留字面相关性，够把"切片/召回/重排"讲清楚。真实项目换：</p>
+<pre><code class="lang-python">from langchain_openai import OpenAIEmbeddings
+emb = OpenAIEmbeddings(model="text-embedding-3-small", base_url=..., api_key=...)</code></pre>
+<h2 id="9-5-一条完整的-RAG-链">9.5 一条完整的 RAG 链</h2>
+<pre><code class="lang-python">rag = (
+    {"context": (lambda x: x["question"]) | retriever | format_docs,
+     "question": lambda x: x["question"]}
+    | PROMPT | model | StrOutputParser()
+)
+rag.invoke({"question": "试用期员工有年假吗？"})</code></pre>
+<p>这个 dict 写法值得记住：<strong>LCEL 里一个 dict 就是并行分支。</strong></p>
+<ul>
+<li><code>context</code> 分支走检索链；</li>
+<li><code>question</code> 分支原样透传；</li>
+<li>两个分支的结果作为 prompt 的变量。</li>
+</ul>
+<h2 id="9-6-三种典型失败">9.6 三种典型失败</h2>
+<table><thead><tr><th>失败</th><th>为什么</th><th>兜底</th></tr></thead><tbody>
+<tr><td>召回到了但没答到</td><td>切片把"条件"和"结论"拆开</td><td>按语义单元切；<code>chunk_overlap</code> 兜住切口</td></tr>
+<tr><td>答了但没来源</td><td>prompt 没强制引用</td><td>写死 <code>[来源: 章节]</code>，答案里没来源就算失败</td></tr>
+<tr><td>该说没有却说有</td><td>没给兜底话术</td><td>prompt 里写"资料里没有就说不知道，并告诉用户找谁"</td></tr>
+</tbody></table>
+<p>三个最低成本的兜底（按顺序上）：</p>
+<ol>
+<li>prompt 里写死兜底话术 + 替代动作（找 HRBP）；</li>
+<li>强制引用标注，无引用即判失败；</li>
+<li>检索分数低于阈值就不硬答，转人工/追问。</li>
+</ol>
+<h2 id="9-7-常见坑">9.7 常见坑</h2>
+<ol>
+<li><strong>切片太小</strong>：召回一堆半句话，模型只能编。</li>
+<li><strong>没有元数据</strong>：答对了也没法标来源，评审时无法追责。</li>
+<li><strong><code>k=10</code> 全塞进去</strong>：上下文被噪声占满，准确率反而下降。先用 k=3，加 rerank 再放宽（第 10 章）。</li>
+<li><strong>把 Embedding 模型和向量库混着换</strong>：换模型必须重建索引，旧向量和新向量不在同一个空间。</li>
+<li><strong>以为"接个向量库"就叫 RAG</strong>：没有切片策略、没有元数据、没有引用校验，那只是"模糊搜索 + 让模型自由发挥"。</li>
+</ol>
+<h2 id="9-8-自检清单">9.8 自检清单</h2>
+<ul>
+<li>[ ] 能说出切片三个参数各自的取舍</li>
+<li>[ ] 知道元数据在后续四件事里的作用</li>
+<li>[ ] 能画出 RAG 链的四个环节</li>
+<li>[ ] 能说出三种失败对应的兜底</li>
+</ul>
+<h2 id="9-9-练习">9.9 练习</h2>
+<ol>
+<li>把 <code>separators</code> 改成 <code>["\n\n"]</code>，观察"年假没休完能折钱吗"的召回变化。</li>
+<li>给 <code>metadata</code> 加 <code>effective_from</code>，检索时过滤未生效的版本。</li>
+<li>在 RAG 链前面加一步"查询改写"（把口语问题改成制度术语），比较召回质量。</li>
+</ol></article>
+  <footer class="pager"><a class="pr" href="08-Context-Engineering.html">← 08 · Context Engineering：Token 预算、裁剪、压缩</a>
+<a class="nx" href="10-RAG进阶.html">10 · RAG 进阶：混合检索、Rerank、版本治理、引用质量 →</a></footer>
+  <div class="foot">本教程示例数据均为虚构，仅用于教学。</div>
+</main>
+</body></html>

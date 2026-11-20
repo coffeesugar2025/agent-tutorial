@@ -1,0 +1,19 @@
+# 本文件保留为「LangChain 依赖来源说明」。
+# 自 v2.0 起，LangChain / LangGraph 已是教程主线的必装依赖，
+# 统一写在 requirements.txt 里，直接执行：
+#
+#     pip install -r requirements.txt
+#
+# 下面这组版本组合经过本工程实测（2026-11）：
+#   langchain 0.3.x + langchain-core 0.3.x + langgraph 0.3.x
+#   langchain-ollama 0.3.x + langchain-community 0.3.x
+#   langchain-mcp-adapters 0.1.x + mcp 1.x（mcp 2.x 不兼容）
+#
+# 若只想单独补装框架层（例如在已有环境里增量安装）：
+langchain>=0.3,<1.0
+langchain-core>=0.3,<1.0
+langgraph>=0.2,<0.4
+langchain-ollama>=0.2,<0.4
+langchain-community>=0.3,<0.4
+langchain-mcp-adapters>=0.1,<0.2
+mcp>=1.9,<2
