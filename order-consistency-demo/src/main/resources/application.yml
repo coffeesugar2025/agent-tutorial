@@ -1,0 +1,40 @@
+spring:
+  application:
+    name: order-consistency-demo
+  datasource:
+    url: jdbc:mysql://localhost:3306/order_demo?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
+    username: root
+    password: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema.sql
+      data-locations: classpath:data.sql
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+    virtual-host: /
+    # Outbox 发送端必须开：confirm 保证「broker 收到了」，returns 保证「消息没被静默丢弃」
+    publisher-confirm-type: correlated
+    publisher-returns: true
+
+outbox:
+  poll-ms: 500
+  sender: rabbit                 # rabbit | log（log 为不连 broker 的纯日志实现）
+  confirm-timeout-ms: 5000
+
+app:
+  rabbit:
+    exchange: order.exchange
+    queue-created: order.created.q
+    queue-paid: order.paid.q
+
+server:
+  port: 8080
+
+logging:
+  level:
+    com.example.order: INFO
