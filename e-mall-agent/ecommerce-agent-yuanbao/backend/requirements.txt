@@ -1,0 +1,21 @@
+# LangChain 1.5.x（1.5.0+ 要求 Python >= 3.11，langchain-core >= 1.8）
+# 1.4 起 MCP 能力内置于 langchain.mcp（基于 FastMCP），由 extra [mcp] 提供
+langchain==1.5.2
+langchain[mcp]==1.5.2
+
+# 真实模型通道：init_chat_model("openai:gpt-4o-mini") 会按需加载
+langchain-openai>=1.0.0
+
+# Web 层
+fastapi>=0.115.0
+uvicorn[standard]>=0.32.0
+pydantic>=2.9.0
+pydantic-settings>=2.6.0
+
+# 测试 / HTTP 客户端
+httpx>=0.27.0
+pytest>=8.3.0
+pytest-asyncio>=0.24.0
+
+# 可选：需要兼容旧写法时再装，代码已做 try-import 兜底
+# langchain-mcp-adapters>=0.1.0
