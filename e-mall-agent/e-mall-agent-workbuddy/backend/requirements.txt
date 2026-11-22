@@ -1,0 +1,15 @@
+# LangChain 1.5 runtime (verified 2026-11: langchain 1.5.2 / langgraph 1.2.x)
+langchain==1.5.2
+langgraph==1.2.23
+langchain-mcp-adapters>=0.1.0
+mcp>=1.10.0
+fastapi>=0.115
+uvicorn[standard]>=0.34
+pydantic>=2.9
+pydantic-settings>=2.6
+httpx>=0.27
+numpy>=1.26
+python-multipart>=0.0.12
+
+# Optional: real LLM provider (offline rule-based model is used by default)
+# langchain-openai>=1.0.0
