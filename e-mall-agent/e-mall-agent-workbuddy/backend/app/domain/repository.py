@@ -182,8 +182,27 @@ _repository: InMemoryRepository | None = None
 
 
 def get_repository() -> InMemoryRepository:
+    """返回当前仓储：配置 ECOM_MYSQL_URL 时使用 MySQL，否则内存仓储。
+
+    惰性导入 infra 包以避免与 domain.repository 形成循环依赖；环境变量未配置
+    或 pymysql 不可用时完全走原有内存路径，测试与本地零配置行为不变。
+    """
     global _repository
     if _repository is None:
+        try:
+            from ..infra.mysql_repo import MySQLRepository
+            from ..infra.settings import InfraSettings
+
+            settings = InfraSettings.from_env()
+            if settings.mysql_url:
+                candidate = MySQLRepository(settings=settings)
+                if candidate.status()["active"]:
+                    candidate.initialize()
+                    _repository = candidate  # type: ignore[assignment]
+                    return _repository
+        except Exception:
+            # 基础设施不可用不应阻断应用启动，继续走内存仓储
+            pass
         _repository = InMemoryRepository()
     return _repository
 

@@ -32,6 +32,12 @@ const routes: RouteRecordRaw[] = [
     component: () => import('../views/AdminView.vue'),
     meta: { title: '观测与权限' },
   },
+  {
+    path: '/lab',
+    name: 'lab',
+    component: () => import('../views/LabView.vue'),
+    meta: { title: '能力实验室' },
+  },
   { path: '/:pathMatch(.*)*', redirect: '/chat' },
 ]
 

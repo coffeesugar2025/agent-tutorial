@@ -1,0 +1,61 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ecom-agent-backend-python"
+version = "1.0.0"
+description = "星图商城 · 电商智能体后端（FastAPI + LangChain 1.5 + LangGraph）"
+requires-python = ">=3.12"
+readme = "README.md"
+
+[tool.setuptools]
+packages = ["app"]
+
+# ---------------------------------------------------------------------------
+# 代码风格：black 88 列；ruff 覆盖 pycodestyle/pyflakes/import 排序/安全规则
+# ---------------------------------------------------------------------------
+[tool.black]
+line-length = 100
+target-version = ["py312"]
+extend-exclude = "(var|eval_data|\\.venv)"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+exclude = ["var", "eval_data", ".venv"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "C4", "SIM", "ASYNC", "S"]
+ignore = [
+    "E501",   # 行长由 black 保证
+    "B008",   # FastAPI 依赖注入惯用 Depends() 作为默认值
+    "S101",   # 测试中允许 assert
+    "S311",   # mock/降级路径不用于密码学
+    "SIM105", # 允许显式 try/except/pass 以便记录指标
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S105", "S106", "S108", "E402"]
+"scripts/*" = ["S105", "S106"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["app"]
+
+# ---------------------------------------------------------------------------
+# pytest：单元测试默认离线（MOCK LLM + hash embedding），不依赖外部服务
+# ---------------------------------------------------------------------------
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+addopts = "-q --strict-markers"
+markers = [
+    "unit: 纯逻辑单元测试",
+    "integration: 依赖 DB/接口的集成测试（SQLite 内存库）",
+    "e2e: 端到端链路（Mock LLM）",
+    "slow: 较慢用例",
+]
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore::PendingDeprecationWarning",
+]

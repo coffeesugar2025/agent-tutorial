@@ -76,7 +76,9 @@ async def login(payload: LoginRequest) -> dict[str, Any]:
         raise HTTPException(status_code=401, detail="用户名或密码错误")
     token = issue_token(user, get_settings().secret_key, get_settings().token_ttl_seconds)
     get_audit_logger().record(user.id, "auth.login", "token", "allow")
+    # 同时提供嵌套 user 对象（Java 后端 / 统一契约）与扁平字段（现有前端），保持向后兼容
     return {"token": token, "user_id": user.id, "role": user.role,
+            "user": {"id": user.id, "name": user.name, "role": user.role},
             "permissions": permissions_for(user.role)}
 
 

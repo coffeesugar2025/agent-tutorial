@@ -2,18 +2,21 @@
 import { computed, onMounted } from 'vue'
 import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router'
 import { useAppStore } from './stores/app'
+import { getBackendPreset } from './api/client'
 
 const store = useAppStore()
 const route = useRoute()
 const router = useRouter()
 
 const pageTitle = computed(() => (route.meta.title as string) || '控制台')
+const backendLabel = computed(() => getBackendPreset(store.backend).label)
 
 const navItems = [
   { path: '/chat', label: '智能对话', icon: 'chat' },
   { path: '/products', label: '商品目录', icon: 'grid' },
   { path: '/orders', label: '订单管理', icon: 'list' },
   { path: '/workflow', label: '工作流', icon: 'flow' },
+  { path: '/lab', label: '能力实验室', icon: 'lab' },
   { path: '/admin', label: '观测与权限', icon: 'shield' },
 ]
 
@@ -59,6 +62,7 @@ function doLogout(): void {
           <svg v-else-if="item.icon === 'grid'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
           <svg v-else-if="item.icon === 'list'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
           <svg v-else-if="item.icon === 'flow'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="4" width="6" height="5" rx="1"/><rect x="16" y="4" width="6" height="5" rx="1"/><rect x="9" y="15" width="6" height="5" rx="1"/><path d="M8 6.5h8M5 9v4h7v2M19 9v4h-3"/></svg>
+          <svg v-else-if="item.icon === 'lab'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 3h6M10 3v6L4.2 18a2 2 0 0 0 1.7 3h12.2a2 2 0 0 0 1.7-3L14 9V3"/><path d="M7 15h10"/></svg>
           <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3 4 6v6c0 5 3.4 8.4 8 9 4.6-.6 8-4 8-9V6l-8-3Z"/><path d="m9 12 2 2 4-4"/></svg>
           <span>{{ item.label }}</span>
         </RouterLink>
@@ -85,6 +89,10 @@ function doLogout(): void {
           <span class="crumb">电商智能助手 / {{ pageTitle }}</span>
         </div>
         <div class="topbar-right">
+          <span class="engine-chip" :title="store.apiBaseUrl">
+            <span class="engine-dot"></span>
+            {{ backendLabel }}
+          </span>
           <span class="status-dot"></span>
           <span class="status-text">服务运行中</span>
           <span class="role-chip">{{ roleLabels[store.user?.role || ''] || (store.isLoggedIn ? store.user?.role : '访客') }}</span>
@@ -258,6 +266,12 @@ a { color: inherit; text-decoration: none; }
 .topbar-divider { width: 1px; height: 16px; background: #e3e6ec; }
 .crumb { font-size: 12px; color: #9ca3af; }
 .topbar-right { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #6b7280; }
+.engine-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 3px 10px; border-radius: 999px;
+  background: #eef4ff; color: #1d4ed8; font-weight: 500;
+}
+.engine-dot { width: 6px; height: 6px; border-radius: 50%; background: #3b82f6; }
 .status-dot { width: 7px; height: 7px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 0 3px #e7f7ee; }
 .role-chip {
   margin-left: 8px; padding: 3px 10px; border-radius: 999px;

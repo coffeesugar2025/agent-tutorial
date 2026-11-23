@@ -87,9 +87,16 @@ cd backend && python3 mcp_server/server.py http     # 监听 127.0.0.1:9000/mcp
 ecommerce-agent/
 ├── .env.example                 配置模板
 ├── README.md                   本文件
+├── scripts/
+│   ├── build_testcase_xlsx.py  ★ 生成 Excel 测试用例集（可重复生成）
+│   ├── build_interview_docx.py ★ 生成 100 题 Word 文档（可重复生成）
+│   └── interview_questions.py  ★ 100 题题库数据（10 章 × 10 题）
 ├── docs/
 │   ├── 01-产品功能.md
-│   └── 02-技术架构.md
+│   ├── 02-技术架构.md
+│   ├── 03-LangChain知识点测试矩阵.md
+│   ├── LangChain1.5_电商智能体_测试用例.xlsx  ★ 89 条输入/输出用例
+│   └── LangChain1.5电商智能体_Agent面试题100题.docx  ★ 100 题 + 详细答案
 ├── backend/
 │   ├── requirements.txt        Python 依赖
 │   ├── pytest.ini
@@ -107,7 +114,7 @@ ecommerce-agent/
 │   │   │   ├── prompt.py       系统提示词
 │   │   │   └── runtime.py      astream_events → SSE 协议 + 卡片提取
 │   │   └── api/routes.py       8 个 HTTP 接口
-│   └── tests/                  ★ 54 个后端测试
+│   └── tests/                  ★ 97 个后端测试（54 工程 + 43 知识点专项）
 └── frontend/
     ├── scripts/verify-core.mjs  ★ 零依赖核心校验（Node 24+，无需 npm install）
     ├── src/
@@ -141,7 +148,7 @@ SSE 事件序列：`meta → (tool_start → tool_end → cards)* → token* →
 
 ## 6. 测试
 
-### 后端（已实跑：54 passed）
+### 后端（已实跑：97 passed）
 
 ```bash
 cd backend && python3 -m pytest -q
@@ -155,8 +162,35 @@ cd backend && python3 -m pytest -q
 | `test_api.py` | 10 | health/tools/audit/intent、同步对话、SSE 协议顺序、越权防护、422 |
 | `test_streaming.py` | 5 | 卡片提取、增量 token、事件序列与 done 统计 |
 | `test_agent_e2e.py` | 11 | **真实 MCP 子进程 + create_agent 全链路**、多工具编排、checkpointer 记忆、中间件拦截、MCP 宕机降级 |
+| `test_langchain_knowledge_points.py` | **43** | **按 12 个 LangChain 1.5 知识点逐条断言框架行为**（见下） |
 
 > `test_agent_e2e.py` 不做任何 mock patch：模型是脚本化的，但工具是真实 MCP 工具，能证明工具确实被 LangGraph ToolNode 执行。
+
+#### 按知识点筛跑
+
+```bash
+cd backend
+python3 -m pytest tests/test_langchain_knowledge_points.py -v        # 43 例
+python3 -m pytest tests/test_langchain_knowledge_points.py -k kp4 -v  # 只看 MCP
+python3 -m pytest tests/test_langchain_knowledge_points.py -k "kp5 or kp7" -v
+```
+
+| 前缀 | 知识点 | 例数 |
+|---|---|---|
+| `kp1` | `create_agent` / Agent 循环 | 3 |
+| `kp2` | `BaseChatModel` / `bind_tools` / Function Calling | 4 |
+| `kp3` | `@tool` / `args_schema` | 2 |
+| `kp4` | `langchain.mcp.MCPAdapter` / `MCPConfig` | 4 |
+| `kp5` | `AgentMiddleware` / 内置中间件 / `override` | 6 |
+| `kp6` | `response_format` / 三种 Strategy | 5 |
+| `kp7` | `checkpointer` / `thread_id` | 4 |
+| `kp8` | `astream_events` / `tool-call-delta` | 4 |
+| `kp9` | `content_blocks` / `ToolMessage` | 3 |
+| `kp10` | `init_chat_model` / `provider:model` | 2 |
+| `kp11` | LangGraph 运行时 / `recursion_limit` | 2 |
+| `kp12` | 1.5 特性：Decisions / Router / 内置 MCP | 4 |
+
+完整映射、断言要点与 4 个实测踩坑见 `docs/03-LangChain知识点测试矩阵.md`。
 
 ### 前端
 
@@ -185,7 +219,28 @@ cd frontend && node --no-warnings scripts/verify-core.mjs
 
 > 说明：本次交付环境中 npm 依赖安装受网络超时限制，`vitest run` 与 `vite build`
 > 未能在沙盒内完成；前端核心逻辑已用上述零依赖方式等价实跑验证，组件级测试与构建
-> 请在本地按「标准方式」执行。后端 54 例与前端核心 8 断言均为真实运行结果。
+> 请在本地按「标准方式」执行。后端 97 例与前端核心 8 断言均为真实运行结果。
+
+### Excel 测试用例集（输入 / 预期输出 / 实测输出）
+
+`docs/LangChain1.5_电商智能体_测试用例.xlsx`：**89 条可执行用例**，每行都给出
+「H 输入 → I 预期输出 → J 实测输出 → K 状态」，覆盖 12 个 LangChain 知识点。
+
+| 工作表 | 行数 | 内容 |
+|---|---|---|
+| 使用说明 | — | 版本基线、执行命令、统计公式、字段字典 |
+| 知识点用例 | 43 | 与 `test_langchain_knowledge_points.py` 一一对应，逐条断言框架行为 |
+| Agent场景用例 | 20 | 自然语言输入 → 回答 / 工具调用 / 结构化卡片 / SSE 事件序列 |
+| 工具边界用例 | 14 | 工具函数入参 → 返回输出（含门槛、封顶、超卖、越权、缺货等边界） |
+| API接口用例 | 12 | HTTP / SSE 请求体 → 状态码与响应体 |
+| 知识点覆盖矩阵 | 12 | `COUNTIF` 公式统计每个知识点的双层覆盖，`12/12 已覆盖` |
+
+统计与覆盖判定全部用 Excel 公式（59 个），已写入缓存值，打开即显示；
+修改 K 列状态后统计自动刷新。需要重新生成时执行：
+
+```bash
+python3 scripts/build_testcase_xlsx.py
+```
 
 ---
 
@@ -205,9 +260,33 @@ cd frontend && node --no-warnings scripts/verify-core.mjs
 | 要求 | 位置 |
 |---|---|
 | ① 前后端代码 | `backend/` + `frontend/`（全量可运行） |
-| ② 测试用例 | `backend/tests/` 54 例（已跑通）+ `frontend/src/__tests__/` 12 例 + `scripts/verify-core.mjs`（已跑通） |
+| ② 测试用例 | 后端 **97 例**（54 工程 + 43 知识点专项，已跑通）+ 前端 12 例 + `scripts/verify-core.mjs`（已跑通）+ **Excel 89 条输入/输出用例** |
 | ③ 产品功能 | `docs/01-产品功能.md` |
 | ④ 技术架构 | `docs/02-技术架构.md` |
+| 附：知识点矩阵 | `docs/03-LangChain知识点测试矩阵.md` |
+| 附：Excel 用例集 | `docs/LangChain1.5_电商智能体_测试用例.xlsx` |
+| 附：Agent 面试题集 | `docs/LangChain1.5电商智能体_Agent面试题100题.docx`（100 题 + 详细答案） |
+
+### 8.1 Agent 面试题 100 题（Word）
+
+`docs/LangChain1.5电商智能体_Agent面试题100题.docx`：**10 章 × 10 题 = 100 题**，
+每题带【基础 / 进阶 / 实战 / 设计】标签与详细参考答案，答案全部落到本项目的文件、
+函数、配置、测试或实测踩坑。含封面、使用说明、目录域、每章题目速览表、
+12 个知识点→题号索引、项目速查表，页眉页脚与页码齐全。
+
+| 章 | 主题 | 章 | 主题 |
+|---|---|---|---|
+| 一 | LangChain 1.5 基础与版本演进 | 六 | response_format 结构化输出 |
+| 二 | create_agent 与 Agent 循环 | 七 | checkpointer / thread_id / 多轮会话 |
+| 三 | BaseChatModel / bind_tools / 离线 mock | 八 | 流式输出、SSE 与前端 |
+| 四 | 工具与 MCP（MCPAdapter / 降级） | 九 | 安全、提示词与业务事实约束 |
+| 五 | AgentMiddleware 与治理 | 十 | 工程架构、测试与生产化 |
+
+难度分布：基础 39 / 进阶 14 / 实战 23 / 设计 24。重新生成：
+
+```bash
+python3 scripts/build_interview_docx.py   # 题库数据在 scripts/interview_questions.py
+```
 
 ---
 

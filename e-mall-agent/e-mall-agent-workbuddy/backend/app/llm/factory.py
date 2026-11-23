@@ -183,6 +183,16 @@ class RuleBasedChatModel(BaseChatModel):
 
 
 def get_model() -> BaseChatModel:
+    """按配置创建模型。
+
+    优先级：
+    1. 旧版 ``ECOM_LLM_PROVIDER=openai``（向后兼容）；
+    2. 新版 ``ECOM_LLM_PROVIDERS`` 网关（deepseek / qwen / offline）；
+    3. 离线规则模型兜底（零 Key 可运行）。
+
+    网关使用惰性导入：``app.infra.llm_gateway`` 反向依赖本模块的 RuleBasedChatModel，
+    直接在模块顶层导入会产生循环依赖。
+    """
     settings = get_settings()
     if settings.llm_provider == "openai" and settings.openai_api_key:
         try:
@@ -192,4 +202,13 @@ def get_model() -> BaseChatModel:
                               temperature=0, streaming=True)
         except ImportError as exc:  # pragma: no cover - optional dependency
             raise RuntimeError("ECOM_LLM_PROVIDER=openai 需要安装 langchain-openai") from exc
+
+    from ..infra.settings import InfraSettings  # 惰性导入，避免循环依赖
+
+    infra = InfraSettings.from_env()
+    if any(name.strip().lower() != "offline"
+           for name in infra.provider_names if isinstance(name, str)):
+        from ..infra.llm_gateway import LLMGateway  # 惰性导入
+
+        return LLMGateway(infra).create_chat_model()
     return RuleBasedChatModel()

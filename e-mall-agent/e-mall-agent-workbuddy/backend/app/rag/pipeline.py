@@ -32,6 +32,18 @@ class RAGPipeline:
     def __init__(self, top_k: int | None = None) -> None:
         self.top_k = top_k or get_settings().rag_top_k
         self.store = InMemoryVectorStore(HashEmbeddings())
+        # 配置 ECOM_MILVUS_URL 时切换到 Milvus（不可用时适配器自动回退内存向量库）
+        try:
+            from ..infra.milvus_store import MilvusVectorStore
+            from ..infra.settings import InfraSettings
+
+            settings = InfraSettings.from_env()
+            if settings.milvus_url:
+                candidate = MilvusVectorStore(settings=settings)
+                if candidate.status()["active"]:
+                    self.store = candidate  # type: ignore[assignment]
+        except Exception:
+            pass
         self.ingest()
 
     def ingest(self, docs: list[dict[str, str]] | None = None) -> int:

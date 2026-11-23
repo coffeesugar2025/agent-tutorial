@@ -1,0 +1,37 @@
+# Python
+.venv/
+**/.venv/
+__pycache__/
+**/__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+
+# Node
+node_modules/
+**/node_modules/
+dist/
+**/dist/
+.vite/
+
+# Java
+target/
+**/target/
+
+# Git / IDE / OS
+.git/
+.gitignore
+.idea/
+.vscode/
+*.log
+.DS_Store
+
+# Local secrets & artifacts
+.env
+**/.env
+!**/.env.example
+output/
+docs/**/*.xlsx
+docs/**/*.docx
+.workbuddy/

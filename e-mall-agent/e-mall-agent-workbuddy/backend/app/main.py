@@ -7,6 +7,9 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+from .api.capabilities import router as capabilities_router
+from .api.frontier import router as frontier_router
+from .api.infra import router as infra_router
 from .api.routes import router
 from .config import get_settings
 from .rag.pipeline import get_rag_pipeline
@@ -25,6 +28,9 @@ app.add_middleware(
     allow_methods=["*"], allow_headers=["*"],
 )
 app.include_router(router)
+app.include_router(capabilities_router)
+app.include_router(frontier_router)
+app.include_router(infra_router)
 
 
 @app.exception_handler(PermissionError)

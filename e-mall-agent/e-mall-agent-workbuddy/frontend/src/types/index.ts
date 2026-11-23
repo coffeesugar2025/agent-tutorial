@@ -141,3 +141,82 @@ export interface FulfillmentResult {
   steps: string[]
   interrupt?: ApprovalInterrupt
 }
+
+export interface PlanResult {
+  answer: string
+  trace: Array<Record<string, unknown>>
+  terminated_reason: string
+  mode: string
+}
+
+export interface HybridSource {
+  channel: string
+  rank: number
+  raw_score: number
+  contribution: number
+}
+
+export interface HybridHit {
+  id: string
+  content: string
+  score: number
+  rank: number
+  metadata: Record<string, unknown>
+  sources: Record<string, HybridSource>
+}
+
+export interface HybridResult {
+  count: number
+  results: HybridHit[]
+  context: string
+}
+
+export interface MemoryResult {
+  working: unknown[]
+  episodes: unknown[]
+  user_summary: string
+  injected_context: string
+  token_estimate: number
+}
+
+export interface SandboxResult {
+  ok: boolean
+  value: unknown
+  stdout: string
+  error: string
+  duration_ms: number
+}
+
+export interface Text2SQLResult {
+  sql: string
+  params: unknown[]
+  columns: string[]
+  rows: Array<Record<string, unknown>>
+}
+
+export interface MetricsSummary {
+  agent_runs: number
+  success_rate: number
+  tool_calls: number
+  tool_error_rate: number
+  total_tokens: number
+  agent_latency_ms: { count: number; p50: number; p95: number; p99: number }
+  tool_latency_ms: { count: number; p50: number; p95: number; p99: number }
+}
+
+export interface MetricsSnapshot {
+  counters: Record<string, unknown>
+  gauges: Record<string, unknown>
+  histograms: Record<string, unknown>
+  summary: MetricsSummary
+}
+
+export interface EvalReport {
+  total: number
+  passed: number
+  pass_rate: number
+  per_case: Array<Record<string, unknown>>
+  by_tag: Record<string, unknown>
+  avg_latency_ms: number
+  p95_latency_ms: number
+}

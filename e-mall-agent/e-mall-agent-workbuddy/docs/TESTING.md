@@ -1,5 +1,7 @@
 # 测试用例与验证
 
+> **双后端版测试体系（单元/集成/产品/E2E/一致性/可靠性 + Java + 前端）见 [`TEST_SUITE.md`](TEST_SUITE.md)**，本文件保留 Python 单栈的历史用例明细。
+
 ## 1. 运行方式
 
 ```bash
@@ -15,7 +17,7 @@ npm test -- --run
 npm run build
 ```
 
-后端测试结果：全量 **79 passed**（pytest 8.x / Python 3.13），包含一次真实的 MCP stdio 协议往返测试。其中按 LangChain 知识点组织的专项用例 39 例见 `docs/LANGCHAIN_TEST_CASES.md`。
+后端测试结果：基线 **248 passed**，经能力补齐后 **422 passed**（pytest 8.x / Python 3.12），另新增 `test_infra.py`（基础设施适配器）与 `test_cross_backend.py`（双后端一致性，两后端都在线时执行，否则跳过）。其中包含一次真实的 MCP stdio 协议往返测试。按 LangChain 知识点组织的专项用例 39 例见 `docs/LANGCHAIN_TEST_CASES.md`；能力图谱补齐专项 169 例见下表后半部分，逐项覆盖状态见 `docs/CAPABILITY_MATRIX.md`。前端测试与构建命令见 `TEST_SUITE.md`。
 
 ## 2. 后端用例清单
 
@@ -29,6 +31,12 @@ npm run build
 | `test_workflow.py` | 4 | 大额中断→恢复完成、拒绝→取消、小额跳过审批、订单不存在分支 |
 | `test_api.py` | 10 | 健康检查/OpenAPI、登录成功失败、guest 403、客户订单隔离、客服跨客户、对话+SSE、商品下单退款、工作流 API、上下文/RAG/图元数据 |
 | `test_langchain_knowledge.py` | 39 | 按 11 个 LangChain 知识点组织：消息/模型、LCEL、Tools、create_agent、Middleware、LangGraph 状态图、HITL、MCP、RAG、上下文工程、稳定性。清单见 `docs/LANGCHAIN_TEST_CASES.md` |
+| `test_planning.py` | 15 | 规划拆步与依赖、ReAct 多轮工具轨迹、最大步数终止、Plan-and-Solve 失败降级 |
+| `test_reliability.py` | 26 | 重试退避、超时降级、Fallback 链顺序、幂等并发只执行一次、终止条件各分支 |
+| `test_memory.py` | 21 | 会话/情景/用户三层记忆、跨用户隔离、预算淘汰、TTL、合规删除、并发写入 |
+| `test_rag_advanced.py` | 40 | 三种切片、BM25 中文召回、RRF 融合、重排、无命中返回空、版本/增量/撤销、引用质量、Text2SQL 注入防护、Cypher、图谱检索 |
+| `test_sandbox_resume.py` | 40 | AST 安全校验、危险 import 拦截、Code Mode 工具编排、Harness、Checkpoint 断点恢复、幂等步骤 |
+| `test_eval.py` | 27 | Counter/Gauge/Histogram P95、回调埋点、Golden Case 导入导出、规则评分、批量评测、Trace Replay、回归门禁 |
 
 ## 3. 关键断言示例
 
@@ -42,7 +50,8 @@ npm run build
 
 - `tests/api.spec.ts`：mock `fetch`，验证登录请求 URL/方法/Token 写入，以及 `chatStream` 将 SSE 帧解析为回调事件。
 - `tests/graph.spec.ts`：挂载 `GraphFlow`，断言节点标签与边渲染。
-- 实测结果：**2 个测试文件、4 个用例全部通过**；`npm run build`（`vue-tsc --noEmit` + Vite）成功，产出 `dist/`。
+- `tests/capability.spec.ts`：mock `fetch`，验证规划端点请求体与 Token、混合检索 RRF 来源明细解析、沙箱结果解析。
+- 实测结果：**3 个测试文件、7 个用例全部通过**；`npm run build`（`vue-tsc --noEmit` + Vite）成功，产出 `dist/`。
 
 ## 5. 手动验收清单
 
@@ -53,3 +62,8 @@ npm run build
 - [ ] 管理员运行 O1001 履约 → 出现审批中断 → 批准后订单 `shipped`。
 - [ ] 对话页上下文侧栏展示 4 个区块及字符数。
 - [ ] 工作流页两张 SVG 图正常显示节点与连线。
+- [ ] 能力实验室：Plan-and-Solve 执行"查询P001库存并下单1件"，出现 2 步轨迹。
+- [ ] 能力实验室：混合检索对比 hybrid/bm25/vector，看到 RRF 与来源明细。
+- [ ] 能力实验室：代码沙箱 `import os` 被安全策略拦截。
+- [ ] 能力实验室：Text2SQL 生成受限 SELECT；运行评测看到通过率与 P95。
+- [ ] 对话一次后刷新指标页，agent_runs 与 tool_calls 计数增加。

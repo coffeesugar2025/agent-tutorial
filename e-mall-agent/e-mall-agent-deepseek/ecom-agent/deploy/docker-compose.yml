@@ -1,0 +1,405 @@
+# =============================================================================
+# 星图商城 · 电商智能体平台  全栈编排（docker compose v2 语法）
+#
+# 启动：./scripts/up.sh --build        （或 docker compose up -d --build）
+# 停止：./scripts/down.sh
+#
+# 设计要点
+#   1. 两套后端（python/java）共用同一套 MySQL / Redis / RabbitMQ / Milvus，
+#      仅靠 APP_PORT（容器内 SERVER_PORT）区分，前端由 nginx 上游决定访问哪一套。
+#   2. 所有中间件都带 healthcheck，后端用 condition: service_healthy 等待就绪。
+#   3. 前端只在后端“已启动”后启动（service_started），不等待其 healthy：
+#      后端的健康探针依赖镜像内工具，不应反向阻塞静态站点。
+#   4. 网络统一 ecom-net，数据卷全部命名持久化；不使用 version / links 等废弃字段。
+# =============================================================================
+
+name: ${COMPOSE_PROJECT_NAME:-xingtu-ecom}
+
+# -----------------------------------------------------------------------------
+# 复用片段
+# -----------------------------------------------------------------------------
+x-logging: &default-logging
+  driver: "json-file"
+  options:
+    max-size: "50m"
+    max-file: "5"
+
+x-backend-env: &backend-env
+  APP_ENV: ${APP_ENV:-dev}
+  TZ: ${TZ:-Asia/Shanghai}
+  LOG_LEVEL: ${LOG_LEVEL:-INFO}
+  # --- MySQL ---
+  MYSQL_HOST: mysql
+  MYSQL_PORT: ${MYSQL_PORT:-3306}
+  MYSQL_DB: ${MYSQL_DB:-ecom_agent}
+  MYSQL_USER: ${MYSQL_USER:-ecom}
+  MYSQL_PASSWORD: ${MYSQL_PASSWORD:-ecom123}
+  # --- Redis ---
+  REDIS_HOST: redis
+  REDIS_PORT: ${REDIS_PORT:-6379}
+  REDIS_PASSWORD: ${REDIS_PASSWORD:-ecom123}
+  REDIS_DB: ${REDIS_DB:-0}
+  # --- RabbitMQ ---
+  RABBITMQ_HOST: rabbitmq
+  RABBITMQ_PORT: ${RABBITMQ_PORT:-5672}
+  RABBITMQ_USER: ${RABBITMQ_USER:-ecom}
+  RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-ecom123}
+  RABBITMQ_VHOST: ${RABBITMQ_VHOST:-ecom}
+  # --- Milvus / MinIO ---
+  MILVUS_HOST: milvus
+  MILVUS_PORT: ${MILVUS_PORT:-19530}
+  MILVUS_TOKEN: ${MILVUS_TOKEN:-}
+  MILVUS_COLLECTION_PREFIX: ${MILVUS_COLLECTION_PREFIX:-ecom}
+  MINIO_ENDPOINT: ${MINIO_ENDPOINT:-http://minio:9000}
+  MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+  MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin123}
+  MINIO_BUCKET: ${MINIO_BUCKET:-ecom-files}
+  # --- LLM ---
+  LLM_PRIMARY: ${LLM_PRIMARY:-deepseek}
+  MOCK_LLM: ${MOCK_LLM:-true}
+  DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
+  DEEPSEEK_BASE_URL: ${DEEPSEEK_BASE_URL:-https://api.deepseek.com/v1}
+  DEEPSEEK_MODEL: ${DEEPSEEK_MODEL:-deepseek-chat}
+  DASHSCOPE_API_KEY: ${DASHSCOPE_API_KEY:-}
+  DASHSCOPE_BASE_URL: ${DASHSCOPE_BASE_URL:-https://dashscope.aliyuncs.com/compatible-mode/v1}
+  QWEN_MODEL: ${QWEN_MODEL:-qwen-max}
+  QWEN_FAST_MODEL: ${QWEN_FAST_MODEL:-qwen-turbo}
+  OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+  OPENAI_BASE_URL: ${OPENAI_BASE_URL:-https://api.openai.com/v1}
+  OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o-mini}
+  OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://ollama:11434}
+  OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:7b}
+  # --- Embedding / Rerank ---
+  EMBEDDING_PROVIDER: ${EMBEDDING_PROVIDER:-hash}
+  EMBEDDING_MODEL: ${EMBEDDING_MODEL:-text-embedding-v3}
+  EMBEDDING_DIM: ${EMBEDDING_DIM:-1024}
+  RERANK_PROVIDER: ${RERANK_PROVIDER:-llm}
+  # --- Agent 运行时 / 安全 ---
+  JWT_SECRET: ${JWT_SECRET:-change-me-in-prod-please-32bytes-min}
+  MAX_STEPS: ${MAX_STEPS:-12}
+  MAX_TOKEN_BUDGET: ${MAX_TOKEN_BUDGET:-60000}
+  TASK_TIMEOUT_SECONDS: ${TASK_TIMEOUT_SECONDS:-120}
+  APPROVAL_AMOUNT_THRESHOLD_CENTS: ${APPROVAL_AMOUNT_THRESHOLD_CENTS:-100000}
+  RATE_LIMIT_PER_MINUTE: ${RATE_LIMIT_PER_MINUTE:-30}
+  SSE_HEARTBEAT_SECONDS: ${SSE_HEARTBEAT_SECONDS:-15}
+
+services:
+  # ===========================================================================
+  # 中间件
+  # ===========================================================================
+  mysql:
+    image: mysql:8.0.39
+    restart: unless-stopped
+    command:
+      # 认证插件降级为 native_password：兼容 PyMySQL / 各类 Java 驱动
+      - --default-authentication-plugin=mysql_native_password
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_0900_ai_ci
+      - --max_connections=500
+      - --innodb-buffer-pool-size=512M
+      - --lower_case_table_names=0
+    environment:
+      TZ: ${TZ:-Asia/Shanghai}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root123}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-ecom_agent}
+      MYSQL_USER: ${MYSQL_USER:-ecom}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-ecom123}
+    ports:
+      - "${MYSQL_HOST_PORT:-3306}:3306"
+    volumes:
+      # 01-schema.sql → 02-seed.sql 按文件名顺序执行，仅首次初始化数据卷时生效
+      - ./mysql/init:/docker-entrypoint-initdb.d:ro
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - mysqladmin ping -h 127.0.0.1 -uroot -p"$$MYSQL_ROOT_PASSWORD" --silent
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
+    networks:
+      - ecom-net
+    logging: *default-logging
+
+  redis:
+    image: redis:7.2-alpine
+    restart: unless-stopped
+    # 有密码则带 --requirepass，无密码则裸启（与 REDIS_PASSWORD 留空兼容）
+    command:
+      - sh
+      - -c
+      - >-
+        if [ -n "$$REDIS_PASSWORD" ]; then
+        exec redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
+        --requirepass "$$REDIS_PASSWORD";
+        else
+        exec redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru;
+        fi
+    environment:
+      TZ: ${TZ:-Asia/Shanghai}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-ecom123}
+    ports:
+      - "${REDIS_HOST_PORT:-6379}:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - redis-cli -a "$$REDIS_PASSWORD" --no-auth-warning ping | grep -q PONG || redis-cli ping | grep -q PONG
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+    networks:
+      - ecom-net
+    logging: *default-logging
+
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    restart: unless-stopped
+    environment:
+      TZ: ${TZ:-Asia/Shanghai}
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-ecom}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-ecom123}
+      RABBITMQ_DEFAULT_VHOST: ${RABBITMQ_VHOST:-ecom}
+    ports:
+      - "${RABBITMQ_HOST_PORT:-5672}:5672"
+      - "${RABBITMQ_MGMT_PORT:-15672}:15672"
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 40s
+    networks:
+      - ecom-net
+    logging: *default-logging
+
+  etcd:
+    # Milvus 2.5 官方配套版本；国内网络可替换为 bitnami/etcd:3.5
+    image: quay.io/coreos/etcd:v3.5.5
+    restart: unless-stopped
+    environment:
+      TZ: ${TZ:-Asia/Shanghai}
+      ETCD_AUTO_COMPACTION_MODE: revision
+      ETCD_AUTO_COMPACTION_RETENTION: "1000"
+      ETCD_QUOTA_BACKEND_BYTES: "4294967296"
+      ETCD_SNAPSHOT_COUNT: "50000"
+    command:
+      - etcd
+      - --advertise-client-urls=http://etcd:2379
+      - --listen-client-urls=http://0.0.0.0:2379
+      - --data-dir=/etcd
+    ports:
+      - "${ETCD_HOST_PORT:-2379}:2379"
+    volumes:
+      - etcd-data:/etcd
+    healthcheck:
+      test: ["CMD", "etcdctl", "endpoint", "health"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 20s
+    networks:
+      - ecom-net
+    logging: *default-logging
+
+  minio:
+    image: minio/minio:RELEASE.2023-03-20T20-16-18Z
+    restart: unless-stopped
+    command: minio server /minio_data --console-address ":9001"
+    environment:
+      TZ: ${TZ:-Asia/Shanghai}
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin123}
+    ports:
+      - "${MINIO_HOST_PORT:-9000}:9000"
+      - "${MINIO_CONSOLE_PORT:-9001}:9001"
+    volumes:
+      - minio-data:/minio_data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 20s
+    networks:
+      - ecom-net
+    logging: *default-logging
+
+  milvus:
+    image: milvusdb/milvus:v2.5.4
+    restart: unless-stopped
+    command: ["milvus", "run", "standalone"]
+    security_opt:
+      - seccomp:unconfined
+    environment:
+      TZ: ${TZ:-Asia/Shanghai}
+      ETCD_ENDPOINTS: etcd:2379
+      MINIO_ADDRESS: minio:9000
+      MINIO_ACCESS_KEY_ID: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD:-minioadmin123}
+      MINIO_BUCKET_NAME: milvus-bucket
+      COMMON_STORAGETYPE: minio
+    ports:
+      - "${MILVUS_HOST_PORT:-19530}:19530"
+      - "${MILVUS_METRICS_PORT:-9091}:9091"
+    volumes:
+      - milvus-data:/var/lib/milvus
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9091/healthz"]
+      interval: 15s
+      timeout: 10s
+      retries: 30
+      start_period: 120s
+    depends_on:
+      etcd:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    networks:
+      - ecom-net
+    logging: *default-logging
+
+  # ===========================================================================
+  # 后端 A：Python (FastAPI)  —— 容器内 8000
+  # ===========================================================================
+  backend-python:
+    build:
+      context: ../backend-python
+      dockerfile: Dockerfile
+    image: xingtu/ecom-backend-python:${IMAGE_TAG:-dev}
+    restart: unless-stopped
+    environment:
+      <<: *backend-env
+      # 两套后端共用全部中间件，仅靠端口区分
+      APP_PORT: ${APP_PORT_PYTHON:-8000}
+      SERVER_PORT: ${APP_PORT_PYTHON:-8000}
+      PYTHONUNBUFFERED: "1"
+    ports:
+      - "${APP_PORT_PYTHON:-8000}:${APP_PORT_PYTHON:-8000}"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      milvus:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          curl -fsS "http://127.0.0.1:$${APP_PORT}/health"
+          || wget -qO- "http://127.0.0.1:$${APP_PORT}/health"
+          || python -c "import os,urllib.request;urllib.request.urlopen('http://127.0.0.1:'+os.environ.get('APP_PORT','8000')+'/health',timeout=3)"
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+    networks:
+      - ecom-net
+    logging: *default-logging
+
+  # ===========================================================================
+  # 后端 B：Java (Spring Boot) —— 容器内 8080，默认不由 nginx 代理
+  # ===========================================================================
+  backend-java:
+    build:
+      context: ../backend-java
+      dockerfile: Dockerfile
+    image: xingtu/ecom-backend-java:${IMAGE_TAG:-dev}
+    restart: unless-stopped
+    environment:
+      <<: *backend-env
+      APP_PORT: ${APP_PORT_JAVA:-8080}
+      SERVER_PORT: ${APP_PORT_JAVA:-8080}
+      JAVA_TOOL_OPTIONS: ${JAVA_TOOL_OPTIONS:--Xms512m -Xmx1024m}
+    ports:
+      - "${APP_PORT_JAVA:-8080}:${APP_PORT_JAVA:-8080}"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      milvus:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          curl -fsS "http://127.0.0.1:$${APP_PORT}/health"
+          || wget -qO- "http://127.0.0.1:$${APP_PORT}/health"
+          || nc -z 127.0.0.1 $${APP_PORT}
+      interval: 15s
+      timeout: 10s
+      retries: 20
+      start_period: 90s
+    networks:
+      - ecom-net
+    logging: *default-logging
+
+  # ===========================================================================
+  # 前端：静态站点 + /api 反代（nginx）
+  # ===========================================================================
+  frontend:
+    build:
+      # 用仓库根做上下文，Dockerfile 内只拷 frontend/，与前端工程是否自带
+      # Dockerfile 解耦；若前端另有专用镜像，改回 context: ../frontend 即可。
+      context: ..
+      dockerfile: deploy/nginx/Dockerfile
+    image: xingtu/ecom-frontend:${IMAGE_TAG:-dev}
+    restart: unless-stopped
+    environment:
+      TZ: ${TZ:-Asia/Shanghai}
+    ports:
+      - "${FRONTEND_PORT:-8088}:80"
+    volumes:
+      # 配置以 bind mount 注入，改完 nginx -s reload 即可生效，无需重建镜像
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      backend-python:
+        condition: service_started
+      backend-java:
+        condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/healthz | grep -q ok"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    networks:
+      - ecom-net
+    logging: *default-logging
+
+# -----------------------------------------------------------------------------
+# 网络与数据卷
+# -----------------------------------------------------------------------------
+networks:
+  ecom-net:
+    name: ecom-net
+    driver: bridge
+
+volumes:
+  mysql-data:
+    name: xingtu-mysql-data
+  redis-data:
+    name: xingtu-redis-data
+  rabbitmq-data:
+    name: xingtu-rabbitmq-data
+  etcd-data:
+    name: xingtu-etcd-data
+  minio-data:
+    name: xingtu-minio-data
+  milvus-data:
+    name: xingtu-milvus-data

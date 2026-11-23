@@ -1,0 +1,185 @@
+server:
+  port: ${SERVER_PORT:8080}
+  shutdown: graceful
+  tomcat:
+    connection-timeout: 20s
+    max-connections: 2000
+
+spring:
+  application:
+    name: ecom-agent-java
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+  datasource:
+    url: jdbc:mysql://${MYSQL_HOST:mysql}:${MYSQL_PORT:3306}/${MYSQL_DB:ecom_agent}?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+    username: ${MYSQL_USER:ecom}
+    password: ${MYSQL_PASSWORD:ecom123}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 16
+      minimum-idle: 2
+      connection-timeout: 3000
+      validation-timeout: 2000
+      pool-name: ecom-pool
+  sql:
+    init:
+      mode: never
+  data:
+    redis:
+      host: ${REDIS_HOST:redis}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      database: ${REDIS_DB:0}
+      timeout: 2s
+      connect-timeout: 2s
+      lettuce:
+        pool:
+          max-active: 16
+          max-idle: 8
+          min-idle: 0
+  rabbitmq:
+    host: ${RABBITMQ_HOST:rabbitmq}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USER:ecom}
+    password: ${RABBITMQ_PASSWORD:ecom123}
+    virtual-host: ${RABBITMQ_VHOST:ecom}
+    connection-timeout: 3s
+    listener:
+      simple:
+        acknowledge-mode: auto
+        prefetch: 8
+        retry:
+          enabled: true
+          max-attempts: 3
+          initial-interval: 1s
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 24MB
+
+management:
+  endpoints:
+    web:
+      base-path: /
+      path-mapping:
+        prometheus: metrics
+      exposure:
+        include: prometheus
+  endpoint:
+    health:
+      enabled: false
+  metrics:
+    tags:
+      application: ecom-agent-java
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+
+app:
+  env: ${APP_ENV:dev}
+  agent:
+    max-steps: ${MAX_STEPS:12}
+    max-token-budget: ${MAX_TOKEN_BUDGET:60000}
+    task-timeout-seconds: ${TASK_TIMEOUT_SECONDS:120}
+    approval-amount-threshold-cents: ${APPROVAL_AMOUNT_THRESHOLD_CENTS:100000}
+    rate-limit-per-minute: ${RATE_LIMIT_PER_MINUTE:30}
+    memory-window: ${MEMORY_WINDOW:20}
+    summary-threshold: ${SUMMARY_THRESHOLD:40}
+    max-tool-result-chars: 4000
+    checkpoint-enabled: true
+  jwt:
+    secret: ${JWT_SECRET:change-me-in-prod}
+    expire-seconds: ${JWT_EXPIRE_SECONDS:86400}
+  llm:
+    primary: ${LLM_PRIMARY:deepseek}
+    mock: ${MOCK_LLM:false}
+    temperature: 0.3
+    max-tokens: 1024
+    timeout-seconds: 45
+    rerank-provider: ${RERANK_PROVIDER:llm}
+    fallback-chain: ${LLM_FALLBACK_CHAIN:deepseek,qwen,qwen-turbo,openai,ollama,mock}
+    providers:
+      deepseek:
+        base-url: ${DEEPSEEK_BASE_URL:https://api.deepseek.com/v1}
+        api-key: ${DEEPSEEK_API_KEY:}
+        model: ${DEEPSEEK_MODEL:deepseek-chat}
+      qwen:
+        base-url: ${DASHSCOPE_BASE_URL:https://dashscope.aliyuncs.com/compatible-mode/v1}
+        api-key: ${DASHSCOPE_API_KEY:}
+        model: ${QWEN_MODEL:qwen-max}
+      qwen-turbo:
+        base-url: ${DASHSCOPE_BASE_URL:https://dashscope.aliyuncs.com/compatible-mode/v1}
+        api-key: ${DASHSCOPE_API_KEY:}
+        model: ${QWEN_FAST_MODEL:qwen-turbo}
+      openai:
+        base-url: ${OPENAI_BASE_URL:https://api.openai.com/v1}
+        api-key: ${OPENAI_API_KEY:}
+        model: ${OPENAI_MODEL:gpt-4o-mini}
+      ollama:
+        base-url: ${OLLAMA_BASE_URL:http://ollama:11434}/v1
+        api-key: ollama
+        model: ${OLLAMA_MODEL:qwen2.5:7b}
+      mock:
+        base-url: mock://local
+        api-key: mock
+        model: mock-chat
+  embedding:
+    provider: ${EMBEDDING_PROVIDER:dashscope}
+    model: ${EMBEDDING_MODEL:text-embedding-v3}
+    dim: ${EMBEDDING_DIM:1024}
+    base-url: ${EMBEDDING_BASE_URL:}
+    api-key: ${EMBEDDING_API_KEY:}
+  milvus:
+    enabled: ${MILVUS_ENABLED:true}
+    host: ${MILVUS_HOST:milvus}
+    port: ${MILVUS_PORT:19530}
+    token: ${MILVUS_TOKEN:root:Milvus}
+    collection-prefix: ${MILVUS_COLLECTION_PREFIX:ecom}
+    timeout-ms: 3000
+  rag:
+    chunk-size: ${RAG_CHUNK_SIZE:400}
+    chunk-overlap: ${RAG_CHUNK_OVERLAP:80}
+    dense-top-k: 20
+    sparse-top-k: 20
+    rerank-top-n: 5
+    min-score: 0.05
+    candidate-limit: 3000
+  pricing:
+    default-input-per-million-cents: ${PRICE_INPUT_CENTS:200}
+    default-output-per-million-cents: ${PRICE_OUTPUT_CENTS:800}
+    models:
+      deepseek-chat:
+        input-per-million-cents: 100
+        output-per-million-cents: 400
+      qwen-max:
+        input-per-million-cents: 240
+        output-per-million-cents: 960
+      qwen-turbo:
+        input-per-million-cents: 30
+        output-per-million-cents: 60
+      gpt-4o-mini:
+        input-per-million-cents: 15
+        output-per-million-cents: 60
+      mock-chat:
+        input-per-million-cents: 0
+        output-per-million-cents: 0
+  mq:
+    enabled: ${MQ_ENABLED:true}
+    exchange: ecom.agent
+    dlx: ecom.agent.dlx
+  security:
+    injection-detect-enabled: true
+    pii-mask-enabled: true
+  sandbox:
+    enabled: ${SANDBOX_ENABLED:true}
+    max-output-chars: 4000
+  eval:
+    enabled: true
+    default-repeat: 1
+
+logging:
+  level:
+    root: INFO
+    com.xingtu.agent: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] [%X{traceId}] %logger{36} - %msg%n"

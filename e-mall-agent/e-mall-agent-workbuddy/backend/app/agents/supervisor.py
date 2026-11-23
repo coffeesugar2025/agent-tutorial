@@ -163,14 +163,28 @@ def _input_state(user_input: str, user: User, trace_id: str) -> dict[str, Any]:
 
 async def run_agent(user_input: str, user: User, thread_id: str = "default",
                     token: str | None = None) -> dict[str, Any]:
+    import time
+    started = time.perf_counter()
     graph = await build_supervisor(user, token)
     config = {"configurable": {"thread_id": f"{thread_id}-{uuid.uuid4().hex[:8]}"}}
     result = await graph.ainvoke(_input_state(user_input, user, thread_id), config)
     answer = result.get("final_answer", "")
     get_conversation_store().append(thread_id, user_input, answer)
+    route = result.get("route", "general")
+    try:
+        from ..api.capabilities import get_metrics
+        get_metrics().record_agent_run(
+            route=route, ok=bool(answer),
+            latency_ms=(time.perf_counter() - started) * 1000,
+            tokens=len(answer),
+            tools_used=[m.name for m in result.get("messages", [])
+                        if isinstance(m, ToolMessage) and m.name],
+        )
+    except Exception:
+        pass
     return {
         "answer": answer,
-        "route": result.get("route", "general"),
+        "route": route,
         "trace_id": thread_id,
         "context": result.get("context_snapshot", {}),
         "messages": result.get("messages", []),

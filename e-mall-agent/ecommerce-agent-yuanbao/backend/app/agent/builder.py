@@ -57,6 +57,11 @@ def build_intent_agent(cfg: Settings | None = None) -> Any:
 
     LangChain 1.5 会把 schema 注册成一个工具，模型输出被校验后写入
     result["structured_response"]，前端可直接消费强类型意图。
+
+    注意：该图仅在 AGENT_MODE=real 时挂载（见 main.py）。若用不产出结构化
+    输出的脚本模型 ainvoke，会因 schema 一直未满足而触发 GraphRecursionError；
+    mock 模式改由 rule_based_intent() 返回同契约结果。对应回归用例见
+    tests/test_langchain_knowledge_points.py::test_kp6_response_format_requires_model_cooperation。
     """
     cfg = cfg or settings
     return create_agent(

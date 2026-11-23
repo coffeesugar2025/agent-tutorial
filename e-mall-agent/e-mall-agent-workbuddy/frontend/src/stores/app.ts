@@ -8,6 +8,19 @@ export const useAppStore = defineStore('app', () => {
   const user = ref<User | null>(null)
   const isLoggedIn = computed(() => Boolean(token.value))
 
+  const backend = ref<api.BackendKey>(api.getBackendKey())
+  const apiBaseUrl = ref<string>(api.getApiBaseUrl())
+
+  /** Switch between the Python and Java backends. Tokens are not portable. */
+  function switchBackend(key: api.BackendKey): void {
+    api.setBackendKey(key)
+    backend.value = key
+    apiBaseUrl.value = api.getApiBaseUrl()
+    api.clearToken()
+    token.value = null
+    user.value = null
+  }
+
   async function loadMe(): Promise<User | null> {
     if (!token.value) return null
     user.value = await api.me()
@@ -37,5 +50,5 @@ export const useAppStore = defineStore('app', () => {
     user.value = null
   }
 
-  return { token, user, isLoggedIn, login, logout, loadMe }
+  return { token, user, isLoggedIn, backend, apiBaseUrl, login, logout, loadMe, switchBackend }
 })

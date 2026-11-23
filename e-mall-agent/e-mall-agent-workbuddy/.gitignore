@@ -12,6 +12,14 @@ dist/
 .vite/
 *.tsbuildinfo
 
+# Java / Maven
+target/
+*.class
+.mvn/timing.properties
+
+# Tooling
+.workbuddy/tools/
+
 # Env / logs
 .env
 *.log

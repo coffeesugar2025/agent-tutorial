@@ -1,0 +1,341 @@
+@use './variables.scss' as v;
+
+:root {
+  --ecom-primary: #{v.$primary-color};
+  --ecom-primary-dark: #{v.$primary-dark};
+  --ecom-primary-light: #{v.$primary-light};
+  --ecom-success: #{v.$success-color};
+  --ecom-warning: #{v.$warning-color};
+  --ecom-danger: #{v.$danger-color};
+  --ecom-info: #{v.$info-color};
+  --ecom-text-primary: #{v.$text-primary};
+  --ecom-text-regular: #{v.$text-regular};
+  --ecom-text-secondary: #{v.$text-secondary};
+  --ecom-border: #{v.$border-color};
+  --ecom-bg-page: #{v.$bg-page};
+  --ecom-bg-card: #{v.$bg-card};
+  --ecom-radius: #{v.$radius-md};
+  --ecom-shadow: #{v.$shadow-card};
+
+  // Element Plus 主题色对齐
+  --el-color-primary: #{v.$primary-color};
+  --el-color-primary-light-3: #6b93ff;
+  --el-color-primary-light-5: #9bb6ff;
+  --el-color-primary-light-7: #c6d6ff;
+  --el-color-primary-light-8: #dbe5ff;
+  --el-color-primary-light-9: #{v.$primary-light};
+  --el-color-primary-dark-2: #{v.$primary-dark};
+  --el-color-success: #{v.$success-color};
+  --el-color-warning: #{v.$warning-color};
+  --el-color-danger: #{v.$danger-color};
+  --el-border-radius-base: 8px;
+  --el-font-family: 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif;
+  font-size: 14px;
+  color: v.$text-primary;
+  background: v.$bg-page;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: v.$primary-color;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+button {
+  font-family: inherit;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 8px;
+
+  &:hover {
+    background: #94a3b8;
+  }
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* ------------------------- 通用布局工具类 ------------------------- */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  height: 100%;
+  min-height: 0;
+}
+
+.panel {
+  background: v.$bg-card;
+  border: 1px solid v.$border-light;
+  border-radius: v.$radius-md;
+  box-shadow: v.$shadow-card;
+  padding: 16px;
+}
+
+.panel--flush {
+  padding: 0;
+  overflow: hidden;
+}
+
+.panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.panel__title {
+  font-size: 15px;
+  font-weight: 600;
+  color: v.$text-primary;
+}
+
+.panel__subtitle {
+  font-size: 12px;
+  color: v.$text-secondary;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.toolbar__spacer {
+  flex: 1 1 auto;
+}
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 12px;
+}
+
+.text-muted {
+  color: v.$text-secondary;
+}
+
+.text-strong {
+  font-weight: 600;
+}
+
+.mono {
+  font-family: v.$font-mono;
+}
+
+.ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.flex {
+  display: flex;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.gap-6 {
+  gap: 6px;
+}
+
+.gap-12 {
+  gap: 12px;
+}
+
+.mt-12 {
+  margin-top: 12px;
+}
+
+.w-full {
+  width: 100%;
+}
+
+.scroll-area {
+  overflow: auto;
+  min-height: 0;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.18s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+/* ------------------------- Element Plus 微调 ------------------------- */
+
+.el-card {
+  border-radius: v.$radius-md;
+  border-color: v.$border-light;
+}
+
+.el-table {
+  --el-table-header-bg-color: #f8fafc;
+  --el-table-header-text-color: #{v.$text-regular};
+  font-size: 13px;
+}
+
+.el-drawer__header {
+  margin-bottom: 12px;
+  font-weight: 600;
+  color: v.$text-primary;
+}
+
+.el-descriptions__label {
+  color: v.$text-secondary;
+}
+
+/* ------------------------- 消息内的 markdown ------------------------- */
+
+.markdown-body {
+  font-size: 14px;
+  line-height: 1.75;
+  color: v.$text-primary;
+  word-break: break-word;
+
+  > :first-child {
+    margin-top: 0;
+  }
+
+  > :last-child {
+    margin-bottom: 0;
+  }
+
+  p {
+    margin: 0 0 10px;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    margin: 16px 0 8px;
+    font-weight: 600;
+    line-height: 1.4;
+  }
+
+  h1 {
+    font-size: 19px;
+  }
+
+  h2 {
+    font-size: 17px;
+  }
+
+  h3 {
+    font-size: 15px;
+  }
+
+  ul,
+  ol {
+    margin: 0 0 10px;
+    padding-left: 22px;
+  }
+
+  li + li {
+    margin-top: 4px;
+  }
+
+  blockquote {
+    margin: 8px 0;
+    padding: 6px 12px;
+    color: v.$text-regular;
+    background: #f8fafc;
+    border-left: 3px solid v.$primary-color;
+    border-radius: 0 v.$radius-sm v.$radius-sm 0;
+  }
+
+  code {
+    padding: 1px 5px;
+    font-family: v.$font-mono;
+    font-size: 12.5px;
+    color: #b91c5c;
+    background: #f4f6fb;
+    border-radius: 4px;
+  }
+
+  .code-block {
+    margin: 10px 0;
+    padding: 12px 14px;
+    overflow-x: auto;
+    background: #0f172a;
+    border-radius: v.$radius-sm;
+
+    code {
+      padding: 0;
+      color: #e2e8f0;
+      background: transparent;
+      font-size: 12.5px;
+      line-height: 1.6;
+    }
+  }
+
+  table {
+    width: 100%;
+    margin: 10px 0;
+    border-collapse: collapse;
+    font-size: 13px;
+
+    th,
+    td {
+      padding: 6px 10px;
+      border: 1px solid v.$border-color;
+      text-align: left;
+    }
+
+    th {
+      background: #f8fafc;
+      font-weight: 600;
+    }
+  }
+
+  a {
+    color: v.$primary-color;
+    word-break: break-all;
+  }
+
+  hr {
+    margin: 14px 0;
+    border: 0;
+    border-top: 1px solid v.$border-color;
+  }
+}

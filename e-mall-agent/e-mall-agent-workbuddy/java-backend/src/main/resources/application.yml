@@ -1,0 +1,90 @@
+server:
+  port: ${SERVER_PORT:8080}
+  shutdown: graceful
+
+spring:
+  application:
+    name: ${APP_NAME:ecom-java-backend}
+  datasource:
+    # 未配置 MYSQL_URL 时自动使用进程内 H2（MySQL 兼容模式）启动
+    url: ${MYSQL_URL:jdbc:h2:mem:ecom;MODE=MySQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE}
+    driver-class-name: ${DB_DRIVER:org.h2.Driver}
+    username: ${MYSQL_USER:sa}
+    password: ${MYSQL_PASSWORD:}
+    hikari:
+      maximum-pool-size: ${DB_POOL_SIZE:10}
+      connection-timeout: ${DB_CONNECTION_TIMEOUT_MS:3000}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: ${JPA_DDL_AUTO:update}
+    properties:
+      hibernate:
+        format_sql: false
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      timeout: ${REDIS_TIMEOUT:2s}
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USER:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+    connection-timeout: ${RABBITMQ_TIMEOUT_MS:2000}
+  sql:
+    init:
+      # schema.sql 默认不自动执行（JPA ddl-auto 建表 + DataSeeder 幂等种子）；
+      # 需要手工初始化 MySQL 时设置 SQL_INIT_MODE=always
+      mode: ${SQL_INIT_MODE:never}
+  mvc:
+    async:
+      request-timeout: ${ASYNC_TIMEOUT_MS:120000}
+
+app:
+  security:
+    secret: ${JWT_SECRET:ecom-dev-secret-change-me-in-production}
+    token-ttl-seconds: ${TOKEN_TTL_SECONDS:86400}
+  llm:
+    provider: ${LLM_PROVIDER:auto}   # auto | deepseek | qwen | offline
+    deepseek:
+      api-key: ${DEEPSEEK_API_KEY:}
+      base-url: ${DEEPSEEK_BASE_URL:https://api.deepseek.com/v1}
+      model: ${DEEPSEEK_MODEL:deepseek-chat}
+    qwen:
+      api-key: ${QWEN_API_KEY:}
+      base-url: ${QWEN_BASE_URL:https://dashscope.aliyuncs.com/compatible-mode/v1}
+      model: ${QWEN_MODEL:qwen-plus}
+    temperature: ${LLM_TEMPERATURE:0.2}
+    timeout-seconds: ${LLM_TIMEOUT_SECONDS:20}
+    max-retries: ${LLM_MAX_RETRIES:2}
+  agent:
+    max-rounds: ${AGENT_MAX_ROUNDS:4}
+    context-max-chars: ${CONTEXT_MAX_CHARS:4000}
+    refund-threshold: ${REFUND_THRESHOLD:500}
+  rag:
+    top-k: ${RAG_TOP_K:3}
+    milvus-enabled: ${MILVUS_ENABLED:false}
+    milvus-host: ${MILVUS_HOST:localhost}
+    milvus-port: ${MILVUS_PORT:19530}
+    milvus-collection: ${MILVUS_COLLECTION:ecom_docs}
+    milvus-token: ${MILVUS_TOKEN:}
+    embedding-dim: ${EMBEDDING_DIM:1536}
+  memory:
+    max-messages: ${MEMORY_MAX_MESSAGES:10}
+    redis-enabled: ${REDIS_MEMORY_ENABLED:false}
+  event:
+    publish-enabled: ${EVENT_PUBLISH_ENABLED:false}
+
+springdoc:
+  api-docs:
+    path: ${API_DOCS_PATH:/v3/api-docs}
+  swagger-ui:
+    path: ${SWAGGER_PATH:/swagger-ui.html}
+
+logging:
+  level:
+    com.example.ecom: ${LOG_LEVEL:INFO}
+  pattern:
+    console: "%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} [%thread] %-5level [%X{traceId:-}] %logger{36} - %msg%n"

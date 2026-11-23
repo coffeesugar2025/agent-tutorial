@@ -10,8 +10,9 @@
 | 编排运行时 | langgraph 1.2.x | `StateGraph`、checkpointer、`interrupt()` / `Command(resume=...)` |
 | MCP | `langchain-mcp-adapters` + `mcp` FastMCP | stdio / streamable-http；官方适配器转换 MCP 工具 |
 | RAG | `langchain-core` `InMemoryVectorStore` + 自建确定性哈希 Embedding | 零 API Key 可运行；向量召回 + 中文 n-gram 词面重排 |
-| 可观测性 | 进程内 TraceCollector + AuditLogger + 前端图可视化 | 可替换为 LangSmith / OpenTelemetry |
-| 测试 | pytest + pytest-asyncio；Vitest + Vue Test Utils | 39 个后端用例 + 前端用例 |
+| 可观测性 | TraceCollector + AuditLogger + Metrics(Counter/Gauge/Histogram) | 可替换为 LangSmith / OpenTelemetry |
+| 评测体系 | Golden Case / Evaluator / Replay / 回归门禁 | 任务成功率、工具准确率、幻觉率、P95/P99 |
+| 测试 | pytest + pytest-asyncio；Vitest + Vue Test Utils | 后端全量用例 + 前端用例 |
 
 > 版本说明：2026-11 验证 PyPI 最新 Python 版为 `langchain==1.5.2`、`langgraph==1.2.23`。LangChain 1.x 中 v0 的 `LLMChain` / `create_react_agent` 已迁移到 `langchain-classic` 或由 `create_agent` 取代，本项目只使用 1.5 的现代 API。
 
@@ -80,6 +81,41 @@ flowchart TB
 | 追踪 | TraceCollector 记录节点流转、工具调用、最终答案长度；`/api/graphs` 提供图元数据供前端渲染 |
 | 错误处理 | `PermissionError` → 403；业务校验 `ValueError` → 400；工具异常以 JSON error 回传模型而非崩溃 |
 
+### 3.6 规划与推理（Planning）
+
+`app/planning/` 提供两条执行路径：
+
+- **ReActLoop**：以 LangGraph `StateGraph` 实现 Thought → Action → Observation 循环，带最大步数、超时与重复动作检测；产出完整 trajectory 供 Trace 与评测回放。
+- **PlanAndSolveExecutor**：`PydanticOutputParser` 先把目标拆成带依赖的 `Plan`，再逐步执行；单步失败可跳过或降级，避免整任务回滚。
+
+两者通过 `create_planning_graph(mode=...)` 统一入口，使用同一套离线模型，零 API Key 可跑。
+
+### 3.7 三层记忆（Memory）
+
+`app/memory/` 分离三种生命周期：
+
+| 层 | 类 | 生命周期 | 用途 |
+|---|---|---|---|
+| 会话记忆 | `WorkingMemory` | thread | 多轮对话，按预算淘汰+压缩 |
+| 情景记忆 | `EpisodicMemory` | user + task | 完整任务轨迹，按时间/关键词检索，带 TTL |
+| 用户长期记忆 | `UserMemory` | user | profile / preferences / facts，带置信度与来源 |
+
+`MemoryManager` 门面统一 `remember` / `recall`，返回可注入 system prompt 的 `injected_context` 与 token 估算；`forget_user` 支持合规删除。存储通过 `MemoryStore` Protocol 抽象，可换 Redis/Postgres。
+
+### 3.8 进阶 RAG 与知识治理
+
+- **解析切片**：`ingest.py` 支持文本/Markdown/JSON，固定长度+overlap、章节、语义段落三种策略。
+- **混合检索**：`hybrid.py` 用纯 Python BM25 + 向量召回，RRF 融合后用交叉特征重排；无命中时真实返回空（不像 demo pipeline 给兜底）。
+- **知识治理**：`governance.py` 提供版本化、增量索引、撤销/回滚、租户与分类隔离。
+- **幻觉控制**：`citation.py` 校验引用是否落在召回集，并给答案打 groundedness 分数、列出未支撑句。
+- **高阶检索**：`text2sql.py` 提供受限 SQLite SELECT 与 Text2Cypher 模板；`graphrag.py` 用邻接表建实体关系图，支持 1-2 跳子图检索。
+
+### 3.9 沙箱、恢复与评测
+
+- **Sandbox**：`CodeSandbox` 先 AST 静态校验再受限执行，拦截危险 import 与 dunder 属性；`CodeModeRunner` 把工具集包装成命名空间，让模型用代码编排多个工具；`Harness` 记录一次任务的完整输入输出。
+- **长任务恢复**：`resume/` 每步写 `Checkpoint`，中断后按 task_id 从断点继续，幂等步骤不重复执行。
+- **可观测与评测**：`metrics.py` 提供 Counter/Gauge/Histogram（P50/P95/P99）与 LangChain 回调埋点；`eval/` 支持 Golden Case 批量评测、Trace Replay 复现 Bad Case、回归门禁阻止质量退化。
+
 ## 4. 目录结构
 
 ```
@@ -90,18 +126,27 @@ backend/
     domain/                 实体与内存仓储（可替换 SQL）
     security/               rbac.py（权限/Token/ContextVar）、audit.py
     context/engine.py       上下文工程
-    rag/                    embeddings.py、pipeline.py
+    rag/                    embeddings.py、pipeline.py（基础）
+                            ingest / hybrid / governance / citation / text2sql / graphrag（进阶）
     llm/factory.py          离线工具调用模型 + OpenAI 切换
     mcp/                    tools.py（工具真源）、server.py（FastMCP）
     agents/                 tools.py、specialists.py、supervisor.py
     workflows/fulfillment.py 订单履约图
-    observability/tracer.py Trace + 图描述
+    observability/          tracer.py（Trace + 图描述）、metrics.py（指标）
+    planning/               ReAct / Plan-and-Solve / 规划执行
+    reliability/            重试 / 超时 / 降级 / 幂等 / 终止条件
+    memory/                 会话 / 情景 / 用户长期记忆
+    sandbox/                AST 校验 / 受限执行 / Code Mode / Harness
+    resume/                 Checkpoint / 长任务恢复
+    eval/                   Golden Case / Evaluator / Replay / 回归门禁
     api/                    routes.py、schemas.py
-  tests/                    39 个 pytest 用例
+  tests/                    pytest 用例（业务 + 知识点 + 能力补齐专项）
 frontend/
   src/{api,stores,router,types,views,components}
-docs/                       产品/架构/API/测试文档
+docs/                       产品/架构/API/测试/能力矩阵/生产化文档
 ```
+
+完整的能力项与状态对照见 [`CAPABILITY_MATRIX.md`](CAPABILITY_MATRIX.md)。
 
 ## 5. 生产化替换点
 

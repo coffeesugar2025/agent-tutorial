@@ -3,17 +3,112 @@ import type {
   ChatEvent,
   ChatResult,
   ContextPreview,
+  EvalReport,
   FulfillmentResult,
   GraphBundle,
+  HybridResult,
   LoginResult,
+  MemoryResult,
+  MetricsSnapshot,
   Order,
+  PlanResult,
   Product,
   RagDoc,
+  SandboxResult,
+  Text2SQLResult,
   TraceEvent,
   User,
 } from '../types'
 
+// ---------- backend engine configuration ----------
 export const TOKEN_KEY = 'ecom_token'
+export const BACKEND_KEY = 'ecom_backend'
+export const API_BASE_KEY = 'ecom_api_base_url'
+export const DEFAULT_API_BASE_URL = 'http://localhost:8000'
+export const DEFAULT_JAVA_API_URL = 'http://localhost:8080'
+
+export type BackendKey = 'python' | 'java'
+
+export interface BackendPreset {
+  key: BackendKey
+  label: string
+  url: string
+}
+
+export const BACKEND_PRESETS: BackendPreset[] = [
+  {
+    key: 'python',
+    label: 'Python · LangChain 1.5',
+    url: import.meta.env.VITE_PYTHON_API_URL || DEFAULT_API_BASE_URL,
+  },
+  {
+    key: 'java',
+    label: 'Java · LangChain4j',
+    url: import.meta.env.VITE_JAVA_API_URL || DEFAULT_JAVA_API_URL,
+  },
+]
+
+function runtimeApiBaseUrl(): string | undefined {
+  if (typeof window === 'undefined') return undefined
+  const configured = window.__APP_CONFIG__?.API_BASE_URL
+  return configured && configured.trim() ? configured.trim() : undefined
+}
+
+/** Resolve the active base URL: runtime config > Vite env > localStorage > default. */
+export function getApiBaseUrl(): string {
+  const envBase = import.meta.env.VITE_API_BASE_URL
+  const envUrl = envBase && envBase.trim() ? envBase.trim() : undefined
+  const storedUrl = localStorage.getItem(API_BASE_KEY) || undefined
+  return runtimeApiBaseUrl() ?? envUrl ?? storedUrl ?? DEFAULT_API_BASE_URL
+}
+
+/** Persist a manual base URL override (used by localStorage-based switching). */
+export function setApiBaseUrl(url: string): void {
+  localStorage.setItem(API_BASE_KEY, url.trim())
+}
+
+export function getBackendKey(): BackendKey {
+  return localStorage.getItem(BACKEND_KEY) === 'java' ? 'java' : 'python'
+}
+
+/** Pick a preset and persist both the key and its URL. */
+export function setBackendKey(key: BackendKey): void {
+  localStorage.setItem(BACKEND_KEY, key)
+  localStorage.setItem(API_BASE_KEY, getBackendPreset(key).url)
+}
+
+export function getBackendPreset(key?: BackendKey): BackendPreset {
+  const target = key ?? getBackendKey()
+  return BACKEND_PRESETS.find((preset) => preset.key === target) ?? BACKEND_PRESETS[0]
+}
+
+/** Clear all backend overrides so resolution falls back to env/default. */
+export function resetApiBaseUrl(): void {
+  localStorage.removeItem(API_BASE_KEY)
+  localStorage.removeItem(BACKEND_KEY)
+}
+
+/**
+ * Build an API URL from the resolved base.
+ * The built-in localhost default stays a same-origin `/api` path so the
+ * Vite/nginx proxy handles routing; explicit bases become absolute URLs.
+ */
+export function apiUrl(path: string): string {
+  const base = getApiBaseUrl().replace(/\/+$/, '')
+  const suffix = path.startsWith('/') ? path : `/${path}`
+  if (!base || base === DEFAULT_API_BASE_URL) return `/api${suffix}`
+  return `${base}/api${suffix}`
+}
+
+/** GET /api/health on the currently selected backend. */
+export async function probeHealth(): Promise<boolean> {
+  try {
+    const response = await fetch(apiUrl('/health'), { method: 'GET' })
+    return response.ok
+  } catch {
+    return false
+  }
+}
 
 export function getToken(): string | null {
   return localStorage.getItem(TOKEN_KEY)
@@ -63,7 +158,7 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   if (options.body !== undefined) {
     headers['Content-Type'] = 'application/json'
   }
-  const response = await fetch(`/api${path}`, init)
+  const response = await fetch(apiUrl(path), init)
   if (!response.ok) {
     throw new Error(await readError(response))
   }
@@ -96,7 +191,7 @@ export async function chatStream(
   threadId: string,
   onEvent: (event: ChatEvent) => void,
 ): Promise<void> {
-  const response = await fetch('/api/chat/stream', {
+  const response = await fetch(apiUrl('/chat/stream'), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -198,4 +293,35 @@ export function resumeFulfillment(threadId: string, approved: boolean): Promise<
     thread_id: threadId,
     approved,
   })
+}
+
+// ---------- extended capabilities ----------
+export function planGoal(goal: string, mode: 'react' | 'plan_solve'): Promise<PlanResult> {
+  return post<PlanResult>('/capabilities/plan', { goal, mode })
+}
+
+export function hybridSearch(query: string, topK = 5, mode = 'hybrid'): Promise<HybridResult> {
+  return post<HybridResult>('/capabilities/rag/hybrid', { query, top_k: topK, mode })
+}
+
+export function memoryRecall(threadId = 'default', query = ''): Promise<MemoryResult> {
+  return request<MemoryResult>(
+    `/capabilities/memory?thread_id=${encodeURIComponent(threadId)}&query=${encodeURIComponent(query)}`,
+  )
+}
+
+export function sandboxRun(code: string, mode: 'plain' | 'code_mode'): Promise<SandboxResult> {
+  return post<SandboxResult>('/capabilities/sandbox', { code, mode })
+}
+
+export function text2sql(question: string): Promise<Text2SQLResult> {
+  return post<Text2SQLResult>('/capabilities/rag/text2sql', { question })
+}
+
+export function metricsSnapshot(): Promise<MetricsSnapshot> {
+  return request<MetricsSnapshot>('/capabilities/metrics')
+}
+
+export function evaluateCases(cases: Array<Record<string, unknown>>): Promise<{ report: EvalReport }> {
+  return post<{ report: EvalReport }>('/capabilities/eval', { cases, runner: 'echo' })
 }

@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { audit, traces } from '../api/client'
+import { BACKEND_PRESETS, audit, probeHealth, traces } from '../api/client'
 import { useAppStore } from '../stores/app'
+import type { BackendKey } from '../api/client'
 import type { AuditEntry, TraceEvent } from '../types'
 
 const store = useAppStore()
@@ -30,6 +31,22 @@ const traceNotice = ref('')
 const auditNotice = ref('')
 const loggingIn = ref('')
 const loginError = ref('')
+const health = ref<'checking' | 'online' | 'offline'>('checking')
+
+async function checkHealth(): Promise<void> {
+  health.value = 'checking'
+  health.value = (await probeHealth()) ? 'online' : 'offline'
+}
+
+function selectBackend(key: BackendKey): void {
+  if (store.backend === key) return
+  store.switchBackend(key)
+  traceRows.value = []
+  auditRows.value = []
+  traceNotice.value = ''
+  auditNotice.value = ''
+  void checkHealth()
+}
 
 function formatTime(value: string | number): string {
   if (typeof value === 'number') {
@@ -85,6 +102,7 @@ function doLogout(): void {
 
 onMounted(() => {
   if (store.isLoggedIn) void loadData()
+  void checkHealth()
 })
 </script>
 
@@ -125,6 +143,37 @@ onMounted(() => {
       <div v-if="store.user" class="permission-strip">
         <span class="small muted">当前权限：</span>
         <span v-for="permission in store.user.permissions" :key="permission" class="badge badge-green">{{ permission }}</span>
+      </div>
+    </section>
+
+    <section class="card backend-card">
+      <div class="block-head">
+        <h3 class="block-title">后端引擎</h3>
+        <span
+          class="badge"
+          :class="health === 'online' ? 'badge-green' : health === 'offline' ? 'badge-red' : 'badge-amber'"
+        >
+          {{ health === 'online' ? '在线' : health === 'offline' ? '离线' : '检测中' }}
+        </span>
+      </div>
+      <div class="backend-buttons">
+        <button
+          v-for="preset in BACKEND_PRESETS"
+          :key="preset.key"
+          class="backend-button"
+          :class="{ active: store.backend === preset.key }"
+          type="button"
+          @click="selectBackend(preset.key)"
+        >
+          <span class="role-name">{{ preset.label }}</span>
+          <span class="small muted mono">{{ preset.url }}</span>
+        </button>
+      </div>
+      <div class="backend-meta">
+        <span class="small muted">当前 baseURL：</span>
+        <code class="mono small">{{ store.apiBaseUrl }}</code>
+        <span class="small muted">GET /api/health</span>
+        <button class="btn btn-sm" type="button" @click="checkHealth">重新检测</button>
       </div>
     </section>
 
@@ -217,7 +266,7 @@ onMounted(() => {
 .current-user { display: flex; align-items: center; gap: 10px; }
 .notice { padding: 10px 14px; border-radius: 8px; margin: 0 16px 14px; font-size: 12px; background: #fff8ea; color: #92400e; }
 .notice.error { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
-.login-card, .matrix-card, .table-card { padding: 16px 18px; margin-bottom: 18px; }
+.login-card, .matrix-card, .table-card, .backend-card { padding: 16px 18px; margin-bottom: 18px; }
 .block-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
 .role-buttons { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; }
 .role-button { display: flex; flex-direction: column; gap: 3px; align-items: flex-start; padding: 12px 14px; border: 1px solid #dce1ea; border-radius: 9px; background: #fbfcfe; cursor: pointer; text-align: left; }
@@ -225,6 +274,11 @@ onMounted(() => {
 .role-button.active { border-color: #2563eb; background: #eef4ff; }
 .role-name { font-size: 14px; font-weight: 600; }
 .permission-strip { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 14px; padding-top: 12px; border-top: 1px solid #eef0f4; }
+.backend-buttons { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
+.backend-button { display: flex; flex-direction: column; gap: 4px; align-items: flex-start; padding: 12px 14px; border: 1px solid #dce1ea; border-radius: 9px; background: #fbfcfe; cursor: pointer; text-align: left; }
+.backend-button:hover { border-color: #9dbdf5; background: #f4f8ff; }
+.backend-button.active { border-color: #2563eb; background: #eef4ff; }
+.backend-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 14px; padding-top: 12px; border-top: 1px solid #eef0f4; }
 .table-scroll { overflow-x: auto; }
 .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
 .data-table th { text-align: left; font-weight: 500; color: #6b7280; background: #fafbfd; padding: 10px 12px; border-bottom: 1px solid #eef0f4; white-space: nowrap; }

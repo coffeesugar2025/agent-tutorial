@@ -1,0 +1,208 @@
+# =============================================================================
+# 星图商城 · 仅中间件（本地裸跑后端时使用）
+#
+# 启动：./scripts/up.sh --infra --build
+# 用途：在本机用 uv/pytest 或 mvn 直接跑后端，只把依赖放进容器。
+# 注意：与本文件配套使用同一 COMPOSE_PROJECT_NAME 与 ecom-net，
+#      因此可以与全栈 compose 交叉重启，但不要同时 up 两套。
+# =============================================================================
+
+name: ${COMPOSE_PROJECT_NAME:-xingtu-ecom}
+
+x-logging: &default-logging
+  driver: "json-file"
+  options:
+    max-size: "50m"
+    max-file: "5"
+
+services:
+  mysql:
+    image: mysql:8.0.39
+    restart: unless-stopped
+    command:
+      - --default-authentication-plugin=mysql_native_password
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_0900_ai_ci
+      - --max_connections=500
+      - --innodb-buffer-pool-size=512M
+    environment:
+      TZ: ${TZ:-Asia/Shanghai}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root123}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-ecom_agent}
+      MYSQL_USER: ${MYSQL_USER:-ecom}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-ecom123}
+    ports:
+      - "${MYSQL_HOST_PORT:-3306}:3306"
+    volumes:
+      - ./mysql/init:/docker-entrypoint-initdb.d:ro
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - mysqladmin ping -h 127.0.0.1 -uroot -p"$$MYSQL_ROOT_PASSWORD" --silent
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
+    networks:
+      - ecom-net
+    logging: *default-logging
+
+  redis:
+    image: redis:7.2-alpine
+    restart: unless-stopped
+    command:
+      - sh
+      - -c
+      - >-
+        if [ -n "$$REDIS_PASSWORD" ]; then
+        exec redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
+        --requirepass "$$REDIS_PASSWORD";
+        else
+        exec redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru;
+        fi
+    environment:
+      TZ: ${TZ:-Asia/Shanghai}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-ecom123}
+    ports:
+      - "${REDIS_HOST_PORT:-6379}:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - redis-cli -a "$$REDIS_PASSWORD" --no-auth-warning ping | grep -q PONG || redis-cli ping | grep -q PONG
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+    networks:
+      - ecom-net
+    logging: *default-logging
+
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    restart: unless-stopped
+    environment:
+      TZ: ${TZ:-Asia/Shanghai}
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-ecom}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-ecom123}
+      RABBITMQ_DEFAULT_VHOST: ${RABBITMQ_VHOST:-ecom}
+    ports:
+      - "${RABBITMQ_HOST_PORT:-5672}:5672"
+      - "${RABBITMQ_MGMT_PORT:-15672}:15672"
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 40s
+    networks:
+      - ecom-net
+    logging: *default-logging
+
+  etcd:
+    image: quay.io/coreos/etcd:v3.5.5
+    restart: unless-stopped
+    environment:
+      TZ: ${TZ:-Asia/Shanghai}
+      ETCD_AUTO_COMPACTION_MODE: revision
+      ETCD_AUTO_COMPACTION_RETENTION: "1000"
+      ETCD_QUOTA_BACKEND_BYTES: "4294967296"
+      ETCD_SNAPSHOT_COUNT: "50000"
+    command:
+      - etcd
+      - --advertise-client-urls=http://etcd:2379
+      - --listen-client-urls=http://0.0.0.0:2379
+      - --data-dir=/etcd
+    ports:
+      - "${ETCD_HOST_PORT:-2379}:2379"
+    volumes:
+      - etcd-data:/etcd
+    healthcheck:
+      test: ["CMD", "etcdctl", "endpoint", "health"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 20s
+    networks:
+      - ecom-net
+    logging: *default-logging
+
+  minio:
+    image: minio/minio:RELEASE.2023-03-20T20-16-18Z
+    restart: unless-stopped
+    command: minio server /minio_data --console-address ":9001"
+    environment:
+      TZ: ${TZ:-Asia/Shanghai}
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin123}
+    ports:
+      - "${MINIO_HOST_PORT:-9000}:9000"
+      - "${MINIO_CONSOLE_PORT:-9001}:9001"
+    volumes:
+      - minio-data:/minio_data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 20s
+    networks:
+      - ecom-net
+    logging: *default-logging
+
+  milvus:
+    image: milvusdb/milvus:v2.5.4
+    restart: unless-stopped
+    command: ["milvus", "run", "standalone"]
+    security_opt:
+      - seccomp:unconfined
+    environment:
+      TZ: ${TZ:-Asia/Shanghai}
+      ETCD_ENDPOINTS: etcd:2379
+      MINIO_ADDRESS: minio:9000
+      MINIO_ACCESS_KEY_ID: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD:-minioadmin123}
+      MINIO_BUCKET_NAME: milvus-bucket
+      COMMON_STORAGETYPE: minio
+    ports:
+      - "${MILVUS_HOST_PORT:-19530}:19530"
+      - "${MILVUS_METRICS_PORT:-9091}:9091"
+    volumes:
+      - milvus-data:/var/lib/milvus
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9091/healthz"]
+      interval: 15s
+      timeout: 10s
+      retries: 30
+      start_period: 120s
+    depends_on:
+      etcd:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    networks:
+      - ecom-net
+    logging: *default-logging
+
+networks:
+  ecom-net:
+    name: ecom-net
+    driver: bridge
+
+volumes:
+  mysql-data:
+    name: xingtu-mysql-data
+  redis-data:
+    name: xingtu-redis-data
+  rabbitmq-data:
+    name: xingtu-rabbitmq-data
+  etcd-data:
+    name: xingtu-etcd-data
+  minio-data:
+    name: xingtu-minio-data
+  milvus-data:
+    name: xingtu-milvus-data

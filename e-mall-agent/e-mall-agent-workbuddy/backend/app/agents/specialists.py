@@ -34,9 +34,24 @@ TOOL_SETS: dict[str, tuple[str, ...]] = {
 @wrap_tool_call
 async def trace_tool_call(request: Any, handler: Any) -> Any:
     """Middleware: record every tool invocation for the visual trace (async-safe)."""
+    import time
+
     name = (request.tool_call or {}).get("name", "unknown")
     args = (request.tool_call or {}).get("args", {})
-    result = await handler(request)
+    started = time.perf_counter()
+    ok = True
+    try:
+        result = await handler(request)
+    except Exception:
+        ok = False
+        raise
+    finally:
+        latency = (time.perf_counter() - started) * 1000
+        try:
+            from ..api.capabilities import get_metrics
+            get_metrics().record_tool_call(name, ok, latency)
+        except Exception:
+            pass
     get_tracer().record(current_trace_id.get(), "agent:tool", name,
                         {"args": args, "result": str(getattr(result, "content", result))[:400]})
     return result
