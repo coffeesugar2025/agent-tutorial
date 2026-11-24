@@ -6,6 +6,12 @@
 * span 的 ``seq`` 严格自增，供 ``/admin/traces/{traceId}`` 顺序回放。
 """
 
+# ═══════ 文件级能力标注 ═══════
+# [CAP-16] 可观测与调试
+# 职责：链路追踪：TraceRecorder 负责写 ``agent_trace`` / ``agent_span`` / ``
+# 能力编号与规范见 docs/11-代码能力标注规范.md
+# ══════════════════════════════════
+
 from __future__ import annotations
 
 import logging
@@ -48,6 +54,9 @@ class Span:
         return int((time.perf_counter() - self.started_at) * 1000)
 
 
+# ──────── [CAP-16] 可观测与调试 ────────
+#   本处：trace/span 落库
+#   域约束：span 必须 try/finally 收口；不打印完整 prompt，只记 hash 与长度
 class TraceRecorder:
     """trace 生命周期管理（可在任意线程调用，内部每次独立 Session）。"""
 
@@ -210,6 +219,9 @@ class TraceRecorder:
             logger.warning("写 agent_span 失败 name=%s err=%s", span.name, exc)
 
     # --- checkpoint ---------------------------------------------------------
+    # ──────── [CAP-16] 可观测与调试 ────────
+    #   本处：每步状态快照（可重放）
+    #   域约束：span 必须 try/finally 收口；不打印完整 prompt，只记 hash 与长度
     def checkpoint(self, step_no: int, state: dict[str, Any]) -> None:
         """每步状态快照（可重放 / 审批后恢复）。"""
         try:

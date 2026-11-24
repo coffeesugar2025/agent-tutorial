@@ -15,6 +15,12 @@
 目录不存在、单个 Skill 解析失败都只记日志并跳过，**不会让 import 或调用失败**。
 """
 
+# ═══════ 文件级能力标注 ═══════
+# [CAP-11] 生态协议/执行环境
+# 职责：Skill 渐进式披露加载器：``SKILL
+# 能力编号与规范见 docs/11-代码能力标注规范.md
+# ══════════════════════════════════
+
 from __future__ import annotations
 
 import logging
@@ -564,6 +570,9 @@ def skill_index(root: str | None = None) -> str:
     return get_loader(root).index_block()
 
 
+# ──────── [CAP-11] 生态协议 / 执行环境 ────────
+#   本处：Skill 提示块（渐进式披露）
+#   域约束：对外暴露默认只读，写工具必须走审批；缺依赖时降级为纯 JSON 描述
 def load_skill_prompt(
     names: list[str] | None = None,
     *,

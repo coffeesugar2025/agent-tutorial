@@ -7,6 +7,12 @@
 读取时拼成一行注入 system prompt，体积控制在 200 字以内，避免挤占上下文预算。
 """
 
+# ═══════ 文件级能力标注 ═══════
+# [CAP-07] 记忆
+# 职责：用户画像：长期记忆的结构化部分（品牌偏好、预算区间、尺码、会员等级）
+# 能力编号与规范见 docs/11-代码能力标注规范.md
+# ══════════════════════════════════
+
 from __future__ import annotations
 
 import logging
@@ -85,6 +91,9 @@ def _to_vo(row: UserProfile) -> dict[str, Any]:
     }
 
 
+# ──────── [CAP-06] 上下文工程 ────────
+#   本处：用户画像注入（≤200 字）
+#   域约束：稳定内容在前、易变在后；画像≤200 字、记忆 top5、Skill 正文按触发词加载
 def profile_snippet(user_id: int) -> str:
     """拼成注入 system prompt 的一行画像（≤200 字）。"""
     try:

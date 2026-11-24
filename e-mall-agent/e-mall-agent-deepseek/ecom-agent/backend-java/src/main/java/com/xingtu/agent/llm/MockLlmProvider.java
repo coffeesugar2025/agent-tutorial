@@ -1,5 +1,11 @@
 package com.xingtu.agent.llm;
 
+// ═══════ 文件级能力标注 ═══════
+// [CAP-02] 模型接入与输出控制  |  [CAP-18] 成本与模型工程
+// 职责：Mock 供应商：走 LangChain4j ChatLanguageModel 接口，token 用量由本地估算
+// 能力编号与规范见 docs/11-代码能力标注规范.md
+// ══════════════════════════════════
+
 import com.xingtu.agent.common.TokenEstimator;
 
 /**

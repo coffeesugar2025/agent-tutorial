@@ -4,6 +4,12 @@
 * 缺依赖 → ``GET /mcp/tools`` 的 JSON 描述，Web 服务照常运行。
 """
 
+# ═══════ 文件级能力标注 ═══════
+# [CAP-11] 生态协议/执行环境
+# 职责：MCP 网关：把工具注册表暴露为 MCP / HTTP JSON
+# 能力编号与规范见 docs/11-代码能力标注规范.md
+# ══════════════════════════════════
+
 from app.mcp.server import (
     PROTOCOL_VERSION,
     SERVER_NAME,

@@ -1,5 +1,11 @@
 package com.xingtu.agent.llm;
 
+// ═══════ 文件级能力标注 ═══════
+// [CAP-02] 模型接入与输出控制  |  [CAP-18] 成本与模型工程
+// 职责：降级链：主模型优先，其后是配置的兜底链，最后永远以 mock 兜底（避免全链路不可用）
+// 能力编号与规范见 docs/11-代码能力标注规范.md
+// ══════════════════════════════════
+
 import com.xingtu.agent.config.AppProperties;
 import org.springframework.stereotype.Component;
 

@@ -1,5 +1,11 @@
 package com.xingtu.agent.eval;
 
+// ═══════ 文件级能力标注 ═══════
+// [CAP-17] 评测与迭代
+// 职责：离线评测数据集：每个 suite 一组用例，断言用「必须出现的词 / 禁止出现的词」表达， 这样不依赖外部 Judge 
+// 能力编号与规范见 docs/11-代码能力标注规范.md
+// ══════════════════════════════════
+
 import org.springframework.stereotype.Component;
 
 import java.util.LinkedHashMap;

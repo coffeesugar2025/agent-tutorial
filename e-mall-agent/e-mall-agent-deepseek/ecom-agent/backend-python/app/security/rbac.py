@@ -4,6 +4,12 @@
 避免与 :mod:`app.security.auth` 形成循环导入。
 """
 
+# ═══════ 文件级能力标注 ═══════
+# [CAP-15] 安全与合规
+# 职责：RBAC：角色解析与依赖注入式校验
+# 能力编号与规范见 docs/11-代码能力标注规范.md
+# ══════════════════════════════════
+
 from __future__ import annotations
 
 from collections.abc import Callable

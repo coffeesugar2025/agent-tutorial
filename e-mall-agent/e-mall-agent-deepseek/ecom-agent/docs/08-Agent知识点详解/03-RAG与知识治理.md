@@ -245,16 +245,25 @@ score(d) = Σ_i 1 / (k + rank_i(d))      k = 60
 **Python** · `app/rag/retriever.py`
 
 ```python
-def rrf_fuse(dense: list[Hit], sparse: list[Hit], k: int = RRF_K) -> list[tuple[Hit, float]]:
-    """双路 RRF：同一 chunk 在两条榜单里的名次取倒数和。"""
+def reciprocal_rank_fusion(rankings: list[list[int]], k: int = RRF_K) -> dict[int, float]:
+    """RRF：score(d) = Σ 1/(k + rank_i(d))。"""
     scores: dict[int, float] = {}
+    for ranking in rankings:
+        for rank, doc_id in enumerate(ranking, start=1):
+            scores[doc_id] = scores.get(doc_id, 0.0) + 1.0 / (k + rank)
+    return scores
+
+def rrf_fuse(dense: list[Hit], sparse: list[Hit], k: int = RRF_K) -> list[tuple[Hit, float]]:
+    """融合两路召回，返回 [(hit, rrf_score)]（降序）。"""
     by_id: dict[int, Hit] = {}
-    for ranking in (dense, sparse):
-        for rank, hit in enumerate(ranking, start=1):
-            scores[hit.id] = scores.get(hit.id, 0.0) + 1.0 / (k + rank)
-            by_id.setdefault(hit.id, hit)
-    ordered = sorted(scores.items(), key=lambda kv: kv[1], reverse=True)
-    return [(by_id[hid], score) for hid, score in ordered]
+    for hit in dense:
+        by_id[hit.id] = hit
+    for hit in sparse:
+        by_id.setdefault(hit.id, hit)
+    scores = reciprocal_rank_fusion([[h.id for h in dense], [h.id for h in sparse]], k=k)
+    fused = [(by_id[d], round(s, 8)) for d, s in scores.items() if d in by_id]
+    fused.sort(key=lambda item: item[1], reverse=True)
+    return fused
 
 
 async def hybrid_search(query: str, top_k: int | None = None, doc_types=None,

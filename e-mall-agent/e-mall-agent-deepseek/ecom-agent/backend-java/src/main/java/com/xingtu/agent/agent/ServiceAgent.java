@@ -1,5 +1,11 @@
 package com.xingtu.agent.agent;
 
+// ═══════ 文件级能力标注 ═══════
+// [CAP-03] 运行时循环  |  [CAP-04] 规划与反思  |  [CAP-06] 上下文工程
+// 职责：订单售后 Agent：查订单、查物流、退款资格校验与退款申请（不可逆，需审批）
+// 能力编号与规范见 docs/11-代码能力标注规范.md
+// ══════════════════════════════════
+
 import org.springframework.stereotype.Component;
 
 import java.util.List;

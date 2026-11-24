@@ -1,5 +1,11 @@
 package com.xingtu.agent.infra;
 
+// ═══════ 文件级能力标注 ═══════
+// [CAP-14] 可靠性/降级
+// 职责：进程内向量库：Milvus 不可用时的降级路径，同时也用于单元测试
+// 能力编号与规范见 docs/11-代码能力标注规范.md
+// ══════════════════════════════════
+
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;

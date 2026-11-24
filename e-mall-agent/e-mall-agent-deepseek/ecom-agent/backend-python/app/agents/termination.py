@@ -12,6 +12,12 @@
 > 顺序是契约的一部分：``tests/unit/test_termination.py`` 依赖它。
 """
 
+# ═══════ 文件级能力标注 ═══════
+# [CAP-03] 运行时循环  |  [CAP-04] 规划与反思  |  [CAP-06] 上下文工程
+# 职责：终止策略（纯函数，便于单测）
+# 能力编号与规范见 docs/11-代码能力标注规范.md
+# ══════════════════════════════════
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -39,6 +45,9 @@ class TerminationInput:
     stalled: bool = False
 
 
+# ──────── [CAP-03] 运行时循环 ────────
+#   本处：同工具同参数连续两次
+#   域约束：判定顺序固定为 超时→步数→预算→循环→无进展，同时命中也必须稳定返回同一个原因
 def detect_repeated_tool(signatures: list[str]) -> bool:
     """最近两次工具签名是否相同（同工具同参数连续调用）。
 
@@ -49,6 +58,9 @@ def detect_repeated_tool(signatures: list[str]) -> bool:
     return signatures[-1] == signatures[-2]
 
 
+# ──────── [CAP-03] 运行时循环 ────────
+#   本处：无进展检测（摘要哈希）
+#   域约束：判定顺序固定为 超时→步数→预算→循环→无进展，同时命中也必须稳定返回同一个原因
 def detect_stall(progress_marks: list[str]) -> bool:
     """最近两步的信息摘要是否完全相同（没有产生新信息）。
 
@@ -59,6 +71,9 @@ def detect_stall(progress_marks: list[str]) -> bool:
     return progress_marks[-1] == progress_marks[-2]
 
 
+# ──────── [CAP-03] 运行时循环 ────────
+#   本处：7 条终止条件（顺序即契约）
+#   域约束：判定顺序固定为 超时→步数→预算→循环→无进展，同时命中也必须稳定返回同一个原因
 def evaluate(data: TerminationInput) -> str | None:
     """返回终止原因；``None`` 表示可以继续。"""
     if data.elapsed_seconds >= data.timeout_seconds:

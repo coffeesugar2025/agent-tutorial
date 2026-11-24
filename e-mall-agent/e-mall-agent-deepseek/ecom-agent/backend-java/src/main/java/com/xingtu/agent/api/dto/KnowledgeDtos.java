@@ -1,5 +1,11 @@
 package com.xingtu.agent.api.dto;
 
+// ═══════ 文件级能力标注 ═══════
+// [CAP-01] 交互协议  （支撑）
+// 职责：知识库相关 DTO（docs/03-API契约
+// 能力编号与规范见 docs/11-代码能力标注规范.md
+// ══════════════════════════════════
+
 import java.util.List;
 
 /**

@@ -8,6 +8,12 @@
 3. 所有消息 ``delivery_mode=2`` 持久化，``confirm_delivery`` 开启 publisher confirm。
 """
 
+# ═══════ 文件级能力标注 ═══════
+# [CAP-14] 可靠性/降级
+# 职责：RabbitMQ 生产者/消费者（pika 同步版，含 DLX、重试、落库兜底）
+# 能力编号与规范见 docs/11-代码能力标注规范.md
+# ══════════════════════════════════
+
 from __future__ import annotations
 
 import json
@@ -108,6 +114,9 @@ def _update_task_status(task_id: int, status: str, error: str | None = None, ret
 # ---------------------------------------------------------------------------
 # 生产者
 # ---------------------------------------------------------------------------
+# ──────── [CAP-14] 可靠性 / 降级 ────────
+#   本处：MQ 投递（失败落库兜底）
+#   域约束：降级必须可观测（指标 + degraded 标记）；重试只给幂等操作
 class MessageBus:
     """pika 连接/通道复用 + 失败兜底。"""
 

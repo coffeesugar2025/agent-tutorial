@@ -4,6 +4,12 @@ LLM rerank 用**结构化输出**批量打分（一次调用给全部候选打�
 失败时保持 RRF 顺序（``rerank_score=None``），并记降级指标。
 """
 
+# ═══════ 文件级能力标注 ═══════
+# [CAP-12] 检索增强 RAG
+# 职责：检索重排：LLM rerank + ``none`` 降级
+# 能力编号与规范见 docs/11-代码能力标注规范.md
+# ══════════════════════════════════
+
 from __future__ import annotations
 
 import logging
@@ -50,6 +56,9 @@ class NoneReranker(BaseReranker):
         return items[:top_n]
 
 
+# ──────── [CAP-12] 检索增强 RAG ────────
+#   本处：LLM 重排（含阈值与降级）
+#   域约束：任一环节失败必须降级并标记 degraded，不允许静默返回空结果
 class LLMReranker(BaseReranker):
     """LLM 打分重排；任何失败都退回原顺序。"""
 

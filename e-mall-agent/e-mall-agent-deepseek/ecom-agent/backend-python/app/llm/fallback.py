@@ -9,6 +9,12 @@
 4. 每次成功调用都写 ``llm_call``（含 cached_tokens）并更新指标。
 """
 
+# ═══════ 文件级能力标注 ═══════
+# [CAP-02] 模型接入与输出控制  |  [CAP-18] 成本与模型工程
+# 职责：多供应商 fallback 链 + 熔断器（CLOSED / OPEN / HALF_OPEN）
+# 能力编号与规范见 docs/11-代码能力标注规范.md
+# ══════════════════════════════════
+
 from __future__ import annotations
 
 import asyncio
@@ -52,6 +58,9 @@ def _breaker_name(provider: str) -> str:
     return f"llm:{provider.lower()}"
 
 
+# ──────── [CAP-14] 可靠性 / 降级 ────────
+#   本处：熔断（3 次失败 / 30s 冷却）
+#   域约束：降级必须可观测（指标 + degraded 标记）；重试只给幂等操作
 class CircuitBreaker:
     """单供应商熔断器（进程内 + Redis 共享状态）。"""
 
@@ -209,6 +218,9 @@ class LLMCallResult:
         return list(getattr(self.message, "tool_calls", None) or [])
 
 
+# ──────── [CAP-02] 模型接入与输出控制 ────────
+#   本处：统一调用（流式/结构化/降级）
+#   域约束：模型工厂不做重试；重试与熔断分别由 fallback 层与 CircuitBreaker 负责
 class LLMClient:
     """统一的模型调用客户端（流式/非流式/结构化）。"""
 

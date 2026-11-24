@@ -5,6 +5,12 @@
 它不具备真正的语义泛化能力，但足够支撑检索链路的单测、CI 与首次体验。
 """
 
+# ═══════ 文件级能力标注 ═══════
+# [CAP-12] 检索增强 RAG
+# 职责：Embedding 四种实现：dashscope / openai / ollama / hash
+# 能力编号与规范见 docs/11-代码能力标注规范.md
+# ══════════════════════════════════
+
 from __future__ import annotations
 
 import hashlib
@@ -191,6 +197,9 @@ class OllamaEmbedding(BaseEmbedding):
 # ---------------------------------------------------------------------------
 # 工厂
 # ---------------------------------------------------------------------------
+# ──────── [CAP-12] 检索增强 RAG ────────
+#   本处：向量化工厂（含离线 hash 兜底）
+#   域约束：任一环节失败必须降级并标记 degraded，不允许静默返回空结果
 def build_embedding(provider: str | None = None) -> BaseEmbedding:
     """按 ``EMBEDDING_PROVIDER`` 构建；失败自动降级到 hash 并记日志。"""
     resolved = (provider or settings.embedding_provider or "hash").lower()

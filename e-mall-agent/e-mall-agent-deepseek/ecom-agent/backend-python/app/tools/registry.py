@@ -1,5 +1,11 @@
 """工具注册表：按 agent 分配工具集，并提供 LangChain / OpenAI schema 两种导出。"""
 
+# ═══════ 文件级能力标注 ═══════
+# [CAP-05] 工具治理
+# 职责：工具注册表：按 agent 分配工具集，并提供 LangChain / OpenAI schema 两种导出
+# 能力编号与规范见 docs/11-代码能力标注规范.md
+# ══════════════════════════════════
+
 from __future__ import annotations
 
 import json
@@ -59,6 +65,9 @@ def get_spec(name: str) -> ToolSpec:
     return spec
 
 
+# ──────── [CAP-05] 工具治理 ────────
+#   本处：按 Agent 裁剪工具集
+#   域约束：READ 可重试、WRITE 幂等、IRREVERSIBLE 必须走审批；新增工具只注册不改管线
 def tools_for(agent_type: str) -> list[ToolSpec]:
     """按 agent 返回工具定义（顺序与 docs/00 一致）。"""
     names = AGENT_TOOL_NAMES.get(agent_type.upper(), [])
@@ -86,6 +95,9 @@ def describe_tools(agent_type: str | None = None) -> list[dict[str, Any]]:
     ]
 
 
+# ──────── [CAP-11] 生态协议 / 执行环境 ────────
+#   本处：导出为 LangChain Tool
+#   域约束：对外暴露默认只读，写工具必须走审批；缺依赖时降级为纯 JSON 描述
 async def prepare_langchain_tools(
     agent_type: str,
     ctx: ToolContext,

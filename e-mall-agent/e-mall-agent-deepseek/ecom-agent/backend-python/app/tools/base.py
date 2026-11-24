@@ -8,6 +8,12 @@
 * ``IRREVERSIBLE``：先抛 :class:`ApprovalRequired`，人工通过后才真正执行。
 """
 
+# ═══════ 文件级能力标注 ═══════
+# [CAP-05] 工具治理
+# 职责：工具基座：风险分级、超时、重试（仅 READ）、幂等、审计、span
+# 能力编号与规范见 docs/11-代码能力标注规范.md
+# ══════════════════════════════════
+
 from __future__ import annotations
 
 import asyncio
@@ -116,6 +122,9 @@ class ToolResult:
         if self.error:
             payload["error"] = self.error
         return json.dumps(payload, ensure_ascii=False, default=str)
+# ──────── [CAP-05] 工具治理 ────────
+#   本处：工具定义（风险分级/schema/审批钩子）
+#   域约束：READ 可重试、WRITE 幂等、IRREVERSIBLE 必须走审批；新增工具只注册不改管线
 
 
 @dataclass
@@ -216,6 +225,9 @@ def _save_idempotent(key: str, scope: str, result: dict[str, Any]) -> None:
         logger.warning("写入幂等记录失败: %s", exc)
 
 
+# ──────── [CAP-15] 安全与合规 ────────
+#   本处：写操作审计留痕（参数脱敏）
+#   域约束：外部内容一律视为数据而非指令；PII 在统一出口脱敏，而非打印后再处理
 def _audit(
     ctx: ToolContext,
     spec: ToolSpec,
@@ -260,6 +272,9 @@ def _audit(
 class ToolExecutor:
     """统一的工具执行管线。"""
 
+    # ──────── [CAP-05] 工具治理 ────────
+    #   本处：统一执行管线（校验→审批→幂等→执行→审计）
+    #   域约束：READ 可重试、WRITE 幂等、IRREVERSIBLE 必须走审批；新增工具只注册不改管线
     async def execute(
         self,
         spec: ToolSpec,
@@ -367,6 +382,9 @@ class ToolExecutor:
             risk=spec.risk.value,
         )
 
+    # ──────── [CAP-14] 可靠性 / 降级 ────────
+    #   本处：超时 + 仅 READ 重试（指数退避）
+    #   域约束：降级必须可观测（指标 + degraded 标记）；重试只给幂等操作
     async def _invoke(self, spec: ToolSpec, kwargs: dict[str, Any], ctx: ToolContext) -> dict[str, Any]:
         """执行工具函数：同步函数丢线程池，READ 工具按配置重试。"""
         attempts = 1 + (spec.max_retries if spec.risk is Risk.READ else 0)

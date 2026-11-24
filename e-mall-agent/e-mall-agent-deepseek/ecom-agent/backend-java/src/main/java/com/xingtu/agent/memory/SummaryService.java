@@ -1,5 +1,11 @@
 package com.xingtu.agent.memory;
 
+// ═══════ 文件级能力标注 ═══════
+// [CAP-07] 记忆
+// 职责：会话滚动摘要：消息超过阈值时用 LLM 压缩成一句话摘要，失败时退化为抽取式摘要
+// 能力编号与规范见 docs/11-代码能力标注规范.md
+// ══════════════════════════════════
+
 import com.xingtu.agent.infra.repo.MessageRepository;
 import com.xingtu.agent.infra.repo.SessionRepository;
 import com.xingtu.agent.llm.LlmProvider;

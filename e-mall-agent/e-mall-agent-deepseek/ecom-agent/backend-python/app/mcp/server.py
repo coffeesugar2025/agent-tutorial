@@ -18,6 +18,12 @@ IRREVERSIBLE 永远不会自动执行）。
 缺依赖时返回 ``None`` / 降级 JSON，**不会 import 失败**。
 """
 
+# ═══════ 文件级能力标注 ═══════
+# [CAP-11] 生态协议/执行环境
+# 职责：MCP（Model Context Protocol）网关：把 ``tools/registry`` 的工具暴露给外部 
+# 能力编号与规范见 docs/11-代码能力标注规范.md
+# ══════════════════════════════════
+
 from __future__ import annotations
 
 import asyncio
@@ -317,6 +323,9 @@ def create_router(*, allow_write: bool = False) -> Any | None:
     return router
 
 
+# ──────── [CAP-11] 生态协议 / 执行环境 ────────
+#   本处：工具暴露为 MCP 端点
+#   域约束：对外暴露默认只读，写工具必须走审批；缺依赖时降级为纯 JSON 描述
 def mount(app: Any, *, allow_write: bool = False) -> bool:
     """把 ``/mcp`` 路由挂到 FastAPI app（返回是否挂载成功）。"""
     router = create_router(allow_write=allow_write)

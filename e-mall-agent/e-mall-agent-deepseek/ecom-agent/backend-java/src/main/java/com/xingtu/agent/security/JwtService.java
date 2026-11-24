@@ -1,5 +1,11 @@
 package com.xingtu.agent.security;
 
+// ═══════ 文件级能力标注 ═══════
+// [CAP-15] 安全与合规
+// 职责：JWT 签发与校验（jjwt 0
+// 能力编号与规范见 docs/11-代码能力标注规范.md
+// ══════════════════════════════════
+
 import com.xingtu.agent.common.BizException;
 import com.xingtu.agent.common.TraceContext;
 import com.xingtu.agent.config.AppProperties;

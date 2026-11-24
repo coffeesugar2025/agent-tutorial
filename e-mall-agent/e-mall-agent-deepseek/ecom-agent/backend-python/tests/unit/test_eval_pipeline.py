@@ -1,5 +1,11 @@
 """评测链路单元测试：数据集校验、规则/LLM judge、分数归一、pass@k / pass^k 与落库。"""
 
+# ═══════ 文件级能力标注 ═══════
+# [CAP-17] 评测与迭代  （支撑）
+# 职责：评测链路单元测试：数据集校验、规则/LLM judge、分数归一、pass@k / pass^k 与落库
+# 能力编号与规范见 docs/11-代码能力标注规范.md
+# ══════════════════════════════════
+
 from __future__ import annotations
 
 import asyncio

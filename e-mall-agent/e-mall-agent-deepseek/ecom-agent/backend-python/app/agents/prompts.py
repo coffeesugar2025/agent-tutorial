@@ -9,6 +9,12 @@
 3. **可溯源**：引用检索内容时标注 ``[1]`` ``[2]``，与 citations 顺序一致。
 """
 
+# ═══════ 文件级能力标注 ═══════
+# [CAP-03] 运行时循环  |  [CAP-04] 规划与反思  |  [CAP-06] 上下文工程
+# 职责：各 Agent 的系统提示词
+# 能力编号与规范见 docs/11-代码能力标注规范.md
+# ══════════════════════════════════
+
 from __future__ import annotations
 
 from app.agents.state import AGENT_OPS, AGENT_SERVICE, AGENT_SHOPPING, AGENT_SUPERVISOR

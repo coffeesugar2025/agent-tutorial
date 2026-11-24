@@ -6,6 +6,12 @@
 3. 子块越界时按 ``overlap`` 回退，保证跨句语义不被切断得过于生硬。
 """
 
+# ═══════ 文件级能力标注 ═══════
+# [CAP-12] 检索增强 RAG
+# 职责：文档切片：递归切分 + 父子块（中文友好）
+# 能力编号与规范见 docs/11-代码能力标注规范.md
+# ══════════════════════════════════
+
 from __future__ import annotations
 
 import hashlib
@@ -133,6 +139,9 @@ def split_paragraphs(text: str, parent_size: int) -> list[str]:
     return parents or ([text] if text else [])
 
 
+# ──────── [CAP-12] 检索增强 RAG ────────
+#   本处：切片（递归 + 语义 + 父子块）
+#   域约束：任一环节失败必须降级并标记 degraded，不允许静默返回空结果
 def chunk_document(
     text: str,
     *,

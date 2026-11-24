@@ -1,5 +1,11 @@
 package com.xingtu.agent.common;
 
+// ═══════ 文件级能力标注 ═══════
+// [CAP-01] 交互协议  |  [CAP-14] 可靠性/降级  （支撑）
+// 职责：全局异常处理：所有异常都转成统一信封，HTTP 状态码与契约错误码一致
+// 能力编号与规范见 docs/11-代码能力标注规范.md
+// ══════════════════════════════════
+
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

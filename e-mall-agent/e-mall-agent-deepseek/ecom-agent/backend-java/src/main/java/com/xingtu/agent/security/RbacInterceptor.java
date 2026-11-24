@@ -1,5 +1,11 @@
 package com.xingtu.agent.security;
 
+// ═══════ 文件级能力标注 ═══════
+// [CAP-15] 安全与合规
+// 职责：管理端 RBAC：/api/v1/admin/ 需要 ADMIN，/api/v1/knowledge/ 需要 ADMIN
+// 能力编号与规范见 docs/11-代码能力标注规范.md
+// ══════════════════════════════════
+
 import com.xingtu.agent.common.BizException;
 import com.xingtu.agent.common.TraceContext;
 import jakarta.servlet.http.HttpServletRequest;

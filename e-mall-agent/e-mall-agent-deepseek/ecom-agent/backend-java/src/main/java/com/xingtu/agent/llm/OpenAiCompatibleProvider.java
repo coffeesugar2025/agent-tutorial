@@ -1,5 +1,11 @@
 package com.xingtu.agent.llm;
 
+// ═══════ 文件级能力标注 ═══════
+// [CAP-02] 模型接入与输出控制  |  [CAP-18] 成本与模型工程
+// 职责：OpenAI 兼容协议的供应商实现（DeepSeek / 通义千问 compatible-mode / OpenAI /
+// 能力编号与规范见 docs/11-代码能力标注规范.md
+// ══════════════════════════════════
+
 import com.xingtu.agent.common.TokenEstimator;
 import com.xingtu.agent.config.AppProperties;
 import dev.langchain4j.data.message.AiMessage;

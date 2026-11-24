@@ -7,6 +7,12 @@
 4. ``MOCK_LLM=true`` 时 ``effective_primary`` 强制为 ``mock``，保证离线可跑。
 """
 
+# ═══════ 文件级能力标注 ═══════
+# [CAP-02] 模型接入与输出控制  |  [CAP-14] 可靠性/降级  （支撑）
+# 职责：应用配置：pydantic-settings 读取环境变量，覆盖 docs/00 第 2 节全部变量
+# 能力编号与规范见 docs/11-代码能力标注规范.md
+# ══════════════════════════════════
+
 from __future__ import annotations
 
 from functools import lru_cache
@@ -40,28 +46,28 @@ class Settings(BaseSettings):
     cors_origins: str = "*"
 
     # --- MySQL ---------------------------------------------------------------
-    mysql_host: str = "127.0.0.1"
+    mysql_host: str = "mysql"
     mysql_port: int = 3306
     mysql_db: str = "ecom_agent"
     mysql_user: str = "ecom"
     mysql_password: str = "ecom123"
     database_url: str | None = None
-    db_echo: bool = True
+    db_echo: bool = False
     db_pool_size: int = 10
     db_max_overflow: int = 20
     db_pool_recycle: int = 1800
     auto_create_tables: bool = False
 
     # --- Redis ---------------------------------------------------------------
-    redis_host: str = "127.0.0.1"
+    redis_host: str = "redis"
     redis_port: int = 6379
-    redis_password: str = "ecom123"
+    redis_password: str = ""
     redis_db: int = 0
     redis_socket_timeout: float = 1.0
     redis_connect_timeout: float = 0.5
 
     # --- RabbitMQ ------------------------------------------------------------
-    rabbitmq_host: str = "127.0.0.1"
+    rabbitmq_host: str = "rabbitmq"
     rabbitmq_port: int = 5672
     rabbitmq_user: str = "ecom"
     rabbitmq_password: str = "ecom123"
@@ -75,7 +81,7 @@ class Settings(BaseSettings):
     mq_queue_prefix: str = "ecom.agent.py"
 
     # --- Milvus --------------------------------------------------------------
-    milvus_host: str = "127.0.0.1"
+    milvus_host: str = "milvus"
     milvus_port: int = 19530
     milvus_collection_prefix: str = "ecom"
     # auto / memory / milvus

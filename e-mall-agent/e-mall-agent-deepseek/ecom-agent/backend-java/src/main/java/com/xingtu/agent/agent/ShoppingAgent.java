@@ -1,5 +1,11 @@
 package com.xingtu.agent.agent;
 
+// ═══════ 文件级能力标注 ═══════
+// [CAP-03] 运行时循环  |  [CAP-04] 规划与反思  |  [CAP-06] 上下文工程
+// 职责：商品导购 Agent：负责选品、比价、对比推荐
+// 能力编号与规范见 docs/11-代码能力标注规范.md
+// ══════════════════════════════════
+
 import org.springframework.stereotype.Component;
 
 import java.util.List;

@@ -1,5 +1,11 @@
 package com.xingtu.agent.eval;
 
+// ═══════ 文件级能力标注 ═══════
+// [CAP-17] 评测与迭代
+// 职责：评测执行器：按 eval_run
+// 能力编号与规范见 docs/11-代码能力标注规范.md
+// ══════════════════════════════════
+
 import com.xingtu.agent.common.JsonUtil;
 import com.xingtu.agent.infra.repo.EvalRepository;
 import com.xingtu.agent.llm.CostCalculator;

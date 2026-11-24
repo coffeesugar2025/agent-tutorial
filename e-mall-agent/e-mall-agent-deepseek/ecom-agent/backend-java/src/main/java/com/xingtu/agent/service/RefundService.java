@@ -1,5 +1,11 @@
 package com.xingtu.agent.service;
 
+// ═══════ 文件级能力标注 ═══════
+// [CAP-08] 工作流/状态机  |  [CAP-10] 人机协作 HITL
+// 职责：退款服务：资格校验 + 幂等创建 + 审批后执行
+// 能力编号与规范见 docs/11-代码能力标注规范.md
+// ══════════════════════════════════
+
 import com.xingtu.agent.common.BizException;
 import com.xingtu.agent.common.Ids;
 import com.xingtu.agent.common.JsonUtil;

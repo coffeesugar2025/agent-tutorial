@@ -14,6 +14,12 @@
 4. 执行结果以系统消息回写会话，用户在前端能看到最终状态。
 """
 
+# ═══════ 文件级能力标注 ═══════
+# [CAP-10] 人机协作 HITL
+# 职责：Human-in-the-loop：审批任务的创建、查询、决策、执行与超时
+# 能力编号与规范见 docs/11-代码能力标注规范.md
+# ══════════════════════════════════
+
 from __future__ import annotations
 
 import asyncio
@@ -126,6 +132,9 @@ def pending_count(user_id: int | None = None) -> int:
 # ---------------------------------------------------------------------------
 # 决策
 # ---------------------------------------------------------------------------
+# ──────── [CAP-10] 人机协作 HITL ────────
+#   本处：审批决策入口（授权 + 状态机）
+#   域约束：工具本体无副作用，审批通过后才执行 approved_func；越权一律按不存在处理
 async def decide(
     approval_id: int,
     user_id: int,
@@ -156,6 +165,9 @@ async def decide(
     return {"id": approval_id, "status": STATUS_APPROVED, "result": result}
 
 
+# ──────── [CAP-10] 人机协作 HITL ────────
+#   本处：抢占式状态更新（防并发双批）
+#   域约束：工具本体无副作用，审批通过后才执行 approved_func；越权一律按不存在处理
 def _claim_for_decision(
     approval_id: int,
     user_id: int,
@@ -186,6 +198,9 @@ def _claim_for_decision(
 # ---------------------------------------------------------------------------
 # 执行
 # ---------------------------------------------------------------------------
+# ──────── [CAP-10] 人机协作 HITL ────────
+#   本处：MQ 异步执行，投递失败就地执行
+#   域约束：工具本体无副作用，审批通过后才执行 approved_func；越权一律按不存在处理
 async def _execute_approved(task: dict[str, Any]) -> dict[str, Any]:
     """审批通过后的执行：优先 MQ 异步，投递失败就地执行。"""
     detail = task.get("detail") or {}
@@ -215,6 +230,9 @@ async def _execute_approved(task: dict[str, Any]) -> dict[str, Any]:
     return {"queued": True}
 
 
+# ──────── [CAP-08] 工作流 / 状态机 ────────
+#   本处：审批动作执行（幂等 + 审计）
+#   域约束：状态迁移用期望旧状态做 CAS（UPDATE ... WHERE status=旧值），禁止先查后写
 async def execute_action(payload: dict[str, Any]) -> dict[str, Any]:
     """真正执行被审批的动作（幂等由业务工具保证）。"""
     tool_name = str(payload.get("tool") or "")

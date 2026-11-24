@@ -1,5 +1,11 @@
 package com.xingtu.agent.tool;
 
+// ═══════ 文件级能力标注 ═══════
+// [CAP-05] 工具治理  |  [CAP-13] 结构化知识
+// 职责：工具注册表：集中登记工具名、描述、风险级别与执行器
+// 能力编号与规范见 docs/11-代码能力标注规范.md
+// ══════════════════════════════════
+
 import com.xingtu.agent.common.BizException;
 import org.springframework.stereotype.Component;
 
@@ -28,6 +34,9 @@ public class ToolRegistry {
 
     private final Map<String, Definition> tools = new LinkedHashMap<>();
 
+    // ──────── [CAP-05] 工具治理 ────────
+    //   本处：声明式注册
+    //   域约束：READ 可重试、WRITE 幂等、IRREVERSIBLE 必须走审批；新增工具只注册不改管线
     public void register(Definition definition) {
         if (definition == null || definition.name() == null) {
             return;
@@ -39,6 +48,9 @@ public class ToolRegistry {
         return Optional.ofNullable(tools.get(name));
     }
 
+    // ──────── [CAP-05] 工具治理 ────────
+    //   本处：风险分级查询
+    //   域约束：READ 可重试、WRITE 幂等、IRREVERSIBLE 必须走审批；新增工具只注册不改管线
     public ToolRisk riskOf(String name) {
         Definition definition = tools.get(name);
         return definition == null ? ToolRisk.READ : definition.risk();

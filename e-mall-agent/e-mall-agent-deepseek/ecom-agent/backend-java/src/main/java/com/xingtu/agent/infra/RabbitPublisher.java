@@ -1,5 +1,11 @@
 package com.xingtu.agent.infra;
 
+// ═══════ 文件级能力标注 ═══════
+// [CAP-14] 可靠性/降级
+// 职责：RabbitMQ 发布器：MQ 关闭或发布失败时落 async_task 兜底（状态 QUEUED，由补偿任务处理）
+// 能力编号与规范见 docs/11-代码能力标注规范.md
+// ══════════════════════════════════
+
 import com.xingtu.agent.common.JsonUtil;
 import com.xingtu.agent.config.AppProperties;
 import com.xingtu.agent.infra.repo.AsyncTaskRepository;

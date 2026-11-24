@@ -1,5 +1,11 @@
 package com.xingtu.agent.obs;
 
+// ═══════ 文件级能力标注 ═══════
+// [CAP-16] 可观测与调试
+// 职责：Micrometer 指标收集：指标前缀 ecom_agent_
+// 能力编号与规范见 docs/11-代码能力标注规范.md
+// ══════════════════════════════════
+
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.DistributionSummary;
 import io.micrometer.core.instrument.Gauge;

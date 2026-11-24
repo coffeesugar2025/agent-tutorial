@@ -1,5 +1,11 @@
 """结构化日志：单行 JSON，自动注入 trace_id / session_id / user_id。"""
 
+# ═══════ 文件级能力标注 ═══════
+# [CAP-16] 可观测与调试
+# 职责：结构化日志：单行 JSON，自动注入 trace_id / session_id / user_id
+# 能力编号与规范见 docs/11-代码能力标注规范.md
+# ══════════════════════════════════
+
 from __future__ import annotations
 
 import json

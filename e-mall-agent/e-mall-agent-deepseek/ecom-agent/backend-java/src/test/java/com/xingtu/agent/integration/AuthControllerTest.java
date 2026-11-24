@@ -1,5 +1,11 @@
 package com.xingtu.agent.integration;
 
+// ═══════ 文件级能力标注 ═══════
+// [CAP-17] 评测与迭代  （支撑）
+// 职责：认证接口测试：MockMvc standaloneSetup，不起 Spring 容器、不连数据库/Redis， 仓储与
+// 能力编号与规范见 docs/11-代码能力标注规范.md
+// ══════════════════════════════════
+
 import com.xingtu.agent.api.AuthController;
 import com.xingtu.agent.common.GlobalExceptionHandler;
 import com.xingtu.agent.common.TraceContext;

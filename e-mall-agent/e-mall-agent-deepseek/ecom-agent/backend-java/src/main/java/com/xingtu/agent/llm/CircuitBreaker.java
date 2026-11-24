@@ -1,5 +1,11 @@
 package com.xingtu.agent.llm;
 
+// ═══════ 文件级能力标注 ═══════
+// [CAP-02] 模型接入与输出控制  |  [CAP-18] 成本与模型工程
+// 职责：熔断器：连续失败达到阈值后进入 OPEN，冷却期后半开试探
+// 能力编号与规范见 docs/11-代码能力标注规范.md
+// ══════════════════════════════════
+
 import com.xingtu.agent.config.AppProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -39,6 +45,9 @@ public class CircuitBreaker {
         this.clock = clock;
     }
 
+    // ──────── [CAP-14] 可靠性 / 降级 ────────
+    //   本处：熔断放行判定
+    //   域约束：降级必须可观测（指标 + degraded 标记）；重试只给幂等操作
     public boolean allowRequest(String name) {
         State state = states.computeIfAbsent(name, key -> new State());
         synchronized (state) {

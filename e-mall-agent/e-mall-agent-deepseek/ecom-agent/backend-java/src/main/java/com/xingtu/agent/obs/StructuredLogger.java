@@ -1,5 +1,11 @@
 package com.xingtu.agent.obs;
 
+// ═══════ 文件级能力标注 ═══════
+// [CAP-16] 可观测与调试
+// 职责：结构化日志：一行一个 JSON，统一带 traceId / userId，便于 ELK 检索
+// 能力编号与规范见 docs/11-代码能力标注规范.md
+// ══════════════════════════════════
+
 import com.xingtu.agent.common.JsonUtil;
 import com.xingtu.agent.common.TraceContext;
 import org.slf4j.Logger;

@@ -1,5 +1,11 @@
 package com.xingtu.agent.tool;
 
+// ═══════ 文件级能力标注 ═══════
+// [CAP-05] 工具治理  |  [CAP-13] 结构化知识
+// 职责：Text2SQL 守卫：只允许单条只读 SELECT，禁止注释、多语句、DDL/DML、文件读写与延时函数， 表名必须在
+// 能力编号与规范见 docs/11-代码能力标注规范.md
+// ══════════════════════════════════
+
 import com.xingtu.agent.common.BizException;
 import org.springframework.stereotype.Component;
 
@@ -36,6 +42,9 @@ public class Text2SqlGuard {
     private static final Pattern LIMIT_PATTERN = Pattern.compile("(?i)\\blimit\\s+\\d+");
 
     /** 校验并返回可直接执行的 SQL；不合法抛 40001。 */
+    // ──────── [CAP-13] 结构化知识 ────────
+    //   本处：Text2SQL 白名单 + 只读 + 强制 LIMIT
+    //   域约束：只读 + 表白名单 + 强制 LIMIT，最后一层靠数据库只读账号兜底
     public String validate(String sql) {
         if (sql == null || sql.isBlank()) {
             throw BizException.validation("SQL 不能为空");

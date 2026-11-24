@@ -1,5 +1,11 @@
 package com.xingtu.agent.infra.repo;
 
+// ═══════ 文件级能力标注 ═══════
+// [CAP-05] 工具治理  |  [CAP-12] 检索增强 RAG  （支撑）
+// 职责：商品表访问（product / category），含 MySQL FULLTEXT(ngram) 降级检索
+// 能力编号与规范见 docs/11-代码能力标注规范.md
+// ══════════════════════════════════
+
 import com.xingtu.agent.common.PageResult;
 import com.xingtu.agent.infra.JdbcSupport;
 import org.springframework.dao.DataAccessException;

@@ -6,6 +6,12 @@
 * 消息条数超过阈值时投递 ``session.summarize`` 到 MQ，异步生成摘要，不阻塞对话。
 """
 
+# ═══════ 文件级能力标注 ═══════
+# [CAP-07] 记忆
+# 职责：会话记忆：会话 CRUD、消息落库、历史装载、滚动摘要触发
+# 能力编号与规范见 docs/11-代码能力标注规范.md
+# ══════════════════════════════════
+
 from __future__ import annotations
 
 import logging
@@ -61,8 +67,7 @@ def list_sessions(user_id: int, limit: int = 50) -> list[dict[str, Any]]:
 
 def get_session(session_id: int, user_id: int) -> dict[str, Any]:
     with session_scope() as db:
-        session = _owned(db, session_id, user_id)
-        return to_vo(session)
+        return to_vo(_owned(db, session_id, user_id))
 
 
 def delete_session(session_id: int, user_id: int) -> None:
@@ -202,6 +207,9 @@ def history_dicts(session_id: int, limit: int | None = None) -> list[dict[str, s
         ]
 
 
+# ──────── [CAP-07] 记忆 ────────
+#   本处：会话历史装载（窗口裁剪 + 摘要）
+#   域约束：只记稳定可复用信息；新旧冲突时旧记忆重要性减半，不物理删除
 def load_for_llm(session_id: int) -> tuple[list[Any], str | None]:
     """返回 ``(LangChain 消息列表, 会话摘要)``，已按条数裁剪。
 
@@ -234,6 +242,9 @@ def load_for_llm(session_id: int) -> tuple[list[Any], str | None]:
 # ---------------------------------------------------------------------------
 # 摘要
 # ---------------------------------------------------------------------------
+# ──────── [CAP-07] 记忆 ────────
+#   本处：滚动摘要触发（MQ 异步）
+#   域约束：只记稳定可复用信息；新旧冲突时旧记忆重要性减半，不物理删除
 def maybe_trigger_summary(session_id: int, message_count: int) -> bool:
     """消息达到阈值时异步触发摘要（不阻塞主流程）。
 

@@ -1,5 +1,11 @@
 package com.xingtu.agent.llm;
 
+// ═══════ 文件级能力标注 ═══════
+// [CAP-02] 模型接入与输出控制  |  [CAP-18] 成本与模型工程
+// 职责：成本计算：价格表单位为「分 / 百万 token」，按调用向上取整（避免小额调用被记为 0）
+// 能力编号与规范见 docs/11-代码能力标注规范.md
+// ══════════════════════════════════
+
 import com.xingtu.agent.config.AppProperties;
 import org.springframework.stereotype.Component;
 

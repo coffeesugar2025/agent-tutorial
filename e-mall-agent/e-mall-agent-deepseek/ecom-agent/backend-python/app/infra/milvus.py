@@ -9,6 +9,12 @@ Milvus 不可用时抛 :class:`MilvusUnavailable`，由 ``rag.store`` 捕获并�
 内存向量 / MySQL FULLTEXT；本模块只负责"能不能用"与"怎么读写"。
 """
 
+# ═══════ 文件级能力标注 ═══════
+# [CAP-14] 可靠性/降级
+# 职责：Milvus 封装（pymilvus 2
+# 能力编号与规范见 docs/11-代码能力标注规范.md
+# ══════════════════════════════════
+
 from __future__ import annotations
 
 import logging

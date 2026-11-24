@@ -1,5 +1,11 @@
 package com.xingtu.agent.api;
 
+// ═══════ 文件级能力标注 ═══════
+// [CAP-01] 交互协议
+// 职责：订单与物流接口（docs/03-API契约
+// 能力编号与规范见 docs/11-代码能力标注规范.md
+// ══════════════════════════════════
+
 import com.xingtu.agent.api.dto.OrderDtos;
 import com.xingtu.agent.common.ApiResponse;
 import com.xingtu.agent.common.BizException;

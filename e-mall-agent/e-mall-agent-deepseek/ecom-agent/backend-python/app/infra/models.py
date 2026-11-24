@@ -6,6 +6,12 @@
 * 精度金额统一 ``Numeric(asdecimal=False)``，避免 SQLite 的 Decimal 警告。
 """
 
+# ═══════ 文件级能力标注 ═══════
+# [CAP-14] 可靠性/降级
+# 职责：ORM 模型（业务主表）：用户/商品/订单/会话/审批/知识库
+# 能力编号与规范见 docs/11-代码能力标注规范.md
+# ══════════════════════════════════
+
 from __future__ import annotations
 
 from datetime import datetime

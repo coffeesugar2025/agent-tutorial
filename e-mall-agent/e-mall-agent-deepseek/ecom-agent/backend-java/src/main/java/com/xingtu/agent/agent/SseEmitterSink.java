@@ -1,5 +1,11 @@
 package com.xingtu.agent.agent;
 
+// ═══════ 文件级能力标注 ═══════
+// [CAP-03] 运行时循环  |  [CAP-04] 规划与反思  |  [CAP-06] 上下文工程
+// 职责：SseEmitter 实现：所有 data 都序列化成紧凑 JSON（单行），按契约的 event 名推送
+// 能力编号与规范见 docs/11-代码能力标注规范.md
+// ══════════════════════════════════
+
 import com.xingtu.agent.common.JsonUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,6 +57,9 @@ public class SseEmitterSink implements SseEventSink {
     }
 
     @Override
+    // ──────── [CAP-01] 交互协议 ────────
+    //   本处：SSE 事件发送
+    //   域约束：事件名与字段是前后端契约，改动必须同步 docs/03 与前端状态机
     public void delta(String text) {
         Map<String, Object> data = new LinkedHashMap<>();
         data.put("text", text);

@@ -1,5 +1,11 @@
 package com.xingtu.agent.llm;
 
+// ═══════ 文件级能力标注 ═══════
+// [CAP-02] 模型接入与输出控制  |  [CAP-18] 成本与模型工程
+// 职责：每次模型调用都落 llm_call（成本、token、时延），并打点 micrometer
+// 能力编号与规范见 docs/11-代码能力标注规范.md
+// ══════════════════════════════════
+
 import com.xingtu.agent.common.TraceContext;
 import com.xingtu.agent.infra.repo.LlmCallRepository;
 import com.xingtu.agent.obs.MetricsCollector;

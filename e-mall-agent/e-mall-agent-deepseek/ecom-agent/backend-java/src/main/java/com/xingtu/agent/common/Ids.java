@@ -1,5 +1,11 @@
 package com.xingtu.agent.common;
 
+// ═══════ 文件级能力标注 ═══════
+// [CAP-01] 交互协议  |  [CAP-14] 可靠性/降级  （支撑）
+// 职责：ID 生成：traceId / 订单号 / 退款单号 / 幂等键
+// 能力编号与规范见 docs/11-代码能力标注规范.md
+// ══════════════════════════════════
+
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;

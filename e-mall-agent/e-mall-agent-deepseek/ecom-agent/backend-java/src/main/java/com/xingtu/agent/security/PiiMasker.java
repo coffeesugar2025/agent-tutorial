@@ -1,5 +1,11 @@
 package com.xingtu.agent.security;
 
+// ═══════ 文件级能力标注 ═══════
+// [CAP-15] 安全与合规
+// 职责：PII 脱敏：手机号 / 邮箱 / 身份证 / 银行卡 / 收货地址
+// 能力编号与规范见 docs/11-代码能力标注规范.md
+// ══════════════════════════════════
+
 import org.springframework.stereotype.Component;
 
 import java.util.regex.Matcher;

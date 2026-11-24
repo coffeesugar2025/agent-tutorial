@@ -1,5 +1,11 @@
 """退款工具：创建退款申请（IRREVERSIBLE，必须人工审批后执行）。"""
 
+# ═══════ 文件级能力标注 ═══════
+# [CAP-05] 工具治理
+# 职责：退款工具：创建退款申请（IRREVERSIBLE，必须人工审批后执行）
+# 能力编号与规范见 docs/11-代码能力标注规范.md
+# ══════════════════════════════════
+
 from __future__ import annotations
 
 import json
@@ -54,6 +60,9 @@ def resolve_refund_approval(ctx: ToolContext, kwargs: dict[str, Any]) -> dict[st
     }
 
 
+# ──────── [CAP-10] 人机协作 HITL ────────
+#   本处：不可逆工具只抛审批信号，无副作用
+#   域约束：工具本体无副作用，审批通过后才执行 approved_func；越权一律按不存在处理
 def create_refund_request(ctx: ToolContext, orderNo: str, reason: str, amount: float | None = None) -> dict[str, Any]:
     """IRREVERSIBLE 工具本体：**只有审批通过后**才会被调用。
 
@@ -68,6 +77,9 @@ def create_refund_request(ctx: ToolContext, orderNo: str, reason: str, amount: f
     )
 
 
+# ──────── [CAP-10] 人机协作 HITL ────────
+#   本处：审批通过后真正落库（幂等）
+#   域约束：工具本体无副作用，审批通过后才执行 approved_func；越权一律按不存在处理
 def execute_refund_request(
     ctx: ToolContext,
     order_no: str,
@@ -142,6 +154,9 @@ def get_refund(ctx: ToolContext, refund_no: str) -> dict[str, Any]:
         }
 
 
+# ──────── [CAP-10] 人机协作 HITL ────────
+#   本处：审批后执行适配器（驼峰→蛇形参数映射）
+#   域约束：工具本体无副作用，审批通过后才执行 approved_func；越权一律按不存在处理
 def execute_approved_refund(ctx: ToolContext, approval_id: int | None = None, **kwargs: Any) -> dict[str, Any]:
     """审批通过后的执行适配器。
 

@@ -1,5 +1,11 @@
 package com.xingtu.agent.hitl;
 
+// ═══════ 文件级能力标注 ═══════
+// [CAP-10] 人机协作 HITL
+// 职责：需要人工审批时中断 Agent 循环
+// 能力编号与规范见 docs/11-代码能力标注规范.md
+// ══════════════════════════════════
+
 import java.util.Map;
 
 /**

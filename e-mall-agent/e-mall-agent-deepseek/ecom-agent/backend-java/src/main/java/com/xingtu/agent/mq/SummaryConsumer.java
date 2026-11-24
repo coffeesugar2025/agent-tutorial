@@ -1,5 +1,11 @@
 package com.xingtu.agent.mq;
 
+// ═══════ 文件级能力标注 ═══════
+// [CAP-14] 可靠性/降级
+// 职责：会话摘要消费者：session
+// 能力编号与规范见 docs/11-代码能力标注规范.md
+// ══════════════════════════════════
+
 import com.xingtu.agent.config.RabbitConfig;
 import com.xingtu.agent.infra.repo.AsyncTaskRepository;
 import com.xingtu.agent.memory.SummaryService;

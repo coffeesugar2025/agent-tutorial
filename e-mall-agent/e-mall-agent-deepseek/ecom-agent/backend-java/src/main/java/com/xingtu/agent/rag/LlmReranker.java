@@ -1,5 +1,11 @@
 package com.xingtu.agent.rag;
 
+// ═══════ 文件级能力标注 ═══════
+// [CAP-12] 检索增强 RAG
+// 职责：重排：RERANK_PROVIDER=llm 且非 mock 时用模型打分，否则退化为词面覆盖度打分（确定性、零成本）
+// 能力编号与规范见 docs/11-代码能力标注规范.md
+// ══════════════════════════════════
+
 import com.xingtu.agent.config.AppProperties;
 import com.xingtu.agent.llm.FallbackChain;
 import com.xingtu.agent.llm.LlmProvider;

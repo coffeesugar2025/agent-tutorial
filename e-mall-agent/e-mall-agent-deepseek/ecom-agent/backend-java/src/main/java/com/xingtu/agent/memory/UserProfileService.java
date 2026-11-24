@@ -1,5 +1,11 @@
 package com.xingtu.agent.memory;
 
+// ═══════ 文件级能力标注 ═══════
+// [CAP-07] 记忆
+// 职责：用户画像（user_profile）：结构化长期记忆——偏好品牌、预算区间、尺码、会员等级
+// 能力编号与规范见 docs/11-代码能力标注规范.md
+// ══════════════════════════════════
+
 import com.xingtu.agent.common.JsonUtil;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;

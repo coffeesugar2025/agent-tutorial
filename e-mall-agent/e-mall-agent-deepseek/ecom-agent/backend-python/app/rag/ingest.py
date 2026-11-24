@@ -6,6 +6,12 @@
 * 作业级：``knowledge_job`` 记录 QUEUED → RUNNING → SUCCESS/FAILED + progress。
 """
 
+# ═══════ 文件级能力标注 ═══════
+# [CAP-12] 检索增强 RAG
+# 职责：知识入库：解析(md/txt/pdf/docx) → 清洗 → 切片 → 向量化 → 入库（幂等）
+# 能力编号与规范见 docs/11-代码能力标注规范.md
+# ══════════════════════════════════
+
 from __future__ import annotations
 
 import logging
@@ -119,6 +125,9 @@ def _set_document_status(document_id: int, status: str, **fields: Any) -> None:
 # ---------------------------------------------------------------------------
 # 主流程
 # ---------------------------------------------------------------------------
+# ──────── [CAP-12] 检索增强 RAG ────────
+#   本处：知识入库（checksum 幂等 + 版本）
+#   域约束：任一环节失败必须降级并标记 degraded，不允许静默返回空结果
 def ingest_document(
     document_id: int,
     *,

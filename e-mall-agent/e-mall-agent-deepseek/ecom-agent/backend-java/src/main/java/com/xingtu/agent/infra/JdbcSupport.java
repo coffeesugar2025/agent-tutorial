@@ -1,5 +1,11 @@
 package com.xingtu.agent.infra;
 
+// ═══════ 文件级能力标注 ═══════
+// [CAP-14] 可靠性/降级
+// 职责：JdbcTemplate 薄封装：只做四件事——插入返回自增主键、可空单行查询、动态参数、结果集取值
+// 能力编号与规范见 docs/11-代码能力标注规范.md
+// ══════════════════════════════════
+
 import com.xingtu.agent.common.JsonUtil;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;

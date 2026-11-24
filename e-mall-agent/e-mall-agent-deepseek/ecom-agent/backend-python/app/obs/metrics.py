@@ -4,6 +4,12 @@
 可运行；此时 ``/metrics`` 返回说明性文本而非崩溃。
 """
 
+# ═══════ 文件级能力标注 ═══════
+# [CAP-16] 可观测与调试
+# 职责：Prometheus 指标（前缀 ``ecom_agent_``）
+# 能力编号与规范见 docs/11-代码能力标注规范.md
+# ══════════════════════════════════
+
 from __future__ import annotations
 
 import logging

@@ -1,5 +1,11 @@
 package com.xingtu.agent.tool;
 
+// ═══════ 文件级能力标注 ═══════
+// [CAP-05] 工具治理  |  [CAP-13] 结构化知识
+// 职责：受限沙箱：OPS 的 run_python 只允许「聚合函数 + 数值列表」的确定性计算， 不启动解释器、不读文件、不联
+// 能力编号与规范见 docs/11-代码能力标注规范.md
+// ══════════════════════════════════
+
 import com.xingtu.agent.config.AppProperties;
 import org.springframework.stereotype.Component;
 

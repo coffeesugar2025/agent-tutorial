@@ -1,5 +1,11 @@
 package com.xingtu.agent.memory;
 
+// ═══════ 文件级能力标注 ═══════
+// [CAP-07] 记忆
+// 职责：短期记忆：会话窗口（最近 N 条 user/assistant 消息），必要时叠加滚动摘要
+// 能力编号与规范见 docs/11-代码能力标注规范.md
+// ══════════════════════════════════
+
 import com.xingtu.agent.config.AppProperties;
 import com.xingtu.agent.infra.repo.MessageRepository;
 import com.xingtu.agent.llm.LlmProvider;

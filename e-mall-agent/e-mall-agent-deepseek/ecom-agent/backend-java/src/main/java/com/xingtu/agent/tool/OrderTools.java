@@ -1,5 +1,11 @@
 package com.xingtu.agent.tool;
 
+// ═══════ 文件级能力标注 ═══════
+// [CAP-05] 工具治理  |  [CAP-13] 结构化知识
+// 职责：订单与物流工具：get_order / list_orders / get_logistics（全部 READ）
+// 能力编号与规范见 docs/11-代码能力标注规范.md
+// ══════════════════════════════════
+
 import com.xingtu.agent.common.JsonUtil;
 import com.xingtu.agent.infra.repo.LogisticsRepository;
 import com.xingtu.agent.infra.repo.OrderRepository;

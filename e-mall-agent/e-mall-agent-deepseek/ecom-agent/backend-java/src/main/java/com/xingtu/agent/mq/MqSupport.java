@@ -1,5 +1,11 @@
 package com.xingtu.agent.mq;
 
+// ═══════ 文件级能力标注 ═══════
+// [CAP-14] 可靠性/降级
+// 职责：MQ 消费者公共工具：payload 归一化 + 3 次重试后落 async_task(status='DEAD')
+// 能力编号与规范见 docs/11-代码能力标注规范.md
+// ══════════════════════════════════
+
 import com.xingtu.agent.common.JsonUtil;
 import com.xingtu.agent.infra.repo.AsyncTaskRepository;
 import org.slf4j.Logger;

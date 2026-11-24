@@ -1,5 +1,11 @@
 package com.xingtu.agent;
 
+// ═══════ 文件级能力标注 ═══════
+// [CAP-01] 交互协议  （支撑）
+// 职责：电商智能体 Java 后端入口
+// 能力编号与规范见 docs/11-代码能力标注规范.md
+// ══════════════════════════════════
+
 import com.xingtu.agent.config.AppProperties;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

@@ -1,5 +1,11 @@
 package com.xingtu.agent.hitl;
 
+// ═══════ 文件级能力标注 ═══════
+// [CAP-10] 人机协作 HITL
+// 职责：人工审批：IRREVERSIBLE 工具必须先创建 approval_task 并中断， 审批通过后执行对应动作（退款 
+// 能力编号与规范见 docs/11-代码能力标注规范.md
+// ══════════════════════════════════
+
 import com.xingtu.agent.common.BizException;
 import com.xingtu.agent.common.JsonUtil;
 import com.xingtu.agent.infra.repo.ApprovalRepository;
@@ -77,6 +83,9 @@ public class ApprovalService {
         return approvalRepository.countPending();
     }
 
+    // ──────── [CAP-10] 人机协作 HITL ────────
+    //   本处：审批决策（申请人/坐席双通道）
+    //   域约束：工具本体无副作用，审批通过后才执行 approved_func；越权一律按不存在处理
     /**
      * 审批决策：APPROVE 时同步执行动作（退款走幂等插入），REJECT 仅记录。
      */

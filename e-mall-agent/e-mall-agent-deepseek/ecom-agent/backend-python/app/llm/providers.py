@@ -11,6 +11,12 @@
 :class:`ProviderUnavailable`，由 ``fallback`` 层切到下一个候选。
 """
 
+# ═══════ 文件级能力标注 ═══════
+# [CAP-02] 模型接入与输出控制  |  [CAP-18] 成本与模型工程
+# 职责：LLM 供应商工厂：统一返回 LangChain ChatModel
+# 能力编号与规范见 docs/11-代码能力标注规范.md
+# ══════════════════════════════════
+
 from __future__ import annotations
 
 import logging
@@ -79,6 +85,9 @@ def _openai_compatible(
     )
 
 
+# ──────── [CAP-02] 模型接入与输出控制 ────────
+#   本处：多供应商工厂（懒加载 + 兼容模式）
+#   域约束：模型工厂不做重试；重试与熔断分别由 fallback 层与 CircuitBreaker 负责
 def build_chat_model(
     provider: str | None = None,
     model: str | None = None,

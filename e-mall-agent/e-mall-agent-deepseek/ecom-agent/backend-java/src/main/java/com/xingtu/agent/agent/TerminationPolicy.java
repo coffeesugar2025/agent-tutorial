@@ -1,5 +1,11 @@
 package com.xingtu.agent.agent;
 
+// ═══════ 文件级能力标注 ═══════
+// [CAP-03] 运行时循环  |  [CAP-04] 规划与反思  |  [CAP-06] 上下文工程
+// 职责：终止策略：实现 docs/00 第 5 节的 7 条终止条件，每条都有独立可测的判定
+// 能力编号与规范见 docs/11-代码能力标注规范.md
+// ══════════════════════════════════
+
 import com.xingtu.agent.config.AppProperties;
 
 /**
@@ -54,6 +60,9 @@ public class TerminationPolicy {
                 props.getAgent().getTaskTimeoutSeconds() * 1000L);
     }
 
+    // ──────── [CAP-03] 运行时循环 ────────
+    //   本处：7 条终止条件
+    //   域约束：判定顺序固定为 超时→步数→预算→循环→无进展，同时命中也必须稳定返回同一个原因
     public Verdict check(AgentState state, long nowMillis) {
         if (state == null) {
             return Verdict.stop(Reason.FINAL_ANSWER);

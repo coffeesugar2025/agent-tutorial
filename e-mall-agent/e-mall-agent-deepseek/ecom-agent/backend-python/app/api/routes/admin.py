@@ -1,5 +1,11 @@
 """运营与可观测接口：概览、链路、成本、模型健康、评测。"""
 
+# ═══════ 文件级能力标注 ═══════
+# [CAP-01] 交互协议
+# 职责：运营与可观测接口：概览、链路、成本、模型健康、评测
+# 能力编号与规范见 docs/11-代码能力标注规范.md
+# ══════════════════════════════════
+
 from __future__ import annotations
 
 import logging
@@ -28,6 +34,9 @@ SPAN_TOOL = "TOOL"
 class EvalRunReq(BaseModel):
     suite: str = Field(default="shopping", max_length=64)
     repeat: int = Field(default=3, ge=1, le=10)
+# ──────── [CAP-16] 可观测与调试 ────────
+#   本处：运营概览（成功率/P95/成本归因）
+#   域约束：span 必须 try/finally 收口；不打印完整 prompt，只记 hash 与长度
 
 
 @router.get("/overview", summary="概览指标")

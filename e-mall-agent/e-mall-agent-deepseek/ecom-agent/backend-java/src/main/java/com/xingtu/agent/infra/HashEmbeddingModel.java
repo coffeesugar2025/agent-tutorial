@@ -1,5 +1,11 @@
 package com.xingtu.agent.infra;
 
+// ═══════ 文件级能力标注 ═══════
+// [CAP-14] 可靠性/降级
+// 职责：确定性哈希向量：EMBEDDING_PROVIDER=hash 时使用，无需任何 API Key 即可离线跑通 RAG
+// 能力编号与规范见 docs/11-代码能力标注规范.md
+// ══════════════════════════════════
+
 import com.xingtu.agent.config.AppProperties;
 import com.xingtu.agent.rag.EmbeddingModel;
 import org.springframework.stereotype.Component;

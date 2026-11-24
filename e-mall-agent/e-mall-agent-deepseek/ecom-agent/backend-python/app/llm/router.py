@@ -4,6 +4,12 @@
 价格会随供应商调整，这里给出的是对齐官网量级的近似值，生产可通过配置覆盖。
 """
 
+# ═══════ 文件级能力标注 ═══════
+# [CAP-02] 模型接入与输出控制  |  [CAP-18] 成本与模型工程
+# 职责：模型路由：任务分类 → 模型档位（fast / strong）+ 成本表 + 升级策略
+# 能力编号与规范见 docs/11-代码能力标注规范.md
+# ══════════════════════════════════
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -106,6 +112,9 @@ def make_choice(provider: str, tier: str, model: str | None = None) -> ModelChoi
     )
 
 
+# ──────── [CAP-18] 成本与模型工程 ────────
+#   本处：任务分级选档（fast / strong）
+#   域约束：金额一律用整数分避免浮点误差；Mock 调用次数也要记，即使成本为 0
 def route(task: TaskClass, agent_type: str | None = None) -> ModelChoice:
     """主路由：按任务分类选档位；运营分析统一走 strong。"""
     tier = task.tier
@@ -121,6 +130,9 @@ def escalate(choice: ModelChoice) -> ModelChoice:
     return make_choice(choice.provider, STRONG)
 
 
+# ──────── [CAP-14] 可靠性 / 降级 ────────
+#   本处：候选链（主模型→升档→兜底供应商）
+#   域约束：降级必须可观测（指标 + degraded 标记）；重试只给幂等操作
 def candidates(task: TaskClass, agent_type: str | None = None) -> list[ModelChoice]:
     """候选链：主供应商 fast → 主供应商 strong → 各兜底供应商。
 

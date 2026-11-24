@@ -9,6 +9,12 @@ run_python：AST 白名单校验 + ``python -I`` 子进程隔离 + 超时 + 最�
 明确边界：这是"沙箱 Lite"，不是安全容器；生产若需强隔离应换 gVisor/Firecracker。
 """
 
+# ═══════ 文件级能力标注 ═══════
+# [CAP-05] 工具治理
+# 职责：运营类工具：text2sql（只读、表白名单、注入防护）与 run_python（沙箱子进程）
+# 能力编号与规范见 docs/11-代码能力标注规范.md
+# ══════════════════════════════════
+
 from __future__ import annotations
 
 import ast

@@ -5,6 +5,12 @@
 2. 关键词候选 + BM25-lite 重排（跨进程、跨重启依然有效，最多 500 条候选）。
 """
 
+# ═══════ 文件级能力标注 ═══════
+# [CAP-12] 检索增强 RAG
+# 职责：混合检索：dense + sparse → RRF 融合 → rerank → 父子块展开
+# 能力编号与规范见 docs/11-代码能力标注规范.md
+# ══════════════════════════════════
+
 from __future__ import annotations
 
 import asyncio
@@ -75,6 +81,9 @@ def reciprocal_rank_fusion(rankings: list[list[int]], k: int = RRF_K) -> dict[in
     return scores
 
 
+# ──────── [CAP-12] 检索增强 RAG ────────
+#   本处：RRF 融合（抗分数量纲差异）
+#   域约束：任一环节失败必须降级并标记 degraded，不允许静默返回空结果
 def rrf_fuse(dense: list[Hit], sparse: list[Hit], k: int = RRF_K) -> list[tuple[Hit, float]]:
     """融合两路召回，返回 ``[(hit, rrf_score)]``（降序）。"""
     by_id: dict[int, Hit] = {}
@@ -154,6 +163,9 @@ def _to_chunk(
     )
 
 
+# ──────── [CAP-12] 检索增强 RAG ────────
+#   本处：混合检索主入口（双路召回→RRF→重排→去重）
+#   域约束：任一环节失败必须降级并标记 degraded，不允许静默返回空结果
 async def hybrid_search(
     query: str,
     top_k: int | None = None,

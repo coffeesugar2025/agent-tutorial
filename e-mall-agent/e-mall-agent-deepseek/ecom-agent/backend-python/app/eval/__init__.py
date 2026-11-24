@@ -9,6 +9,12 @@
 * 本包：常用入口的再导出，便于 ``from app.eval import run_suite``。
 """
 
+# ═══════ 文件级能力标注 ═══════
+# [CAP-17] 评测与迭代
+# 职责：离线评测模块：数据集 → 判定 → 跑批 → 落库
+# 能力编号与规范见 docs/11-代码能力标注规范.md
+# ══════════════════════════════════
+
 from app.eval.dataset import (
     EvalCase,
     EvalDataError,

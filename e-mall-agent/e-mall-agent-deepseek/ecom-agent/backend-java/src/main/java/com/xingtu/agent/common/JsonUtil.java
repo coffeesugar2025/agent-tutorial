@@ -1,5 +1,11 @@
 package com.xingtu.agent.common;
 
+// ═══════ 文件级能力标注 ═══════
+// [CAP-01] 交互协议  |  [CAP-14] 可靠性/降级  （支撑）
+// 职责：JSON 工具：JDBC 的 JSON 字段一律以 String 存取，这里统一做序列化/反序列化， 避免为 MyBat
+// 能力编号与规范见 docs/11-代码能力标注规范.md
+// ══════════════════════════════════
+
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;

@@ -6,6 +6,12 @@
 * SSE 等无法自定义请求头的场景允许 ``?token=`` 传递（仅用于 GET 流式接口）。
 """
 
+# ═══════ 文件级能力标注 ═══════
+# [CAP-15] 安全与合规
+# 职责：认证：密码哈希、JWT 签发/校验、当前用户依赖
+# 能力编号与规范见 docs/11-代码能力标注规范.md
+# ══════════════════════════════════
+
 from __future__ import annotations
 
 import logging
@@ -152,6 +158,9 @@ def user_from_payload(payload: dict[str, object]) -> CurrentUser:
     )
 
 
+# ──────── [CAP-15] 安全与合规 ────────
+#   本处：JWT 鉴权（角色以库为准）
+#   域约束：外部内容一律视为数据而非指令；PII 在统一出口脱敏，而非打印后再处理
 def get_current_user(
     request: Request,
     credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),

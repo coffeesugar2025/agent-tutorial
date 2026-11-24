@@ -9,6 +9,12 @@ SSE 是本项目最关键的接口，几条硬约束：
 * ``clientMsgId`` 用于幂等：同一 session 下重复提交不重复执行。
 """
 
+# ═══════ 文件级能力标注 ═══════
+# [CAP-01] 交互协议
+# 职责：对话接口：会话管理、SSE 流式对话、中断、审批
+# 能力编号与规范见 docs/11-代码能力标注规范.md
+# ══════════════════════════════════
+
 from __future__ import annotations
 
 import asyncio
@@ -137,13 +143,13 @@ def interrupt(session_id: int, user: CurrentUser = Depends(get_current_user)):
 # ---------------------------------------------------------------------------
 # 流式对话
 # ---------------------------------------------------------------------------
+# ──────── [CAP-01] 交互协议 ────────
+#   本处：SSE 流式（10 类事件 + 断开即停）
+#   域约束：事件名与字段是前后端契约，改动必须同步 docs/03 与前端状态机
 @router.post("/stream", summary="流式对话（SSE）")
 async def stream(req: StreamReq, request: Request, user: CurrentUser = Depends(get_current_user)):
-    logger.info("stream start -------------------------------")
     """服务端事件流。事件序列见契约：meta → agent → delta/tool_* → usage → done。"""
     session_memory.get_session(req.session_id, user.id)  # 归属校验，失败抛 404
-
-    # 限流操作，基于redis
     limit_chat(user.id, req.session_id)
 
     trace_id = new_trace_id()
@@ -231,6 +237,9 @@ def list_approvals(
     user: CurrentUser = Depends(get_current_user),
 ):
     return ok(hitl.list_tasks(user.id, status=status))
+# ──────── [CAP-10] 人机协作 HITL ────────
+#   本处：审批决策接口（透传角色）
+#   域约束：工具本体无副作用，审批通过后才执行 approved_func；越权一律按不存在处理
 
 
 @router.post("/approvals/{approval_id}", summary="提交审批决策")

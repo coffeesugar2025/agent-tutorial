@@ -1,5 +1,11 @@
 """Redis 滑动窗口限流（含本地降级）。"""
 
+# ═══════ 文件级能力标注 ═══════
+# [CAP-15] 安全与合规
+# 职责：Redis 滑动窗口限流（含本地降级）
+# 能力编号与规范见 docs/11-代码能力标注规范.md
+# ══════════════════════════════════
+
 from __future__ import annotations
 
 import logging
@@ -15,6 +21,9 @@ def build_key(*parts: object) -> str:
     return "rl:" + ":".join(str(p) for p in parts)
 
 
+# ──────── [CAP-14] 可靠性 / 降级 ────────
+#   本处：滑动窗口限流（Redis + 本地兜底）
+#   域约束：降级必须可观测（指标 + degraded 标记）；重试只给幂等操作
 def check_rate_limit(
     key: str,
     limit: int | None = None,

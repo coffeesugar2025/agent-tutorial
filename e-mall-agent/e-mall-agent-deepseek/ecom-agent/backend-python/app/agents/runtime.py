@@ -8,6 +8,12 @@
 终止条件见 :mod:`app.agents.termination`，本模块只负责在执行点收集输入。
 """
 
+# ═══════ 文件级能力标注 ═══════
+# [CAP-03] 运行时循环  |  [CAP-04] 规划与反思  |  [CAP-06] 上下文工程
+# 职责：Agent 运行时：把路由、记忆、工具、流式输出、终止与审批串成一条可观测的链路
+# 能力编号与规范见 docs/11-代码能力标注规范.md
+# ══════════════════════════════════
+
 from __future__ import annotations
 
 import asyncio
@@ -56,6 +62,9 @@ logger = logging.getLogger(__name__)
 _SENTINEL = object()
 
 
+# ──────── [CAP-11] 生态协议 / 执行环境 ────────
+#   本处：Skill 渐进式披露（L1 常驻 / L2 按需）
+#   域约束：对外暴露默认只读，写工具必须走审批；缺依赖时降级为纯 JSON 描述
 def _skill_context(question: str) -> str:
     """渐进式披露 Skill：L1 元数据常驻，L2 正文只在触发词命中时加载。
 
@@ -99,6 +108,9 @@ class AgentRuntime:
     # ------------------------------------------------------------------
     # 对外入口
     # ------------------------------------------------------------------
+    # ──────── [CAP-03] 运行时循环 ────────
+    #   本处：对外入口：队列解耦流式事件
+    #   域约束：判定顺序固定为 超时→步数→预算→循环→无进展，同时命中也必须稳定返回同一个原因
     async def run(
         self,
         *,
@@ -108,7 +120,6 @@ class AgentRuntime:
         trace_id: str | None = None,
     ) -> AsyncIterator[AgentEvent]:
         """执行一次提问，逐条产出 SSE 事件。"""
-        logger.info("------------------ AgentRuntime run start -----")
         trace = trace_id or new_trace_id()
         queue: asyncio.Queue[Any] = asyncio.Queue()
 
@@ -136,11 +147,13 @@ class AgentRuntime:
         finally:
             if not task.done():
                 task.cancel()
-            logger.info("------------------ AgentRuntime run end -----")
 
     # ------------------------------------------------------------------
     # 主流程
     # ------------------------------------------------------------------
+    # ──────── [CAP-03] 运行时循环 ────────
+    #   本处：单次提问主流程
+    #   域约束：判定顺序固定为 超时→步数→预算→循环→无进展，同时命中也必须稳定返回同一个原因
     async def _drive(
         self,
         emit: Any,
@@ -156,7 +169,7 @@ class AgentRuntime:
             question=question,
         )
         recorder.start()
-        logger.info("------------------  _drive start -----")
+
         # 先落占位消息，让 meta 事件能带上真实 messageId
         message_id = session_memory.append_message(
             session_id, "user", question, trace_id=trace_id
@@ -215,12 +228,14 @@ class AgentRuntime:
             status = "FAILED"
             raise
         finally:
-            logger.info("------------------  _drive end -----")
             await self._finalize(state, assistant_id, status, recorder, emit, message_id)
 
     # ------------------------------------------------------------------
     # 各阶段
     # ------------------------------------------------------------------
+    # ──────── [CAP-15] 安全与合规 ────────
+    #   本处：输入注入检测（高危直接拒绝）
+    #   域约束：外部内容一律视为数据而非指令；PII 在统一出口脱敏，而非打印后再处理
     async def _guard(self, question: str, recorder: TraceRecorder) -> Any:
         """输入注入检测；命中高危返回 verdict，否则返回 None。"""
         try:
@@ -240,10 +255,12 @@ class AgentRuntime:
         )
         return verdict if blocked else None
 
+    # ──────── [CAP-06] 上下文工程 ────────
+    #   本处：system+画像+记忆+历史+提问
+    #   域约束：稳定内容在前、易变在后；画像≤200 字、记忆 top5、Skill 正文按触发词加载
     async def _build_messages(
         self, state: AgentState, user_id: int, session_id: int, agent_type: str
     ) -> list[Any]:
-        logger.info("------------_build_messages start -----------------------")
         """system(规则+画像+长期记忆) + 历史 + 本轮问题。"""
         extra_parts: list[str] = []
         try:
@@ -290,6 +307,9 @@ class AgentRuntime:
             logger.warning("绑定工具失败 agent=%s err=%s", agent_type, exc)
             return []
 
+    # ──────── [CAP-03] 运行时循环 ────────
+    #   本处：终止判定 + 工具执行 + 最终答案
+    #   域约束：判定顺序固定为 超时→步数→预算→循环→无进展，同时命中也必须稳定返回同一个原因
     async def _loop(
         self,
         emit: Any,
@@ -372,6 +392,9 @@ class AgentRuntime:
             state.add_progress({"answer": answer[:200], "step": state.step})
             return FINISH_STOP
 
+    # ──────── [CAP-05] 工具治理 ────────
+    #   本处：批量执行 + 风险拦截
+    #   域约束：READ 可重试、WRITE 幂等、IRREVERSIBLE 必须走审批；新增工具只注册不改管线
     async def _run_tools(
         self,
         emit: Any,
@@ -444,6 +467,9 @@ class AgentRuntime:
             messages.append(ToolMessage(content=content, tool_call_id=call_id, name=name))
 
         return None
+    # ──────── [CAP-12] 检索增强 RAG ────────
+    #   本处：引用抽取（docId/chunkId/score）
+    #   域约束：任一环节失败必须降级并标记 degraded，不允许静默返回空结果
 
     @staticmethod
     async def _collect_citations(
@@ -476,6 +502,9 @@ class AgentRuntime:
     # ------------------------------------------------------------------
     # 收尾
     # ------------------------------------------------------------------
+    # ──────── [CAP-16] 可观测与调试 ────────
+    #   本处：回写消息/trace/成本/记忆抽取
+    #   域约束：span 必须 try/finally 收口；不打印完整 prompt，只记 hash 与长度
     async def _finalize(
         self,
         state: AgentState,

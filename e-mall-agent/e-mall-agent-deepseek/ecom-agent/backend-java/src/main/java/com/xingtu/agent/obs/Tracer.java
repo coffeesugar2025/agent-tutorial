@@ -1,5 +1,11 @@
 package com.xingtu.agent.obs;
 
+// ═══════ 文件级能力标注 ═══════
+// [CAP-16] 可观测与调试
+// 职责：链路追踪：agent_trace 为根节点，agent_span 记录 LLM / TOOL / RETRIEVAL /
+// 能力编号与规范见 docs/11-代码能力标注规范.md
+// ══════════════════════════════════
+
 import com.xingtu.agent.common.JsonUtil;
 import com.xingtu.agent.infra.repo.SpanRepository;
 import com.xingtu.agent.infra.repo.TraceRepository;

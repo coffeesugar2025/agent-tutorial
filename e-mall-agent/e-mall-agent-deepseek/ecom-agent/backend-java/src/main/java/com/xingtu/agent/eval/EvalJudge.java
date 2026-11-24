@@ -1,5 +1,11 @@
 package com.xingtu.agent.eval;
 
+// ═══════ 文件级能力标注 ═══════
+// [CAP-17] 评测与迭代
+// 职责：评测判定器：关键词覆盖度打分，不调用外部模型，保证离线与 CI 可复现
+// 能力编号与规范见 docs/11-代码能力标注规范.md
+// ══════════════════════════════════
+
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;

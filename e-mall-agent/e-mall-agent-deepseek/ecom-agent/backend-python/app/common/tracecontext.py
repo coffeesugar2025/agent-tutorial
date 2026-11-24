@@ -1,5 +1,11 @@
 """请求/日志上下文变量：trace_id 贯穿日志、响应信封与 agent_trace。"""
 
+# ═══════ 文件级能力标注 ═══════
+# [CAP-01] 交互协议  |  [CAP-14] 可靠性/降级  （支撑）
+# 职责：请求/日志上下文变量：trace_id 贯穿日志、响应信封与 agent_trace
+# 能力编号与规范见 docs/11-代码能力标注规范.md
+# ══════════════════════════════════
+
 from __future__ import annotations
 
 from contextvars import ContextVar

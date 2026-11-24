@@ -4,6 +4,12 @@
 ``DATABASE_URL=sqlite:///./test.db``（见 ``tests/conftest.py``）。
 """
 
+# ═══════ 文件级能力标注 ═══════
+# [CAP-17] 评测与迭代  （支撑）
+# 职责：集成测试：知识入库 → 混合检索 → 检索指标 / 上下文组装
+# 能力编号与规范见 docs/11-代码能力标注规范.md
+# ══════════════════════════════════
+
 from __future__ import annotations
 
 import asyncio

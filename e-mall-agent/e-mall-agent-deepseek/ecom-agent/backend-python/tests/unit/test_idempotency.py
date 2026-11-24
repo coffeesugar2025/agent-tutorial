@@ -1,5 +1,11 @@
 """幂等与审批单元测试：幂等键、WRITE 去重、READ 不去重、IRREVERSIBLE 中断与审计。"""
 
+# ═══════ 文件级能力标注 ═══════
+# [CAP-17] 评测与迭代  （支撑）
+# 职责：幂等与审批单元测试：幂等键、WRITE 去重、READ 不去重、IRREVERSIBLE 中断与审计
+# 能力编号与规范见 docs/11-代码能力标注规范.md
+# ══════════════════════════════════
+
 from __future__ import annotations
 
 import asyncio

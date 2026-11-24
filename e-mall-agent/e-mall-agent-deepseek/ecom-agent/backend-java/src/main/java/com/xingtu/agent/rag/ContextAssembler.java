@@ -1,5 +1,11 @@
 package com.xingtu.agent.rag;
 
+// ═══════ 文件级能力标注 ═══════
+// [CAP-12] 检索增强 RAG
+// 职责：上下文装配：把命中切片拼成可注入 prompt 的上下文，统一包 &lt;untrusted_data&gt;， 并限制
+// 能力编号与规范见 docs/11-代码能力标注规范.md
+// ══════════════════════════════════
+
 import com.xingtu.agent.security.InjectionDetector;
 import org.springframework.stereotype.Component;
 

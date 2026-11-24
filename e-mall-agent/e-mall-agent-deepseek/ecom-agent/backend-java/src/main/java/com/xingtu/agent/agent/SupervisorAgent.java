@@ -1,5 +1,11 @@
 package com.xingtu.agent.agent;
 
+// ═══════ 文件级能力标注 ═══════
+// [CAP-03] 运行时循环  |  [CAP-04] 规划与反思  |  [CAP-06] 上下文工程
+// 职责：Supervisor：意图路由 + 结果聚合
+// 能力编号与规范见 docs/11-代码能力标注规范.md
+// ══════════════════════════════════
+
 import org.springframework.stereotype.Component;
 
 import java.util.Locale;
@@ -29,6 +35,9 @@ public class SupervisorAgent implements Agent {
         return java.util.List.of();
     }
 
+    // ──────── [CAP-04] 规划与反思 ────────
+    //   本处：意图路由（纯规则，可复现）
+    //   域约束：路由只发生一次，不做多 Agent 互调，避免错误传播与成本放大
     public Route route(String question) {
         String q = question == null ? "" : question.toLowerCase(Locale.ROOT);
         if (containsAny(q, "报表", "销售额", "gmv", "营收", "营业额", "统计", "经营", "趋势", "转化率",

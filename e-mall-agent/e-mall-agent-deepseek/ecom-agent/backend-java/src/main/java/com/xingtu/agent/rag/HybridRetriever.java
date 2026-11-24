@@ -1,5 +1,11 @@
 package com.xingtu.agent.rag;
 
+// ═══════ 文件级能力标注 ═══════
+// [CAP-12] 检索增强 RAG
+// 职责：混合检索：稠密（Milvus → 进程内向量）+ 稀疏（BM25）→ RRF 融合 → 重排
+// 能力编号与规范见 docs/11-代码能力标注规范.md
+// ══════════════════════════════════
+
 import com.xingtu.agent.common.JsonUtil;
 import com.xingtu.agent.config.AppProperties;
 import com.xingtu.agent.infra.InMemoryVectorStore;
@@ -67,6 +73,9 @@ public class HybridRetriever {
         return retrieve(query, props.getRag().getRerankTopN(), null, "hybrid");
     }
 
+    // ──────── [CAP-12] 检索增强 RAG ────────
+    //   本处：混合检索（dense + BM25 → RRF → 重排）
+    //   域约束：任一环节失败必须降级并标记 degraded，不允许静默返回空结果
     public Result retrieve(String query, int topK, List<String> docTypes, String mode) {
         long start = System.currentTimeMillis();
         if (query == null || query.isBlank()) {

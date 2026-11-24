@@ -1,5 +1,11 @@
 package com.xingtu.agent.rag;
 
+// ═══════ 文件级能力标注 ═══════
+// [CAP-12] 检索增强 RAG
+// 职责：稀疏编码：CJK 单字 + 二元组 + 小写英文/数字词，输出词频
+// 能力编号与规范见 docs/11-代码能力标注规范.md
+// ══════════════════════════════════
+
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;

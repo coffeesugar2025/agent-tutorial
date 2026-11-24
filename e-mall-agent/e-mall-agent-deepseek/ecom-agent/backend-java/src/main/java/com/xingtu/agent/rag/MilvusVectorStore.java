@@ -1,5 +1,11 @@
 package com.xingtu.agent.rag;
 
+// ═══════ 文件级能力标注 ═══════
+// [CAP-12] 检索增强 RAG
+// 职责：Milvus 向量库实现（REST v2）
+// 能力编号与规范见 docs/11-代码能力标注规范.md
+// ══════════════════════════════════
+
 import com.xingtu.agent.config.AppProperties;
 import com.xingtu.agent.infra.MilvusRestClient;
 import com.xingtu.agent.infra.VectorStore;

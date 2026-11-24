@@ -1,5 +1,11 @@
 package com.xingtu.agent.rag;
 
+// ═══════ 文件级能力标注 ═══════
+// [CAP-12] 检索增强 RAG
+// 职责：知识入库：原文暂存 -> 切片 -> 向量化 -> 写 MySQL + Milvus（失败落进程内）
+// 能力编号与规范见 docs/11-代码能力标注规范.md
+// ══════════════════════════════════
+
 import com.xingtu.agent.common.JsonUtil;
 import com.xingtu.agent.config.AppProperties;
 import com.xingtu.agent.infra.InMemoryVectorStore;

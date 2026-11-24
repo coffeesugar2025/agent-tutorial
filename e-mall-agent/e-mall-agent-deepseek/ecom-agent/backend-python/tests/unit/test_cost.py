@@ -1,5 +1,11 @@
 """成本与 token 统计单元测试：单价折算、缓存计价、usage 提取与落库。"""
 
+# ═══════ 文件级能力标注 ═══════
+# [CAP-17] 评测与迭代  （支撑）
+# 职责：成本与 token 统计单元测试：单价折算、缓存计价、usage 提取与落库
+# 能力编号与规范见 docs/11-代码能力标注规范.md
+# ══════════════════════════════════
+
 from __future__ import annotations
 
 from types import SimpleNamespace

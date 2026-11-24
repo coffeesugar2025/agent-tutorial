@@ -15,6 +15,12 @@
 因此本模块 import 不依赖 Agent 运行时是否已实现。
 """
 
+# ═══════ 文件级能力标注 ═══════
+# [CAP-17] 评测与迭代
+# 职责：评测跑批：pass@k / pass^k、成本、延迟，并落 ``eval_run`` / ``eval_case_res
+# 能力编号与规范见 docs/11-代码能力标注规范.md
+# ══════════════════════════════════
+
 from __future__ import annotations
 
 import asyncio
@@ -296,6 +302,9 @@ def calc_pass_at_k(flags: Sequence[bool]) -> bool:
     return any(bool(flag) for flag in flags)
 
 
+# ──────── [CAP-17] 评测与迭代 ────────
+#   本处：pass^k（k 次全过的稳定性口径）
+#   域约束：能用规则判定就不上 LLM judge；eval_run.pass_k 存的是 pass^k 而非 pass@k
 def calc_pass_pow_k(flags: Sequence[bool]) -> bool:
     """pass^k：k 次尝试全部通过（空序列视为未通过）。"""
     return bool(flags) and all(bool(flag) for flag in flags)

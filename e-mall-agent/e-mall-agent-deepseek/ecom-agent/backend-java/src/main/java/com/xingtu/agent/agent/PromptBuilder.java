@@ -1,5 +1,11 @@
 package com.xingtu.agent.agent;
 
+// ═══════ 文件级能力标注 ═══════
+// [CAP-03] 运行时循环  |  [CAP-04] 规划与反思  |  [CAP-06] 上下文工程
+// 职责：Prompt 装配：系统约束 + 工具清单 + 工具协议 + 会话摘要 + 画像 + 记忆 + 最近对话 + 检索上下文
+// 能力编号与规范见 docs/11-代码能力标注规范.md
+// ══════════════════════════════════
+
 import com.xingtu.agent.llm.LlmProvider;
 import org.springframework.stereotype.Component;
 
@@ -25,6 +31,9 @@ public class PromptBuilder {
                 + "不要输出其它文字；信息足够时直接输出面向用户的中文最终答案，不要再调用工具。";
     }
 
+    // ──────── [CAP-06] 上下文工程 ────────
+    //   本处：prompt 装配（含不可信内容隔离）
+    //   域约束：稳定内容在前、易变在后；画像≤200 字、记忆 top5、Skill 正文按触发词加载
     public String userPrompt(AgentState state, Agent agent, String toolCatalog, String summary,
                              List<LlmProvider.Message> history, String contextText, String profile,
                              String memories) {

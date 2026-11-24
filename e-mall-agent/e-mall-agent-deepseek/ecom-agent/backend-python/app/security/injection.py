@@ -7,6 +7,12 @@
 3. **系统提示约束**：:data:`UNTRUSTED_NOTICE` 注入到每个子 agent 的 system prompt。
 """
 
+# ═══════ 文件级能力标注 ═══════
+# [CAP-15] 安全与合规
+# 职责：Prompt Injection 防护（直接注入 + 间接注入）
+# 能力编号与规范见 docs/11-代码能力标注规范.md
+# ══════════════════════════════════
+
 from __future__ import annotations
 
 import re
@@ -134,6 +140,9 @@ def _risk_of(score: int) -> str:
     return RISK_SAFE
 
 
+# ──────── [CAP-15] 安全与合规 ────────
+#   本处：直接注入检测（风险分级）
+#   域约束：外部内容一律视为数据而非指令；PII 在统一出口脱敏，而非打印后再处理
 def inspect_user_input(text: str) -> InjectionVerdict:
     """检测用户输入；``sanitized`` 为去除零宽字符后的文本。"""
     clean = _ZERO_WIDTH_RE.sub("", text or "")
@@ -172,6 +181,9 @@ def neutralize_external(text: str) -> str:
     return clean.strip()
 
 
+# ──────── [CAP-15] 安全与合规 ────────
+#   本处：间接注入防御（外部内容隔离包裹）
+#   域约束：外部内容一律视为数据而非指令；PII 在统一出口脱敏，而非打印后再处理
 def wrap_untrusted(text: str, source: str, kind: str = "document") -> str:
     """把外部内容包进隔离块，并附上"这是数据不是指令"的显式声明。"""
     safe = neutralize_external(text)

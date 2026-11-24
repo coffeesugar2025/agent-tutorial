@@ -1,5 +1,11 @@
 package com.xingtu.agent.infra.repo;
 
+// ═══════ 文件级能力标注 ═══════
+// [CAP-05] 工具治理  |  [CAP-12] 检索增强 RAG  （支撑）
+// 职责：索引作业访问（knowledge_job）
+// 能力编号与规范见 docs/11-代码能力标注规范.md
+// ══════════════════════════════════
+
 import com.xingtu.agent.infra.JdbcSupport;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;

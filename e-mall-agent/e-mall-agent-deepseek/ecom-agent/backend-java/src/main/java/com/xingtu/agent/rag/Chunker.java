@@ -1,5 +1,11 @@
 package com.xingtu.agent.rag;
 
+// ═══════ 文件级能力标注 ═══════
+// [CAP-12] 检索增强 RAG
+// 职责：切片器：按句子边界累积到 chunkSize，相邻块保留 overlap 个字符的重叠
+// 能力编号与规范见 docs/11-代码能力标注规范.md
+// ══════════════════════════════════
+
 import com.xingtu.agent.common.TokenEstimator;
 import com.xingtu.agent.config.AppProperties;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,5 +1,11 @@
 """知识库接口：上传、列表、删除、重建索引、作业进度、检索调试。"""
 
+# ═══════ 文件级能力标注 ═══════
+# [CAP-01] 交互协议
+# 职责：知识库接口：上传、列表、删除、重建索引、作业进度、检索调试
+# 能力编号与规范见 docs/11-代码能力标注规范.md
+# ══════════════════════════════════
+
 from __future__ import annotations
 
 import logging
@@ -179,6 +185,9 @@ def get_job(job_id: int, db: Session = Depends(get_db), user: CurrentUser = Depe
             "error": row.error,
         }
     )
+# ──────── [CAP-12] 检索增强 RAG ────────
+#   本处：检索调试（dense/sparse/rerank 全透视）
+#   域约束：任一环节失败必须降级并标记 degraded，不允许静默返回空结果
 
 
 @router.post("/search", summary="检索调试：dense/sparse/rerank 分数全透视")

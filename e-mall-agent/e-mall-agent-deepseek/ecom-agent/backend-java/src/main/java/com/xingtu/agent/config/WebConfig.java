@@ -1,5 +1,11 @@
 package com.xingtu.agent.config;
 
+// ═══════ 文件级能力标注 ═══════
+// [CAP-02] 模型接入与输出控制  |  [CAP-14] 可靠性/降级  （支撑）
+// 职责：Web 层配置：CORS（前端 8088 / 5173）+ 管理端 RBAC 拦截
+// 能力编号与规范见 docs/11-代码能力标注规范.md
+// ══════════════════════════════════
+
 import com.xingtu.agent.security.RbacInterceptor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;

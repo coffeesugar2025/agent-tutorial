@@ -6,6 +6,12 @@
 * **不可变常量**：终止原因用模块级字符串常量，两端（Python/Java）取值一致。
 """
 
+# ═══════ 文件级能力标注 ═══════
+# [CAP-03] 运行时循环  |  [CAP-04] 规划与反思  |  [CAP-06] 上下文工程
+# 职责：Agent 运行态数据结构
+# 能力编号与规范见 docs/11-代码能力标注规范.md
+# ══════════════════════════════════
+
 from __future__ import annotations
 
 import hashlib
@@ -65,6 +71,9 @@ class ToolCallRecord:
             "latencyMs": self.latency_ms,
             "risk": self.risk,
         }
+# ──────── [CAP-03] 运行时循环 ────────
+#   本处：运行态（可序列化为 checkpoint）
+#   域约束：判定顺序固定为 超时→步数→预算→循环→无进展，同时命中也必须稳定返回同一个原因
 
 
 @dataclass(slots=True)
@@ -126,6 +135,9 @@ class AgentState:
         raw = json.dumps(payload, sort_keys=True, ensure_ascii=False, default=str)
         self.progress_marks.append(hashlib.sha1(raw.encode("utf-8")).hexdigest()[:16])
 
+    # ──────── [CAP-16] 可观测与调试 ────────
+    #   本处：可重放快照
+    #   域约束：span 必须 try/finally 收口；不打印完整 prompt，只记 hash 与长度
     def snapshot(self) -> dict[str, Any]:
         """可重放快照：写入 ``agent_checkpoint.state``。"""
         return {

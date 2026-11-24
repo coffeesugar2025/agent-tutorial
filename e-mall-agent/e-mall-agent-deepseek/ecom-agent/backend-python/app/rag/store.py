@@ -8,6 +8,12 @@
 任何降级都会 ``record_degradation`` 打点并记日志（可观测性要求）。
 """
 
+# ═══════ 文件级能力标注 ═══════
+# [CAP-12] 检索增强 RAG
+# 职责：向量存储抽象 + Milvus 实现 + 内存/关键词降级实现
+# 能力编号与规范见 docs/11-代码能力标注规范.md
+# ══════════════════════════════════
+
 from __future__ import annotations
 
 import logging
@@ -292,6 +298,9 @@ memory_store = MemoryVectorStore()
 milvus_store = MilvusVectorStore()
 
 
+# ──────── [CAP-12] 检索增强 RAG ────────
+#   本处：向量库选择（Milvus / 内存，含降级）
+#   域约束：任一环节失败必须降级并标记 degraded，不允许静默返回空结果
 def get_store(force: str | None = None) -> VectorStore:
     """按配置返回存储实现；``auto`` 优先 Milvus，失败降级内存。"""
     mode = (force or settings.vector_store or "auto").lower()

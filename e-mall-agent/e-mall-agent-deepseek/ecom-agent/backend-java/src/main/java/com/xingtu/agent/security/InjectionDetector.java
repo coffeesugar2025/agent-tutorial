@@ -1,5 +1,11 @@
 package com.xingtu.agent.security;
 
+// ═══════ 文件级能力标注 ═══════
+// [CAP-15] 安全与合规
+// 职责：间接提示注入检测：检索内容、工具返回值一律视为不可信数据
+// 能力编号与规范见 docs/11-代码能力标注规范.md
+// ══════════════════════════════════
+
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -35,6 +41,9 @@ public class InjectionDetector {
     private static final String OPEN = "<untrusted_data>";
     private static final String CLOSE = "</untrusted_data>";
 
+    // ──────── [CAP-15] 安全与合规 ────────
+    //   本处：注入模式检测
+    //   域约束：外部内容一律视为数据而非指令；PII 在统一出口脱敏，而非打印后再处理
     public Detection inspect(String text) {
         if (text == null || text.isBlank()) {
             return new Detection(false, List.of(), null);
@@ -53,6 +62,9 @@ public class InjectionDetector {
     }
 
     /** 统一包裹不可信内容；已包裹的不重复包裹。 */
+    // ──────── [CAP-15] 安全与合规 ────────
+    //   本处：外部内容隔离包裹
+    //   域约束：外部内容一律视为数据而非指令；PII 在统一出口脱敏，而非打印后再处理
     public String wrapUntrusted(String content) {
         if (content == null) {
             return OPEN + "\n" + CLOSE;

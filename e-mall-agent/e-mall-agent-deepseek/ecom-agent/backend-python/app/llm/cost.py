@@ -5,6 +5,12 @@
 * 聚合接口供 ``/admin/overview``、``/admin/costs`` 使用：按模型、按供应商、按天。
 """
 
+# ═══════ 文件级能力标注 ═══════
+# [CAP-02] 模型接入与输出控制  |  [CAP-18] 成本与模型工程
+# 职责：Token 计费与 ``llm_call`` 落库
+# 能力编号与规范见 docs/11-代码能力标注规范.md
+# ══════════════════════════════════
+
 from __future__ import annotations
 
 import logging
@@ -107,6 +113,9 @@ def extract_usage(
     return usage
 
 
+# ──────── [CAP-18] 成本与模型工程 ────────
+#   本处：整数分计费（含缓存 token 折扣）
+#   域约束：金额一律用整数分避免浮点误差；Mock 调用次数也要记，即使成本为 0
 def compute_cost_cents(choice: ModelChoice, usage: TokenUsage) -> int:
     """按 "分/百万 token" 单价折算，向上取整到分。"""
     cached = max(usage.cached_tokens, 0)

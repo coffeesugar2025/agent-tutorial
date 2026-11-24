@@ -1,5 +1,11 @@
 """Prompt Injection 防护单元测试：入口拦截、外部数据隔离与中和。"""
 
+# ═══════ 文件级能力标注 ═══════
+# [CAP-17] 评测与迭代  （支撑）
+# 职责：Prompt Injection 防护单元测试：入口拦截、外部数据隔离与中和
+# 能力编号与规范见 docs/11-代码能力标注规范.md
+# ══════════════════════════════════
+
 from __future__ import annotations
 
 import pytest

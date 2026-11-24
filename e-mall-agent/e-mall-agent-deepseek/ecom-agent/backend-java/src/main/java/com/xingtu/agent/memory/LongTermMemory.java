@@ -1,5 +1,11 @@
 package com.xingtu.agent.memory;
 
+// ═══════ 文件级能力标注 ═══════
+// [CAP-07] 记忆
+// 职责：长期记忆（user_memory）：SEMANTIC / EPISODIC / PROCEDURAL 三类， 召回时用 
+// 能力编号与规范见 docs/11-代码能力标注规范.md
+// ══════════════════════════════════
+
 import com.xingtu.agent.common.JsonUtil;
 import com.xingtu.agent.rag.EmbeddingModelFactory;
 import org.springframework.jdbc.core.JdbcTemplate;

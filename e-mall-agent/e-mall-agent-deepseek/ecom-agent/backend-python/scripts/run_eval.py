@@ -16,6 +16,12 @@
 退出码：0 = 全部 suite 达到 ``--min-pass-rate``；1 = 未达标；2 = 没有可用数据。
 """
 
+# ═══════ 文件级能力标注 ═══════
+# [CAP-17] 评测与迭代  （支撑）
+# 职责：#!/usr/bin/env python 评测 CLI：加载 ``eval_data/*
+# 能力编号与规范见 docs/11-代码能力标注规范.md
+# ══════════════════════════════════
+
 from __future__ import annotations
 
 import argparse

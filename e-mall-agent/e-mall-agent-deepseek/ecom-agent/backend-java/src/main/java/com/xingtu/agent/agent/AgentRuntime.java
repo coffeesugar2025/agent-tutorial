@@ -1,5 +1,11 @@
 package com.xingtu.agent.agent;
 
+// ═══════ 文件级能力标注 ═══════
+// [CAP-03] 运行时循环  |  [CAP-04] 规划与反思  |  [CAP-06] 上下文工程
+// 职责：Agent 主循环（手写 ReAct）：路由 -> 组装上下文 -> 调模型 -> 解析工具调用 -> 执行/挂起审批 
+// 能力编号与规范见 docs/11-代码能力标注规范.md
+// ══════════════════════════════════
+
 import com.xingtu.agent.common.BizException;
 import com.xingtu.agent.common.JsonUtil;
 import com.xingtu.agent.common.TokenEstimator;
@@ -56,6 +62,9 @@ public class AgentRuntime {
         this.policy = TerminationPolicy.from(deps.props());
     }
 
+    // ──────── [CAP-03] 运行时循环 ────────
+    //   本处：主循环（判终止→调模型→执行工具）
+    //   域约束：判定顺序固定为 超时→步数→预算→循环→无进展，同时命中也必须稳定返回同一个原因
     public AgentResult run(AgentRunInput input, SseEventSink sink) {
         long startedAt = System.currentTimeMillis();
         AgentState state = new AgentState(input.traceId(), input.sessionId(), input.userId(),

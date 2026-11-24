@@ -6,6 +6,12 @@
 * ``mask_obj`` 递归处理 dict/list，直接用于工具返回与 SSE 结果。
 """
 
+# ═══════ 文件级能力标注 ═══════
+# [CAP-15] 安全与合规
+# 职责：PII 脱敏：手机号、身份证、银行卡、邮箱、详细地址
+# 能力编号与规范见 docs/11-代码能力标注规范.md
+# ══════════════════════════════════
+
 from __future__ import annotations
 
 import re
@@ -99,6 +105,9 @@ def contains_pii(text: str | None) -> bool:
     )
 
 
+# ──────── [CAP-15] 安全与合规 ────────
+#   本处：PII 递归脱敏（出口统一处理）
+#   域约束：外部内容一律视为数据而非指令；PII 在统一出口脱敏，而非打印后再处理
 def mask_obj(value: Any, depth: int = 0) -> Any:
     """递归脱敏任意结构（dict/list/str），用于工具返回与评估落库。"""
     if depth > 8:

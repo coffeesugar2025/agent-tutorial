@@ -1,5 +1,11 @@
 package com.xingtu.agent.rag;
 
+// ═══════ 文件级能力标注 ═══════
+// [CAP-12] 检索增强 RAG
+// 职责：Embedding 工厂：按 EMBEDDING_PROVIDER 创建模型；远程模型失败时自动降级为 hash 向量，
+// 能力编号与规范见 docs/11-代码能力标注规范.md
+// ══════════════════════════════════
+
 import com.xingtu.agent.config.AppProperties;
 import com.xingtu.agent.infra.EmbeddingFactory;
 import com.xingtu.agent.infra.HashEmbeddingModel;

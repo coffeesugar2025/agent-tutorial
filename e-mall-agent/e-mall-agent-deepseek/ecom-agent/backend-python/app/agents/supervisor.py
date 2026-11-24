@@ -9,6 +9,12 @@
 **只路由一次**，不做多 Agent 互相调用——避免错误传播与成本爆炸。
 """
 
+# ═══════ 文件级能力标注 ═══════
+# [CAP-03] 运行时循环  |  [CAP-04] 规划与反思  |  [CAP-06] 上下文工程
+# 职责：Supervisor 路由：决定一次提问交给哪个子 Agent
+# 能力编号与规范见 docs/11-代码能力标注规范.md
+# ══════════════════════════════════
+
 from __future__ import annotations
 
 import logging
@@ -81,6 +87,9 @@ def _normalize_agent(value: Any) -> str | None:
     return text if text in AGENT_TYPES else None
 
 
+# ──────── [CAP-09] 多智能体协作 ────────
+#   本处：路由兜底规则（分派依据）
+#   域约束：子 Agent 上下文隔离，只回传结论而非原始对话
 def keyword_route(question: str) -> tuple[str, str]:
     """关键词兜底路由：返回 ``(agentType, reason)``。"""
     text = (question or "").lower()
@@ -114,6 +123,9 @@ def _history_digest(history: list[dict[str, Any]] | None, limit: int = 4) -> str
     return "\n".join(lines)
 
 
+# ──────── [CAP-04] 规划与反思 ────────
+#   本处：意图路由（模型优先 + 规则兜底）
+#   域约束：路由只发生一次，不做多 Agent 互调，避免错误传播与成本放大
 async def route(
     question: str,
     history: list[dict[str, Any]] | None = None,

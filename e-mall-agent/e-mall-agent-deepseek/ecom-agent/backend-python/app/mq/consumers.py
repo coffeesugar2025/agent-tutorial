@@ -9,6 +9,12 @@
 handler 签名固定为 ``(payload: dict) -> None``（与 ``app.infra.rabbit.Handler`` 一致）。
 """
 
+# ═══════ 文件级能力标注 ═══════
+# [CAP-14] 可靠性/降级
+# 职责：MQ 消费者注册表
+# 能力编号与规范见 docs/11-代码能力标注规范.md
+# ══════════════════════════════════
+
 from __future__ import annotations
 
 import asyncio
