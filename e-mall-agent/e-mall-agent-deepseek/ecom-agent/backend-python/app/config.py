@@ -46,7 +46,7 @@ class Settings(BaseSettings):
     mysql_user: str = "ecom"
     mysql_password: str = "ecom123"
     database_url: str | None = None
-    db_echo: bool = False
+    db_echo: bool = True
     db_pool_size: int = 10
     db_max_overflow: int = 20
     db_pool_recycle: int = 1800
@@ -55,7 +55,7 @@ class Settings(BaseSettings):
     # --- Redis ---------------------------------------------------------------
     redis_host: str = "127.0.0.1"
     redis_port: int = 6379
-    redis_password: str = ""
+    redis_password: str = "ecom123"
     redis_db: int = 0
     redis_socket_timeout: float = 1.0
     redis_connect_timeout: float = 0.5

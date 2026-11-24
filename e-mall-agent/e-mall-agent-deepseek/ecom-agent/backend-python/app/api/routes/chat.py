@@ -139,8 +139,11 @@ def interrupt(session_id: int, user: CurrentUser = Depends(get_current_user)):
 # ---------------------------------------------------------------------------
 @router.post("/stream", summary="流式对话（SSE）")
 async def stream(req: StreamReq, request: Request, user: CurrentUser = Depends(get_current_user)):
+    logger.info("stream start -------------------------------")
     """服务端事件流。事件序列见契约：meta → agent → delta/tool_* → usage → done。"""
     session_memory.get_session(req.session_id, user.id)  # 归属校验，失败抛 404
+
+    # 限流操作，基于redis
     limit_chat(user.id, req.session_id)
 
     trace_id = new_trace_id()

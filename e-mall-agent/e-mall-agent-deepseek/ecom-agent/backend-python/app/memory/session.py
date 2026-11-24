@@ -61,7 +61,8 @@ def list_sessions(user_id: int, limit: int = 50) -> list[dict[str, Any]]:
 
 def get_session(session_id: int, user_id: int) -> dict[str, Any]:
     with session_scope() as db:
-        return to_vo(_owned(db, session_id, user_id))
+        session = _owned(db, session_id, user_id)
+        return to_vo(session)
 
 
 def delete_session(session_id: int, user_id: int) -> None:

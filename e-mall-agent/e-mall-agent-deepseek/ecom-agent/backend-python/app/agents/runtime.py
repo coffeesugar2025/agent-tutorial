@@ -108,6 +108,7 @@ class AgentRuntime:
         trace_id: str | None = None,
     ) -> AsyncIterator[AgentEvent]:
         """执行一次提问，逐条产出 SSE 事件。"""
+        logger.info("------------------ AgentRuntime run start -----")
         trace = trace_id or new_trace_id()
         queue: asyncio.Queue[Any] = asyncio.Queue()
 
@@ -135,6 +136,7 @@ class AgentRuntime:
         finally:
             if not task.done():
                 task.cancel()
+            logger.info("------------------ AgentRuntime run end -----")
 
     # ------------------------------------------------------------------
     # 主流程
@@ -154,7 +156,7 @@ class AgentRuntime:
             question=question,
         )
         recorder.start()
-
+        logger.info("------------------  _drive start -----")
         # 先落占位消息，让 meta 事件能带上真实 messageId
         message_id = session_memory.append_message(
             session_id, "user", question, trace_id=trace_id
@@ -213,6 +215,7 @@ class AgentRuntime:
             status = "FAILED"
             raise
         finally:
+            logger.info("------------------  _drive end -----")
             await self._finalize(state, assistant_id, status, recorder, emit, message_id)
 
     # ------------------------------------------------------------------
@@ -240,6 +243,7 @@ class AgentRuntime:
     async def _build_messages(
         self, state: AgentState, user_id: int, session_id: int, agent_type: str
     ) -> list[Any]:
+        logger.info("------------_build_messages start -----------------------")
         """system(规则+画像+长期记忆) + 历史 + 本轮问题。"""
         extra_parts: list[str] = []
         try:
