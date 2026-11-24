@@ -1,0 +1,35 @@
+server: { port: 8080 }
+spring:
+  application: { name: ecommerce-agent-java }
+  datasource:
+    url: jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:3306}/${MYSQL_DB:ecommerce_agent}?useUnicode=true&characterEncoding=utf8
+    username: ${MYSQL_USER:agent}
+    password: ${MYSQL_PASSWORD:agent_pwd}
+  jpa: { hibernate: { ddl-auto: validate }, properties: { hibernate: { dialect: org.hibernate.dialect.MySQLDialect } } }
+  data:
+    redis: { host: ${REDIS_HOST:localhost}, port: ${REDIS_PORT:6379}, timeout: 2s }
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    username: ${RABBITMQ_USER:agent}
+    password: ${RABBITMQ_PASSWORD:agent_pwd}
+management:
+  endpoints: { web: { exposure: { include: health,metrics,prometheus } } }
+  metrics: { tags: { application: ecommerce-agent-java } }
+langchain4j:
+  open-ai:
+    chat-model:
+      base-url: ${DEEPSEEK_BASE_URL:https://api.deepseek.com/v1}
+      api-key: ${DEEPSEEK_API_KEY:mock-key}
+      model-name: ${MODEL_VERSION_PIN:deepseek-chat}
+      temperature: 0
+      timeout: 30s
+      log-requests: false
+      log-responses: false
+agent:
+  llm-mode: ${LLM_MODE:mock}
+  milvus: { host: ${MILVUS_HOST:localhost}, port: ${MILVUS_PORT:19530}, collection: ${MILVUS_COLLECTION:ecommerce_chunks} }
+  providers:
+    deepseek: { base-url: ${DEEPSEEK_BASE_URL:https://api.deepseek.com/v1}, key: ${DEEPSEEK_API_KEY:} }
+    qwen: { base-url: ${QWEN_BASE_URL:https://dashscope.aliyuncs.com/compatible-mode/v1}, key: ${QWEN_API_KEY:} }
+    glm: { base-url: ${GLM_BASE_URL:https://open.bigmodel.cn/api/paas/v4}, key: ${GLM_API_KEY:} }
+  budget: { max-steps: 12, max-seconds: 30, max-cost-usd: 1.0 }

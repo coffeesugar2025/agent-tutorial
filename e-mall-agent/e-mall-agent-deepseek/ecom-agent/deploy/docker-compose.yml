@@ -88,7 +88,7 @@ services:
   # 中间件
   # ===========================================================================
   mysql:
-    image: mysql:8.0.39
+    image: mysql:8.0
     restart: unless-stopped
     command:
       # 认证插件降级为 native_password：兼容 PyMySQL / 各类 Java 驱动
@@ -123,7 +123,7 @@ services:
     logging: *default-logging
 
   redis:
-    image: redis:7.2-alpine
+    image: redis:7
     restart: unless-stopped
     # 有密码则带 --requirepass，无密码则裸启（与 REDIS_PASSWORD 留空兼容）
     command:
@@ -156,7 +156,7 @@ services:
     logging: *default-logging
 
   rabbitmq:
-    image: rabbitmq:3.13-management-alpine
+    image: rabbitmq:3.13-management
     restart: unless-stopped
     environment:
       TZ: ${TZ:-Asia/Shanghai}
@@ -231,7 +231,7 @@ services:
     logging: *default-logging
 
   milvus:
-    image: milvusdb/milvus:v2.5.4
+    image: milvusdb/milvus:v2.4.0
     restart: unless-stopped
     command: ["milvus", "run", "standalone"]
     security_opt:
@@ -264,123 +264,7 @@ services:
       - ecom-net
     logging: *default-logging
 
-  # ===========================================================================
-  # 后端 A：Python (FastAPI)  —— 容器内 8000
-  # ===========================================================================
-  backend-python:
-    build:
-      context: ../backend-python
-      dockerfile: Dockerfile
-    image: xingtu/ecom-backend-python:${IMAGE_TAG:-dev}
-    restart: unless-stopped
-    environment:
-      <<: *backend-env
-      # 两套后端共用全部中间件，仅靠端口区分
-      APP_PORT: ${APP_PORT_PYTHON:-8000}
-      SERVER_PORT: ${APP_PORT_PYTHON:-8000}
-      PYTHONUNBUFFERED: "1"
-    ports:
-      - "${APP_PORT_PYTHON:-8000}:${APP_PORT_PYTHON:-8000}"
-    depends_on:
-      mysql:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
-      minio:
-        condition: service_healthy
-      milvus:
-        condition: service_healthy
-    healthcheck:
-      test:
-        - CMD-SHELL
-        - >-
-          curl -fsS "http://127.0.0.1:$${APP_PORT}/health"
-          || wget -qO- "http://127.0.0.1:$${APP_PORT}/health"
-          || python -c "import os,urllib.request;urllib.request.urlopen('http://127.0.0.1:'+os.environ.get('APP_PORT','8000')+'/health',timeout=3)"
-      interval: 15s
-      timeout: 10s
-      retries: 10
-      start_period: 60s
-    networks:
-      - ecom-net
-    logging: *default-logging
 
-  # ===========================================================================
-  # 后端 B：Java (Spring Boot) —— 容器内 8080，默认不由 nginx 代理
-  # ===========================================================================
-  backend-java:
-    build:
-      context: ../backend-java
-      dockerfile: Dockerfile
-    image: xingtu/ecom-backend-java:${IMAGE_TAG:-dev}
-    restart: unless-stopped
-    environment:
-      <<: *backend-env
-      APP_PORT: ${APP_PORT_JAVA:-8080}
-      SERVER_PORT: ${APP_PORT_JAVA:-8080}
-      JAVA_TOOL_OPTIONS: ${JAVA_TOOL_OPTIONS:--Xms512m -Xmx1024m}
-    ports:
-      - "${APP_PORT_JAVA:-8080}:${APP_PORT_JAVA:-8080}"
-    depends_on:
-      mysql:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
-      minio:
-        condition: service_healthy
-      milvus:
-        condition: service_healthy
-    healthcheck:
-      test:
-        - CMD-SHELL
-        - >-
-          curl -fsS "http://127.0.0.1:$${APP_PORT}/health"
-          || wget -qO- "http://127.0.0.1:$${APP_PORT}/health"
-          || nc -z 127.0.0.1 $${APP_PORT}
-      interval: 15s
-      timeout: 10s
-      retries: 20
-      start_period: 90s
-    networks:
-      - ecom-net
-    logging: *default-logging
-
-  # ===========================================================================
-  # 前端：静态站点 + /api 反代（nginx）
-  # ===========================================================================
-  frontend:
-    build:
-      # 用仓库根做上下文，Dockerfile 内只拷 frontend/，与前端工程是否自带
-      # Dockerfile 解耦；若前端另有专用镜像，改回 context: ../frontend 即可。
-      context: ..
-      dockerfile: deploy/nginx/Dockerfile
-    image: xingtu/ecom-frontend:${IMAGE_TAG:-dev}
-    restart: unless-stopped
-    environment:
-      TZ: ${TZ:-Asia/Shanghai}
-    ports:
-      - "${FRONTEND_PORT:-8088}:80"
-    volumes:
-      # 配置以 bind mount 注入，改完 nginx -s reload 即可生效，无需重建镜像
-      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
-    depends_on:
-      backend-python:
-        condition: service_started
-      backend-java:
-        condition: service_started
-    healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/healthz | grep -q ok"]
-      interval: 30s
-      timeout: 5s
-      retries: 5
-      start_period: 15s
-    networks:
-      - ecom-net
-    logging: *default-logging
 
 # -----------------------------------------------------------------------------
 # 网络与数据卷

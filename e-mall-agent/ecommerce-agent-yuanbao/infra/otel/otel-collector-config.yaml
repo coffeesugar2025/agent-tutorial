@@ -1,0 +1,21 @@
+receivers:
+  otlp:
+    protocols:
+      grpc: { endpoint: 0.0.0.0:4317 }
+      http: { endpoint: 0.0.0.0:4318 }
+processors:
+  batch: { timeout: 5s }
+  # attributes processor 对 metrics 的 action 支持随 collector 版本变化，
+  # 这里只挂在 traces 上，避免 0.115 镜像启动报 "unsupported processor for metrics"。
+  attributes/genai:
+    actions:
+      - key: gen_ai.system
+        value: ecommerce-agent
+        action: insert
+exporters:
+  prometheus: { endpoint: 0.0.0.0:8889 }
+  debug: { verbosity: basic }
+service:
+  pipelines:
+    traces: { receivers: [otlp], processors: [batch, attributes/genai], exporters: [debug] }
+    metrics: { receivers: [otlp], processors: [batch], exporters: [prometheus] }

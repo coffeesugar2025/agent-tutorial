@@ -1,0 +1,285 @@
+{
+  "contract_version": "1.0.0",
+  "note": "两套后端必须实现同一组路径；Python 用 FastAPI，Java 用 Spring Boot。",
+  "shared_paths": [
+    {
+      "method": "GET",
+      "path": "/health",
+      "required_fields": [
+        "status"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v1/tools",
+      "required_fields": [
+        "tools"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v2/capabilities",
+      "required_fields": [
+        "modules"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/v2/plan",
+      "required_fields": [
+        "strategy",
+        "trace"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/v2/workflow/run",
+      "required_fields": [
+        "stage"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/v2/multi-agent/chat",
+      "required_fields": [
+        "agents_used"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v2/approvals",
+      "required_fields": [
+        "stats"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/v2/approvals/submit",
+      "required_fields": [
+        "status"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/v2/rag/query",
+      "required_fields": [
+        "answer",
+        "citations"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/v2/models/route",
+      "required_fields": [
+        "plan"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v3/capabilities",
+      "required_fields": [
+        "chapters"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/v3/decision/fit",
+      "required_fields": [
+        "fit"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/v3/decision/roi",
+      "required_fields": [
+        "effective_cost_per_task"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v3/models",
+      "required_fields": [
+        "providers"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/v3/models/chat",
+      "required_fields": [
+        "result"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/v3/models/route",
+      "required_fields": [
+        "plan"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/v3/security/scan",
+      "required_fields": [
+        "prompt",
+        "decision"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v3/security/redteam",
+      "required_fields": [
+        "block_rate"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/v3/errors/classify",
+      "required_fields": [
+        "retryable"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/v3/rag/acl",
+      "required_fields": [
+        "visible",
+        "milvus_expr"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/v3/rag/understand",
+      "required_fields": [
+        "sub_queries"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/v3/rag/evaluate",
+      "required_fields": [
+        "bottleneck_layer"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v3/cache/report",
+      "required_fields": []
+    },
+    {
+      "method": "POST",
+      "path": "/v3/cache/invalidate",
+      "required_fields": []
+    },
+    {
+      "method": "POST",
+      "path": "/v3/replay/record",
+      "required_fields": [
+        "trace_id"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/v3/replay/run",
+      "required_fields": [
+        "ok"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/v3/replay/compare",
+      "required_fields": []
+    },
+    {
+      "method": "GET",
+      "path": "/v3/cost/report",
+      "required_fields": [
+        "optimization_order"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v3/prompts",
+      "required_fields": []
+    },
+    {
+      "method": "POST",
+      "path": "/v3/prompts/register",
+      "required_fields": [
+        "version"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v3/tools/specs",
+      "required_fields": [
+        "cards"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/v3/memory/merge",
+      "required_fields": []
+    },
+    {
+      "method": "POST",
+      "path": "/v3/hitl/submit",
+      "required_fields": [
+        "summary"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/v3/hitl/scan",
+      "required_fields": [
+        "default_action"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/v3/evals/stability",
+      "required_fields": [
+        "aggregate_pass_pow_k"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v3/infra",
+      "required_fields": []
+    },
+    {
+      "method": "POST",
+      "path": "/v1/chat",
+      "required_fields": [
+        "meta",
+        "done"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/v1/chat/sync",
+      "required_fields": [
+        "answer"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/v1/intent",
+      "required_fields": [
+        "intent"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v1/audit",
+      "required_fields": [
+        "records"
+      ]
+    }
+  ],
+  "python_only": [
+    "/metrics"
+  ],
+  "java_only": [
+    "/actuator/prometheus"
+  ]
+}

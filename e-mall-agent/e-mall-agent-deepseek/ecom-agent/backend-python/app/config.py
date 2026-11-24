@@ -40,7 +40,7 @@ class Settings(BaseSettings):
     cors_origins: str = "*"
 
     # --- MySQL ---------------------------------------------------------------
-    mysql_host: str = "mysql"
+    mysql_host: str = "127.0.0.1"
     mysql_port: int = 3306
     mysql_db: str = "ecom_agent"
     mysql_user: str = "ecom"
@@ -53,7 +53,7 @@ class Settings(BaseSettings):
     auto_create_tables: bool = False
 
     # --- Redis ---------------------------------------------------------------
-    redis_host: str = "redis"
+    redis_host: str = "127.0.0.1"
     redis_port: int = 6379
     redis_password: str = ""
     redis_db: int = 0
@@ -61,7 +61,7 @@ class Settings(BaseSettings):
     redis_connect_timeout: float = 0.5
 
     # --- RabbitMQ ------------------------------------------------------------
-    rabbitmq_host: str = "rabbitmq"
+    rabbitmq_host: str = "127.0.0.1"
     rabbitmq_port: int = 5672
     rabbitmq_user: str = "ecom"
     rabbitmq_password: str = "ecom123"
@@ -75,7 +75,7 @@ class Settings(BaseSettings):
     mq_queue_prefix: str = "ecom.agent.py"
 
     # --- Milvus --------------------------------------------------------------
-    milvus_host: str = "milvus"
+    milvus_host: str = "127.0.0.1"
     milvus_port: int = 19530
     milvus_collection_prefix: str = "ecom"
     # auto / memory / milvus

@@ -1,0 +1,26 @@
+name: agent-ci
+on: [push, pull_request]
+jobs:
+  python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+      - run: pip install -r backend-python/requirements.txt
+      - name: 单元测试 + 集成测试 + 契约测试
+        run: cd backend-python && python -m pytest -q
+      - name: 双后端静态契约
+        run: python3 tests/contract/check_contract.py
+      - name: 评测门禁（三重阈值）
+        run: python3 tests/ci/gate.py --max-cost 0.02 --min-success 0.95 --max-p95 3000
+  java:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: '17' }
+      - run: cd backend-java && mvn -q test
+  compose:
+    runs-on: ubuntu-latest
+    steps:
+      - run: docker compose -f infra/docker-compose.yml config -q

@@ -1,0 +1,104 @@
+# ==========================================
+# 通用：系统 / 编辑器 / 日志 / 环境变量
+# ==========================================
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+.idea/
+*.iml
+.settings/
+.classpath
+.project
+# .vscode/ 若团队要共享配置，改成 .vscode/* 再加 ! 例外
+.vscode/
+
+*.log
+logs/
+
+# 密钥与本地环境；示例文件保留
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# ==========================================
+# Java / JVM（Maven + Gradle）
+# ==========================================
+target/
+.gradle/
+build/
+# Eclipse 输出目录，若项目里有同名脚本目录请勿启用
+# bin/
+
+*.class
+hs_err_pid*
+replay_pid*
+
+# 若根目录会散落 jar/war 且确认不提交，再按需启用；
+# 启用时必须排除 wrapper，否则 CI 会拉不到构建工具
+# *.jar
+# *.war
+# !.mvn/wrapper/maven-wrapper.jar
+# !gradle/wrapper/gradle-wrapper.jar
+
+# ==========================================
+# Vue 3 / Vite / Node
+# ==========================================
+node_modules/
+dist/
+.vite/
+.vite/deps/
+.cache/
+*.tsbuildinfo
+*.local
+
+coverage/
+.nyc_output/
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# 仅当使用 Nuxt / SSR 时保留
+# .nuxt/
+# .output/
+# .nitro/
+
+# ==========================================
+# Python
+# ==========================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+.eggs/
+# build/ 与 dist/ 已在上方 Java / 前端规则中忽略，无需重复
+
+.venv/
+venv/
+env/
+ENV/
+# 若项目里存在名为 env/ 的配置目录，删掉上面两行
+
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+.nox/
+.hypothesis/
+
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+*.cover
+
+.ipynb_checkpoints
+pip-log.txt
+pip-delete-this-directory.txt

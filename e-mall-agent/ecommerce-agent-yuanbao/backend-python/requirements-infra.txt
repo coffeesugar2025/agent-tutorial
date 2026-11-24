@@ -1,0 +1,9 @@
+# 可选基础设施适配器：未安装时自动降级到进程内实现，接口不变。
+# 生产部署（有网络）执行： pip install -r requirements.txt -r requirements-infra.txt
+pymilvus>=2.4
+redis>=5.0
+pika>=1.3
+SQLAlchemy>=2.0
+PyMySQL>=1.1
+prometheus-client>=0.20
+opentelemetry-api>=1.25

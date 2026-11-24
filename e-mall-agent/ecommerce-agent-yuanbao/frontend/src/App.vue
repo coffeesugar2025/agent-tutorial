@@ -4,6 +4,7 @@ import StatusBadge from './components/StatusBadge.vue'
 import SessionSidebar from './components/SessionSidebar.vue'
 import MessageBubble from './components/MessageBubble.vue'
 import Composer from './components/Composer.vue'
+import ConsolePanel from './views/ConsolePanel.vue'
 import { detectIntent, getHealth, getTools, streamChat } from './api/client'
 import type {
   AgentCard, AgentEvent, ChatMessage, HealthInfo, Session, ToolInfo,
@@ -31,6 +32,7 @@ const activeId = ref(sessions.value[0].id)
 const health = ref<HealthInfo | null>(null)
 const tools = ref<ToolInfo[]>([])
 const busy = ref(false)
+const showConsole = ref(false)
 const scrollEl = ref<HTMLElement | null>(null)
 let controller: AbortController | null = null
 
@@ -172,7 +174,12 @@ function selectSession(id: string) {
           <h1>小栈 · 电商智能体</h1>
           <p>LangChain 1.5 create_agent · MCP Tools · 工具调用全链路可视化</p>
         </div>
-        <StatusBadge :health="health" :tool-count="tools.length" />
+        <div class="topbar-right">
+          <button class="console-toggle" @click="showConsole = !showConsole">
+            {{ showConsole ? '收起面板' : '能力面板' }}
+          </button>
+          <StatusBadge :health="health" :tool-count="tools.length" />
+        </div>
       </header>
 
       <div class="message-scroll" ref="scrollEl">
@@ -206,6 +213,16 @@ function selectSession(id: string) {
         @send="send"
         @stop="stop"
       />
+
+      <ConsolePanel v-if="showConsole" />
     </main>
   </div>
 </template>
+
+
+<style scoped>
+.topbar-right { display: flex; align-items: center; gap: 10px; }
+.console-toggle { border: 1px solid #cbd7ee; background: #fff; color: #2b5cd9;
+  border-radius: 999px; padding: 5px 14px; font-size: 12px; cursor: pointer; }
+.console-toggle:hover { background: #eef4ff; }
+</style>

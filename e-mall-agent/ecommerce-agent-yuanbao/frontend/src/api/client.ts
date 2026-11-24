@@ -2,8 +2,11 @@
 
 import type { AgentEvent, HealthInfo, IntentInfo, ToolInfo } from '../types'
 import { parseSSEBlock, splitSSEBuffer } from './sse'
-
-const BASE = '/api'
+/** 双后端共用：python → /api/py/*，java → /api/java/*，业务代码不变。
+ *  与 src/api/backend.ts::apiBase() 同逻辑；此处内联以保持零依赖校验脚本可直接加载本文件。 */
+const VITE_BACKEND = (import.meta.env?.VITE_BACKEND as string) || 'python'
+const VITE_API_BASE = (import.meta.env?.VITE_API_BASE as string) || '/api'
+const BASE = VITE_BACKEND === 'java' ? `${VITE_API_BASE}/java` : `${VITE_API_BASE}/py`
 
 async function getJSON<T>(path: string, signal?: AbortSignal): Promise<T> {
   const resp = await fetch(`${BASE}${path}`, { signal })
