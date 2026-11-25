@@ -39,7 +39,7 @@ public class UserProfileService {
                         + "FROM user_profile WHERE user_id = ?",
                 (rs, rowNum) -> {
                     List<String> brands = new ArrayList<>();
-                    Object raw = JsonUtil.parseList(rs.getString("preferred_brands"));
+                    List<Object> raw = JsonUtil.parseList(rs.getString("preferred_brands"));
                     for (Object item : raw) {
                         if (item != null) {
                             brands.add(String.valueOf(item));

@@ -1,21 +1,17 @@
 package com.xingtu.agent.llm;
 
-// ═══════ 文件级能力标注 ═══════
-// [CAP-02] 模型接入与输出控制  |  [CAP-18] 成本与模型工程
-// 职责：OpenAI 兼容协议的供应商实现（DeepSeek / 通义千问 compatible-mode / OpenAI /
-// 能力编号与规范见 docs/11-代码能力标注规范.md
-// ══════════════════════════════════
-
 import com.xingtu.agent.common.TokenEstimator;
 import com.xingtu.agent.config.AppProperties;
 import dev.langchain4j.data.message.AiMessage;
 import dev.langchain4j.data.message.ChatMessage;
 import dev.langchain4j.data.message.SystemMessage;
 import dev.langchain4j.data.message.UserMessage;
-import dev.langchain4j.model.chat.ChatLanguageModel;
+import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.model.chat.request.ChatRequest;
 import dev.langchain4j.model.chat.response.ChatResponse;
+import dev.langchain4j.model.chat.response.ChatResponseMetadata;
 import dev.langchain4j.model.openai.OpenAiChatModel;
+import dev.langchain4j.model.output.TokenUsage;
 
 import java.net.http.HttpClient;
 import java.time.Duration;
@@ -29,9 +25,8 @@ import java.util.List;
  * 由它负责 HTTP 传输、鉴权、响应解析与错误映射，本类只做三件事——
  * 把内部 {@link LlmProvider.Message} 转成 LangChain4j 消息、调用、把结果归一。</p>
  *
- * <p>为什么仍保留自己的 {@code LlmProvider} 抽象：Agent 运行时需要统一的
- * 「候选链 + 熔断 + 计费」视图，而不同框架版本对模型对象的封装方式差异较大，
- * 用一层薄适配隔离后，升级框架不会波及业务代码。</p>
+ * <p>注意 LangChain4j 1.x 的接口名是 {@link ChatModel}（旧版本叫 {@code ChatLanguageModel}），
+ * 且 token 用量挂在 {@code ChatResponse.metadata().tokenUsage()} 上。</p>
  */
 public class OpenAiCompatibleProvider implements LlmProvider {
 
@@ -42,7 +37,7 @@ public class OpenAiCompatibleProvider implements LlmProvider {
     private final int timeoutSeconds;
 
     /** 懒加载：首次调用时才构建，避免启动期因 Key 缺失而失败。 */
-    private volatile ChatLanguageModel delegate;
+    private volatile ChatModel delegate;
 
     public OpenAiCompatibleProvider(String name, AppProperties.Provider provider, int timeoutSeconds,
                                     HttpClient httpClient) {
@@ -87,7 +82,7 @@ public class OpenAiCompatibleProvider implements LlmProvider {
 
         ChatResponse response;
         try {
-            response = model().chat(chatRequest);
+            response = delegateModel().chat(chatRequest);
         } catch (LlmException e) {
             throw e;
         } catch (RuntimeException e) {
@@ -102,12 +97,13 @@ public class OpenAiCompatibleProvider implements LlmProvider {
         int promptTokens = 0;
         int completionTokens = 0;
         try {
-            // LangChain4j 不同小版本的 TokenUsage 取值可能为 Integer 或 int，
-            // 统一按 int 接收，null 时由下面的估算兜底。
-            var usage = response.tokenUsage();
+            ChatResponseMetadata metadata = response.metadata();
+            TokenUsage usage = metadata == null ? null : metadata.tokenUsage();
             if (usage != null) {
-                promptTokens = usage.inputTokenCount();
-                completionTokens = usage.outputTokenCount();
+                Integer input = usage.inputTokenCount();
+                Integer output = usage.outputTokenCount();
+                promptTokens = input == null ? 0 : input;
+                completionTokens = output == null ? 0 : output;
             }
         } catch (RuntimeException ignored) {
             // 供应商未返回 usage，走本地估算
@@ -123,9 +119,9 @@ public class OpenAiCompatibleProvider implements LlmProvider {
                 System.currentTimeMillis() - start);
     }
 
-    /** 构建（并缓存）LangChain4j 模型。 */
-    private ChatLanguageModel model() {
-        ChatLanguageModel local = delegate;
+    /** 构建（并缓存）LangChain4j 模型。注意方法名不能叫 model()，会与接口的 model() 冲突。 */
+    private ChatModel delegateModel() {
+        ChatModel local = delegate;
         if (local == null) {
             synchronized (this) {
                 local = delegate;

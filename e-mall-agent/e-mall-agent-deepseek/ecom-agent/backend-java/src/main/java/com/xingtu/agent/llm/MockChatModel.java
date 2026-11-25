@@ -7,12 +7,10 @@ package com.xingtu.agent.llm;
 // ══════════════════════════════════
 
 import com.xingtu.agent.common.TokenEstimator;
-import dev.langchain4j.data.message.AiMessage;
+import dev.langchain4j.data.message.ChatMessage;
 import dev.langchain4j.data.message.SystemMessage;
 import dev.langchain4j.data.message.UserMessage;
-import dev.langchain4j.model.chat.ChatLanguageModel;
 import dev.langchain4j.model.chat.request.ChatRequest;
-import dev.langchain4j.model.chat.response.ChatResponse;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,36 +18,20 @@ import java.util.List;
 /**
  * 离线确定性 Mock 模型（LLM_PRIMARY=mock）。
  *
- * <p>它实现 LangChain4j 的 {@link ChatLanguageModel}，但决策逻辑完全来自
- * {@link #respond(LlmProvider.Request)}：解析 prompt 中的 STEP / AGENT / QUESTION 标记，
- * 按规则产出「工具调用 JSON」或最终答案，因此在没有网络、没有 API Key 的环境下也能跑通
- * 完整的 ReAct 循环、审批中断、成本与追踪链路。</p>
+ * <p>决策逻辑完全来自 {@link #respond(LlmProvider.Request)}：解析 prompt 中的
+ * STEP / AGENT / QUESTION 标记，按规则产出「工具调用 JSON」或最终答案，
+ * 因此在没有网络、没有 API Key 的环境下也能跑通完整的 ReAct 循环、审批中断、成本与追踪链路。</p>
+ *
+ * <p>说明：LangChain4j 1.x 的模型接口是 {@code ChatModel}，其 {@code chat(ChatRequest)}
+ * 之外还有 {@code doChat}/{@code doChatAsync} 等抽象方法，Mock 只需「确定性文本」，
+ * 因此这里不实现该接口，而是保留一个构造 LangChain4j 消息/请求的方法，
+ * 用于验证消息转换链路（真正调用仍走 {@code respond}）。</p>
  */
-public class MockChatModel implements ChatLanguageModel {
+public class MockChatModel {
 
-    private final ThreadLocal<LlmProvider.Request> pending = new ThreadLocal<>();
-
-    /** 绑定当前请求，供 LangChain4j 的 chat() 回调读取。 */
-    public void bind(LlmProvider.Request request) {
-        pending.set(request);
-    }
-
-    public void clear() {
-        pending.remove();
-    }
-
-    @Override
-    public ChatResponse chat(ChatRequest chatRequest) {
-        LlmProvider.Request request = pending.get();
-        String text = respond(request);
-        return ChatResponse.builder()
-                .aiMessage(AiMessage.from(text))
-                .build();
-    }
-
-    /** 通过 LangChain4j 消息类型构造 ChatRequest 并取回文本（验证消息转换链路）。 */
+    /** 通过 LangChain4j 消息类型构造 ChatRequest，再走确定性决策（验证消息转换链路）。 */
     public String chatViaLangChain4j(LlmProvider.Request request) {
-        List<dev.langchain4j.data.message.ChatMessage> messages = new ArrayList<>();
+        List<ChatMessage> messages = new ArrayList<>();
         for (LlmProvider.Message message : request.messages()) {
             if ("system".equals(message.role())) {
                 messages.add(SystemMessage.from(message.content()));
@@ -57,14 +39,12 @@ public class MockChatModel implements ChatLanguageModel {
                 messages.add(UserMessage.from(message.content()));
             }
         }
-        bind(request);
-        try {
-            ChatResponse response = chat(ChatRequest.builder().messages(messages).build());
-            AiMessage aiMessage = response.aiMessage();
-            return aiMessage == null || aiMessage.text() == null ? "" : aiMessage.text();
-        } finally {
-            clear();
+        ChatRequest chatRequest = ChatRequest.builder().messages(messages).build();
+        // 消息转换的兜底校验：请求非空却转换出空列表，说明转换逻辑有问题
+        if (chatRequest.messages().isEmpty() && !request.messages().isEmpty()) {
+            return "（Mock 模型消息转换异常）";
         }
+        return respond(request);
     }
 
     /** 确定性决策核心：同样的 prompt 永远得到同样的输出。 */

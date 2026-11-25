@@ -119,7 +119,7 @@ public class RefundService {
         if (order.userId() != userId) {
             throw BizException.forbidden("订单不属于当前用户");
         }
-        Eligibility eligibility = checkEligibility(userId, order.getOrderNo());
+        Eligibility eligibility = checkEligibility(userId, order.orderNo());
         if (!eligibility.eligible() && approvalId == null) {
             throw BizException.validation(eligibility.reason());
         }

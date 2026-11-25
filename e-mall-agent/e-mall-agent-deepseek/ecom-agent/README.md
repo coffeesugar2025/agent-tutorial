@@ -275,7 +275,8 @@ docker compose logs -f --tail 100
 |---|---|
 | 双后端 + 前端 + 部署编排 | 已完成（`docker-compose.yml` 可编排 9 个服务） |
 | Python 单元/集成测试 | **126 个用例**（`backend-python/tests/`，全 Mock，实测全绿） |
-| Java 单元/集成测试 | 12 个测试类（`backend-java/src/test/`，未编译验证） |
+| Java 编译 | **已通过**：`javac --release 17` 编译 147 个文件（135 main + 12 test），0 error |
+| Java 单元/集成测试 | 12 个测试类 / **69 个用例**；本机 JDK 25 下 49 通过、20 个因 Mockito 不支持 JDK 25 无法运行（项目目标 JDK 17） |
 | 契约/安全/性能测试 | 已设计（见 05），**脚本尚未落地** |
 | 知识点覆盖 | 完整 55 / 部分 22 / 仅文档 2 / 未覆盖 16（共 95，加权 ≈ 69.5%） |
 | 训练与推理优化 | SFT / LoRA / DPO / 量化 / 剪枝 / 蒸馏 / vLLM / SGLang **未覆盖**；Ollama 仅配置项 |
