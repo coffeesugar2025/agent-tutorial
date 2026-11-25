@@ -20,6 +20,7 @@ import com.xingtu.agent.tool.ToolContext;
 import com.xingtu.agent.tool.ToolRegistry;
 import com.xingtu.agent.tool.ToolResult;
 import com.xingtu.agent.tool.ToolRisk;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -38,6 +39,7 @@ import java.util.Optional;
  * 而是创建 approval_task 并中断（SSE 发 approval + done:approval_required）。</p>
  */
 @Component
+@Slf4j
 public class AgentRuntime {
 
     private static final Logger log = LoggerFactory.getLogger(AgentRuntime.class);
@@ -66,6 +68,7 @@ public class AgentRuntime {
     //   本处：主循环（判终止→调模型→执行工具）
     //   域约束：判定顺序固定为 超时→步数→预算→循环→无进展，同时命中也必须稳定返回同一个原因
     public AgentResult run(AgentRunInput input, SseEventSink sink) {
+        log.info("AgentResult run start -----------------------");
         long startedAt = System.currentTimeMillis();
         AgentState state = new AgentState(input.traceId(), input.sessionId(), input.userId(),
                 input.question(), startedAt, deps.props().getAgent().getTaskTimeoutSeconds() * 1000L);
@@ -228,6 +231,7 @@ public class AgentRuntime {
             deps.tracer().finishTrace(input.traceId(), traceStatus(finishReason),
                     System.currentTimeMillis() - startedAt, state.getCostCents(), state.getStep(), answer);
             deps.interrupts().clear(input.sessionId());
+            log.info("AgentResult run end -----------------------");
         }
         return new AgentResult(messageId, finishReason, state.getPromptTokens(), state.getCompletionTokens(),
                 state.getCostCents(), state.getModel(), answer, approvalId, state.getStep(), input.traceId());

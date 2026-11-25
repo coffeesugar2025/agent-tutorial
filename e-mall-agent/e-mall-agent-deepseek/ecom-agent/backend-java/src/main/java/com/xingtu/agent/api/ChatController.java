@@ -23,6 +23,7 @@ import com.xingtu.agent.infra.repo.MessageRepository;
 import com.xingtu.agent.infra.repo.SessionRepository;
 import com.xingtu.agent.rag.Citation;
 import com.xingtu.agent.security.RateLimiter;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -53,6 +54,7 @@ import java.util.concurrent.TimeUnit;
  */
 @RestController
 @RequestMapping("/api/v1/chat")
+@Slf4j
 public class ChatController {
 
     private static final Logger log = LoggerFactory.getLogger(ChatController.class);
@@ -141,6 +143,7 @@ public class ChatController {
      */
     @PostMapping(value = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter stream(@RequestBody(required = false) ChatDtos.ChatStreamReq req) {
+        log.info("stream begin ------------");
         if (req == null || req.sessionId() <= 0) {
             throw BizException.validation("sessionId 不合法");
         }
@@ -180,6 +183,7 @@ public class ChatController {
                     heartbeat.cancel(false);
                     sink.complete();
                     TraceContext.clear();
+                    log.info("stream end ------------");
                 }
             });
         } catch (RuntimeException e) {
@@ -187,6 +191,7 @@ public class ChatController {
             log.error("提交 SSE 任务失败 sessionId={} traceId={}", sessionId, traceId, e);
             sink.error(50000, "服务繁忙，请稍后重试");
             sink.complete();
+            log.info("stream error end");
         }
         return emitter;
     }

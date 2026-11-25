@@ -15,6 +15,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
@@ -30,6 +31,7 @@ import java.util.Set;
  */
 @Component
 @Order(1)
+@Slf4j
 public class AuthFilter extends OncePerRequestFilter {
 
     private static final Set<String> PUBLIC_PATHS = Set.of(
@@ -46,6 +48,8 @@ public class AuthFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
+
+        logger.info("AuthFilter doFilterInternal start ---------------------");
         String traceId = request.getHeader("X-Trace-Id");
         if (traceId == null || traceId.isBlank()) {
             traceId = Ids.newTraceId();
@@ -81,6 +85,7 @@ public class AuthFilter extends OncePerRequestFilter {
             metrics.request(request.getRequestURI(), request.getMethod(), status, latency);
             MDC.remove("traceId");
             TraceContext.clear();
+            logger.info("AuthFilter doFilterInternal end ---------------------");
         }
     }
 
