@@ -1,0 +1,8 @@
+langgraph
+langchain-core>=1.5.3
+langchain-community
+langchain-openai>=1.4.1
+langchain-text-splitters>=1.1.2
+trustcall
+langsmith>=0.7.31
+aiohttp>=3.13.4

@@ -1,0 +1,34 @@
+[project]
+name = "gradio-agent-app"
+version = "0.1.0"
+description = "基于 LangChain 构建流式对话智能体"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "fastmcp>=4.0.3",
+    "gradio>=6.27.0",
+    "langchain[mcp]>=1.4.0",
+    "langchain-openai>=1.6.2",
+    "langgraph>=1.2.11",
+    "openai>=3.13.0",
+    "pydantic>=2.13.5",
+    "python-dotenv>=1.2.3",
+    "typer>=0.27.2",
+    "langchain-deepseek>=1.2.1",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.2.0",
+    "ruff>=0.16.7",
+]
+
+[tool.pytest.ini_options]
+# 测试以 `from app import ...` / `from utils import ...` 风格导入，需把 app/ 根目录加入 sys.path
+pythonpath = ["."]
+
+[tool.uv]
+
+[[tool.uv.index]]
+url = "https://mirrors.cloud.tencent.com/pypi/simple/"
+default = true

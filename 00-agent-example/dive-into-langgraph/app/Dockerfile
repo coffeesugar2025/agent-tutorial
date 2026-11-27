@@ -1,0 +1,37 @@
+FROM python:3.13-slim
+
+COPY --from=ghcr.io/astral-sh/uv:0.9.24 /uv /uvx /bin/
+
+# 设置工作目录
+WORKDIR /app
+
+# 更换为国内镜像源并安装系统依赖
+# 如需使用 npx 请安装 nodejs npm 
+RUN sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list.d/debian.sources && \
+    apt-get update && apt-get install -y \
+    curl \
+    supervisor \
+    procps \
+    vim \
+    && rm -rf /var/lib/apt/lists/*
+
+# 复制依赖文件并安装Python依赖（索引已在 pyproject.toml 钉定为腾讯源）
+COPY pyproject.toml uv.lock ./
+# --frozen: 构建期不重新解析依赖，保证与 uv.lock 完全一致
+RUN uv sync --frozen
+
+# 复制应用代码
+COPY app.py .
+COPY config/ ./config/
+COPY images/ ./images/
+COPY mcp/ ./mcp/
+COPY prompts/ ./prompts/
+COPY space/ ./space/
+COPY tools/ ./tools/
+COPY utils/ ./utils/
+
+# 复制supervisor配置文件
+COPY docker.conf /etc/supervisor/conf.d/supervisord.conf
+
+# 设置入口点
+ENTRYPOINT ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
