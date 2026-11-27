@@ -1,0 +1,39 @@
+# LangChain 1.5 + LangGraph + Deep Agents 项目依赖
+# 运行环境：Python >= 3.11,<4.0
+# deepagents 最新稳定版：0.7.41（2026-11-20 发布，截至 2026-11-27）
+
+# ── Agent Harness ──────────────────────────────────────────────────
+# create_deep_agent：内置规划、文件系统、子 Agent、上下文压缩、长期记忆
+deepagents==0.7.41
+
+# ── 核心栈 ────────────────────────────────────────────────────────
+# 下限来自 deepagents 0.7.41 的 pyproject，pip 会解析到区间内最新版
+# langchain 保持 1.5 线；想完全跟随上游可把 <1.6 放宽到 <2
+langchain>=1.5.2,<1.6
+langchain-core>=1.8.3,<2
+langgraph>=1.2.24,<2
+langsmith>=0.15.0,<1
+
+# ── 模型接入 ──────────────────────────────────────────────────────
+# ChatOpenAI 实例显式传 api_key / base_url 用这个
+langchain-openai>=1.8.3,<2
+# 注：langchain-anthropic、langchain-google-genai 是 deepagents 的硬依赖，
+# 安装 deepagents 时会自动带上，无需在此手写。
+# 其他供应商按需启用：
+# langchain-ollama>=1.1,<2
+# langchain-deepseek
+
+# ── 会话持久化：checkpointer + thread_id 多轮记忆 ──────────────────
+langgraph-checkpoint-sqlite>=3.1,<4
+# 生产环境改用 Postgres，另需 psycopg[binary]：
+# langgraph-checkpoint-postgres>=3.2,<4
+
+# ── 可选 extras（按需改用带 extra 的写法）─────────────────────────
+# deepagents[quickjs]   代码解释器
+# deepagents[aws]       AWS 模型接入
+# deepagents[video]     视频处理
+
+# ── 工程配套 ──────────────────────────────────────────────────────
+python-dotenv>=1.0,<2
+# 需要 `langgraph dev` 本地 Server 时再启用：
+# langgraph-cli[inmem]
