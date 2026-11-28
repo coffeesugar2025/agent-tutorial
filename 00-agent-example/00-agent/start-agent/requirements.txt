@@ -37,3 +37,6 @@ langgraph-checkpoint-sqlite>=3.1,<4
 python-dotenv>=1.0,<2
 # 需要 `langgraph dev` 本地 Server 时再启用：
 # langgraph-cli[inmem]
+
+langgraph-checkpoint-postgres
+psycopg[binary]

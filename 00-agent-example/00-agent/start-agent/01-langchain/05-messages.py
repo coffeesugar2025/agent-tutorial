@@ -146,3 +146,242 @@ for tool_call in response.tool_calls:
     print(f"Tool: {tool_call['name']}")
     print(f"Args: {tool_call['args']}")
     print(f"ID: {tool_call['id']}")
+
+
+# 2.3.2） Token usage
+# An AIMessage can hold token counts and other usage metadata in its usage_metadata field:
+from langchain.chat_models import init_chat_model
+
+model = init_chat_model("gpt-5-nano")
+
+response = model.invoke("Hello!")
+response.usage_metadata
+
+# 格式如下
+# {'input_tokens': 8,
+#  'output_tokens': 304,
+#  'total_tokens': 312,
+#  'input_token_details': {'audio': 0, 'cache_read': 0},
+#  'output_token_details': {'audio': 0, 'reasoning': 256}}
+
+# 2.3.3 Finish reason
+# An AIMessage records why the model
+# stopped in its response_metadata:
+
+# Use normalized_finish_reason to handle the same outcome
+# across providers, and finish_reason when you need the provider’s exact value:
+response = model.invoke("Hello!")
+if response.response_metadata.get("normalized_finish_reason") == "length":
+    ...  # Retry with a higher token limit, or continue the answer
+
+
+# 2.3.4 Streaming and chunks
+# During streaming, you’ll receive AIMessageChunk objects
+# that can be combined into a full message object:
+
+chunks = []
+full_message = None
+for chunk in model.stream("Hi"):
+    chunks.append(chunk)
+    print(chunk.text)
+    full_message = chunk if full_message is None else full_message + chunk
+
+
+# 2.4)Tool message
+from langchain.messages import AIMessage
+from langchain.messages import ToolMessage
+
+# After a model makes a tool call
+# (Here, we demonstrate manually creating the messages for brevity)
+ai_message = AIMessage(
+    content=[],
+    tool_calls=[{
+        "name": "get_weather",
+        "args": {"location": "San Francisco"},
+        "id": "call_123"
+    }]
+)
+
+# Execute tool and create result message
+weather_result = "Sunny, 72°F"
+tool_message = ToolMessage(
+    content=weather_result,
+    tool_call_id="call_123"  # Must match the call ID
+)
+
+# Continue conversation
+messages = [
+    HumanMessage("What's the weather in San Francisco?"),
+    ai_message,  # Model's tool call
+    tool_message,  # Tool execution result
+]
+response = model.invoke(messages)  # Model processes the result
+
+
+# 3) message content
+
+from langchain.messages import HumanMessage
+
+# String content
+human_message = HumanMessage("Hello, how are you?")
+
+# Provider-native format (e.g., OpenAI)
+human_message = HumanMessage(content=[
+    {"type": "text", "text": "Hello, how are you?"},
+    {"type": "image_url", "image_url": {"url": "https://example.com/image.jpg"}}
+])
+
+# List of standard content blocks
+human_message = HumanMessage(content_blocks=[
+    {"type": "text", "text": "Hello, how are you?"},
+    {"type": "image", "url": "https://example.com/image.jpg"},
+])
+
+
+
+# 3.1,Standard content blocks
+from langchain.messages import AIMessage
+
+message = AIMessage(
+    content=[
+        {
+            "type": "reasoning",
+            "id": "rs_abc123",
+            "summary": [
+                {"type": "summary_text", "text": "summary 1"},
+                {"type": "summary_text", "text": "summary 2"},
+            ],
+        },
+        {"type": "text", "text": "...", "id": "msg_abc123"},
+    ],
+    response_metadata={"model_provider": "openai"}
+)
+message.content_blocks
+
+
+# 3.2,Multimodal
+# Multimodality refers to the ability to work with data
+# that comes in different forms, such as text, audio, images, and video.
+# LangChain includes standard types for these data that can be used across providers.
+# Chat models can accept multimodal data as input and generate it as output.
+# Below we show short examples of input messages featuring multimodal data.
+
+
+######### image
+# From URL
+message = {
+    "role": "user",
+    "content": [
+        {"type": "text", "text": "Describe the content of this image."},
+        {"type": "image", "url": "https://example.com/path/to/image.jpg"},
+    ]
+}
+
+# From base64 data
+message = {
+    "role": "user",
+    "content": [
+        {"type": "text", "text": "Describe the content of this image."},
+        {
+            "type": "image",
+            "base64": "AAAAIGZ0eXBtcDQyAAAAAGlzb21tcDQyAAACAGlzb2...",
+            "mime_type": "image/jpeg",
+        },
+    ]
+}
+
+# From provider-managed File ID
+message = {
+    "role": "user",
+    "content": [
+        {"type": "text", "text": "Describe the content of this image."},
+        {"type": "image", "file_id": "file-abc123"},
+    ]
+}
+
+############# pdf
+# From URL
+message = {
+    "role": "user",
+    "content": [
+        {"type": "text", "text": "Describe the content of this document."},
+        {"type": "file", "url": "https://example.com/path/to/document.pdf"},
+    ]
+}
+
+# From base64 data
+message = {
+    "role": "user",
+    "content": [
+        {"type": "text", "text": "Describe the content of this document."},
+        {
+            "type": "file",
+            "base64": "AAAAIGZ0eXBtcDQyAAAAAGlzb21tcDQyAAACAGlzb2...",
+            "mime_type": "application/pdf",
+        },
+    ]
+}
+
+# From provider-managed File ID
+message = {
+    "role": "user",
+    "content": [
+        {"type": "text", "text": "Describe the content of this document."},
+        {"type": "file", "file_id": "file-abc123"},
+    ]
+}
+
+# 3.3)Content block reference
+# Content blocks are represented (either when creating a message or accessing the content_blocks property)
+# as a list of typed dictionaries. Each item in the list must adhere to one of the following block types:
+
+
+# 4)notafication
+# An agent harness sometimes adds a human message that the user did not type,
+# such as a background task update or a conversation summary.
+# Notification metadata marks these messages so that
+# your frontend can show them differently from user input.
+# Middleware can also mark a tool message that it creates instead of running the tool.
+
+# add_notification_metadata returns a copy of a HumanMessage
+# or ToolMessage with a source that names the feature
+# that added it, and optional data with that feature’s fields
+from langchain.messages import HumanMessage
+from langchain_core.messages import add_notification_metadata
+
+notification = add_notification_metadata(
+    HumanMessage("Background task t_42 finished."),
+    source="background_job",
+    data={"task_id": "t_42", "status": "success"},
+)
+
+
+from langchain_core.messages import get_notification_metadata
+
+for message in messages:
+    metadata = get_notification_metadata(message)
+    if metadata is None:
+        print(message.text)  # A regular message
+    else:
+        print(f"[{metadata['source']}]", metadata.get("data"))
+
+#     5）Serialization
+# You can serialize messages to plain objects for storage and deserialize
+# back to message instances. This is useful for
+# persisting conversation history and resuming sessions
+from langchain.messages import HumanMessage
+from langchain_core.load import dumpd, load
+
+message = HumanMessage("What is the capital of France?")
+
+# Serialize to a plain dict
+serialized = dumpd(message)
+
+# Deserialize back to a message object
+restored = load(serialized)
+
+# 6）Use with chat models
+# Chat models accept a sequence of message objects as input and return an AIMessage as output. Interactions are often stateless, so that a simple conversational loop involves invoking a model with a growing list of messages.
+# Refer to the below guides to learn more:
+# Built-in features for persisting and managing conversation histories
+# Strategies for managing context windows, including trimming and summarizing messages
